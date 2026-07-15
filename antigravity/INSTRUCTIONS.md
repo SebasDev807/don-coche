@@ -1,0 +1,4 @@
+# Objetivos del proyecto
+
+Crear un Sistema de Gestión para Lavadero y Serviteca llamado Don Coche, utilizando únicamente el framework Next.js 16 (App Router), PrismaORM y PostgreSQL, TailwindCSS. El proyecto tiene como objetivo implementar el diseño visual y las funcionalidades operativas y administrativas básicas para descentralizar el registro de operaciones entre la pista y la caja. La prioridad técnica es garantizar que el sistema sea excepcionalmente ágil y fácil de usar para el personal operativo, eliminando la entrada manual de texto donde sea posible. Posteriormente, se irán agregando funcionalidades para escalar el proyecto, siguiendo con exactitud los parámetros de diseño UI/UX previamente definidos (diseño táctil para tablets, interfaz estructurada mediante sombras y espacios sin el uso de bordes negros, y la aplicación estricta de la paleta de colores corporativa).
+

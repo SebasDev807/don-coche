@@ -4,18 +4,14 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { PasswordInput, ErrorMessage } from '@/components/ui';
+import { MOCK_USERS } from '@/data/mocks';
 
 type LoginFormInputs = {
   documento: string;
   password: string;
 };
 
-// Mock Users
-const MOCK_USERS = [
-  { id: '1010101010', name: 'Lized Vanessa Trujillo Mona', role: 'superUser', password: 'ingreso12345' },
-  { id: '1020202020', name: 'Fernanda Alvarez', role: 'admin', password: 'ingreso12345' },
-  { id: '1030303030', name: 'Andres Lopez', role: 'technical', password: 'ingreso12345' },
-];
+
 
 export default function LoginScreen() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();

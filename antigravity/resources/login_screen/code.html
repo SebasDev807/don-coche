@@ -1,0 +1,166 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AUTO-TECH - Iniciar Sesión</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600&amp;family=Sora:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface": "#1a1c1c",
+                    "primary-fixed": "#f8e600",
+                    "surface-bright": "#f9f9f9",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#646464",
+                    "on-primary": "#ffffff",
+                    "on-surface-variant": "#4a4731",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f3f3f4",
+                    "on-secondary-fixed": "#1b1b1b",
+                    "outline": "#7c785f",
+                    "surface": "#f9f9f9",
+                    "background": "#f9f9f9",
+                    "tertiary": "#5f5e5e",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed": "#e5e2e1",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#ffec00",
+                    "primary-fixed-dim": "#d9c900",
+                    "on-background": "#1a1c1c",
+                    "surface-container-high": "#e8e8e8",
+                    "surface-container": "#eeeeee",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#e2e2e2",
+                    "inverse-primary": "#d9c900",
+                    "on-tertiary-container": "#696868",
+                    "on-tertiary-fixed": "#1c1b1b",
+                    "surface-dim": "#dadada",
+                    "on-tertiary-fixed-variant": "#474746",
+                    "outline-variant": "#cdc7aa",
+                    "on-primary-fixed-variant": "#4e4800",
+                    "primary": "#686000",
+                    "on-primary-container": "#736a00",
+                    "on-primary-fixed": "#1f1c00",
+                    "secondary": "#5e5e5e",
+                    "surface-tint": "#686000",
+                    "secondary-fixed-dim": "#c6c6c6",
+                    "on-secondary-fixed-variant": "#474747",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "secondary-fixed": "#e2e2e2",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#e2e2e2",
+                    "inverse-surface": "#2f3131",
+                    "tertiary-container": "#ebe8e7",
+                    "inverse-on-surface": "#f0f1f1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "12px",
+                    "stack-lg": "48px",
+                    "margin-desktop": "64px",
+                    "base": "8px",
+                    "touch-target-min": "56px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "stack-md": "24px"
+            },
+            "fontFamily": {
+                    "body-md": ["Public Sans"],
+                    "cta": ["Sora"],
+                    "headline-lg-mobile": ["Sora"],
+                    "headline-md": ["Sora"],
+                    "display-lg": ["Sora"],
+                    "body-lg": ["Public Sans"],
+                    "headline-lg": ["Sora"],
+                    "label-bold": ["Sora"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "cta": ["16px", {"lineHeight": "1.0", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "label-bold": ["14px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Custom styles for floating label interaction */
+        .floating-input:focus ~ .floating-label,
+        .floating-input:not(:placeholder-shown) ~ .floating-label {
+            transform: translateY(-130%) scale(0.85);
+            color: #7c785f; /* outline */
+        }
+        .floating-input:focus ~ .floating-label {
+            color: #f8e600; /* primary-fixed */
+        }
+    </style>
+</head>
+<body class="antialiased relative min-h-screen bg-white">
+<!-- Atmospheric Background Image -->
+<!-- Main Content Container -->
+<main class="relative z-10 min-h-screen flex items-center justify-center p-margin-mobile md:p-margin-desktop">
+<!-- Login Card -->
+<div class="w-full max-w-[440px] bg-white rounded-lg shadow-sm border border-outline-variant/30 flex flex-col p-stack-lg">
+<!-- Header Section -->
+<header class="flex flex-col items-center justify-center mb-stack-md text-center"><h2 class="font-headline-lg text-headline-lg text-on-surface mb-stack-md">Iniciar Sesión</h2></header>
+<!-- Login Form -->
+<form action="#" class="flex flex-col gap-stack-sm w-full" method="POST">
+<!-- Input Field: Cédula -->
+<div class="relative w-full"><label class="block font-label-bold text-label-bold text-on-surface mb-2" for="documento">Número de Cédula (CC)</label><input autocomplete="username" class="w-full h-touch-target-min px-4 bg-white border border-outline-variant rounded text-on-surface font-body-md focus:outline-none focus:border-primary-fixed transition-colors" id="documento" name="documento" placeholder="Ingrese su cédula" required="" type="text"></div>
+<!-- Input Field: Contraseña -->
+<div class="relative w-full"><label class="block font-label-bold text-label-bold text-on-surface mb-2" for="password">Contraseña</label><input autocomplete="current-password" class="w-full h-touch-target-min px-4 bg-white border border-outline-variant rounded text-on-surface font-body-md focus:outline-none focus:border-primary-fixed transition-colors" id="password" name="password" placeholder="Ingrese su contraseña" required="" type="password"></div>
+<!-- Submit Button -->
+<button class="w-full h-touch-target-min mt-base bg-primary-container text-on-surface font-cta text-label-bold rounded shadow-sm hover:bg-primary-fixed-dim transition-all duration-150" type="submit">Ingresar al Sistema</button>
+</form>
+<!-- Footer Link -->
+<div class="mt-stack-sm flex justify-center">
+<a class="font-body-md text-body-md text-on-secondary-container hover:text-on-surface transition-colors underline underline-offset-4" href="#">
+                    ¿Olvidaste tu contraseña?
+                </a>
+</div>
+</div>
+</main>
+<script>
+        // Simple password visibility toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.querySelector('button[aria-label="Toggle password visibility"]');
+            const passwordInput = document.getElementById('password');
+            const icon = toggleButton.querySelector('.material-symbols-outlined');
+
+            toggleButton.addEventListener('click', () => {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.textContent = 'visibility';
+                } else {
+                    passwordInput.type = 'password';
+                    icon.textContent = 'visibility_off';
+                }
+            });
+        });
+    </script>
+<footer class="w-full bg-white border-t border-outline-variant/30 p-margin-mobile md:px-margin-desktop flex flex-col md:flex-row items-center justify-between gap-4"><div class="flex items-center gap-4"><span class="font-label-bold text-on-surface">DON COCHE</span><span class="text-body-md text-on-secondary-container">© 2026 Don Coche. Lavado y servicio de autos</span></div><div class="flex gap-6"><a class="text-body-md text-on-secondary-container hover:text-on-surface" href="#">Privacidad</a><a class="text-body-md text-on-secondary-container hover:text-on-surface" href="#">Términos de Servicio</a><a class="text-body-md text-on-secondary-container hover:text-on-surface" href="#">Soporte Técnico</a></div></footer>
+
+</body></html>

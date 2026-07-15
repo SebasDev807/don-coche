@@ -1,0 +1,179 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Don Coche - Registro de Vehículo</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style data-purpose="typography">
+    body {
+      font-family: 'Sora', sans-serif;
+    }
+  </style>
+<style data-purpose="custom-colors">
+    .bg-don-coche-yellow {
+      background-color: #FFEC00;
+    }
+    .hover\:bg-don-coche-yellow-dark:hover {
+      background-color: #e6d400;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col font-sans">
+<!-- BEGIN: MainHeader -->
+<header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center" data-purpose="main-header">
+<div class="flex items-center gap-4">
+
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-gray-600 text-sm font-medium">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+        Técnico Activo: Técnico #42
+      </div>
+<button class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+        Cerrar Sesión
+      </button>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 flex overflow-hidden">
+<!-- BEGIN: LeftColumn - Registration Form -->
+<section class="w-2/5 bg-white border-r border-gray-200 p-8 flex flex-col overflow-y-auto" data-purpose="registration-form">
+<div class="mb-8">
+<h1 class="text-3xl font-bold text-gray-900 mb-2">Registro de Vehículo</h1>
+<p class="text-gray-500 text-base leading-relaxed">Ingrese los detalles para iniciar una nueva orden de servicio.</p>
+</div>
+<form class="flex-1 flex flex-col gap-6">
+<div>
+<label class="block text-sm font-bold text-gray-700 mb-2" for="placa">Placa</label>
+<input class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg py-4 px-4 text-gray-400 placeholder-gray-300 font-bold uppercase" id="placa" placeholder="ABC-1234" type="text">
+</div>
+<div>
+<label class="block text-sm font-bold text-gray-700 mb-2" for="propietario">Nombre del Propietario</label>
+<input class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-4 px-4 text-gray-600 placeholder-gray-400" id="propietario" placeholder="Nombre Completo" type="text">
+</div>
+<div class="flex gap-4">
+<div class="flex-1">
+<label class="block text-sm font-bold text-gray-700 mb-2" for="celular">Celular</label>
+<input class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-4 px-4 text-gray-600 placeholder-gray-400" id="celular" placeholder="099 000 0000" type="tel">
+</div>
+<div class="flex-1">
+<label class="block text-sm font-bold text-gray-700 mb-2" for="correo">Correo</label>
+<input class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-4 px-4 text-gray-600 placeholder-gray-400 leading-tight" id="correo" placeholder="usuario@ejemplo.com" type="email">
+</div>
+</div>
+<hr class="my-2 border-gray-200">
+<!-- Reception Status Card -->
+<div class="bg-gray-100 rounded-xl p-5 flex items-center gap-4 mt-auto">
+<div class="bg-gray-200 p-3 rounded-lg text-gray-700">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-sm font-bold text-gray-900">Estado de Recepción</h3>
+<p class="text-sm text-gray-500">Inspección visual pendiente al ingresar</p>
+</div>
+</div>
+</form>
+</section>
+<!-- END: LeftColumn - Registration Form -->
+<!-- BEGIN: RightColumn - Services and Order -->
+<section class="w-3/5 bg-gray-50 flex flex-col overflow-hidden" data-purpose="services-order">
+<!-- Search Bar Area -->
+<div class="p-6 border-b border-gray-200 bg-white">
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<svg aria-hidden="true" class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<input class="block w-full pl-11 pr-3 py-4 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900" placeholder="Buscar Servicios y Repuestos..." type="text">
+</div>
+</div>
+<!-- Frequent Services Grid -->
+<div class="p-6 flex-1 overflow-y-auto border-b border-gray-200">
+<h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Servicios Frecuentes</h2>
+<div class="grid grid-cols-3 gap-4">
+<!-- Service Card 1 -->
+<button class="bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:shadow-sm transition-all">
+<div class="text-gray-500">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-sm font-medium text-gray-800 text-center">Lavado General</span>
+</button>
+<!-- Service Card 2 -->
+<button class="bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:shadow-sm transition-all">
+<div class="text-gray-500">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-sm font-medium text-gray-800 text-center">Cambio de Aceite</span>
+</button>
+<!-- Service Card 3 -->
+<button class="bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:shadow-sm transition-all">
+<div class="text-gray-500 flex gap-1">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-sm font-medium text-gray-800 text-center">Alineación</span>
+</button>
+<!-- Service Card 4 -->
+<button class="bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:shadow-sm transition-all">
+<div class="text-gray-500">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-sm font-medium text-gray-800 text-center">Balanceo</span>
+</button>
+<!-- Service Card 5 -->
+<button class="bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:shadow-sm transition-all">
+<div class="text-gray-500">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.015-.39.03-.587.045m0 0l-5.32 5.32m5.32-5.32l-5.32-5.32m-4.5 14.25l-5.32-5.32m5.32 5.32l-5.32 5.32M14.25 10.5h-4.5m4.5 3h-4.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-sm font-medium text-gray-800 text-center">Limpieza Tapicería</span>
+</button>
+<!-- Service Card 6 -->
+<button class="bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:shadow-sm transition-all">
+<div class="text-gray-500">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 8.25V18a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18V8.25m-18 0V6a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 6v2.25m-18 0h18M5.25 6h.008v.008H5.25V6zM7.5 6h.008v.008H7.5V6zm2.25 0h.008v.008H9.75V6z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-sm font-medium text-gray-800 text-center">Revisión Frenos</span>
+</button>
+</div>
+</div>
+<!-- Order Summary & Submit -->
+<div class="p-6 bg-white border-t border-gray-200 flex flex-col gap-4">
+<div class="flex justify-between items-center mb-2">
+<h2 class="text-lg font-bold text-gray-900">Resumen de Orden</h2>
+<span class="bg-gray-900 text-white text-xs font-bold px-2.5 py-1 rounded-full">0 ITEMS</span>
+</div>
+<p class="text-sm text-gray-500 italic mb-4">No hay servicios seleccionados aún.</p>
+<button class="w-full bg-don-coche-yellow hover:bg-don-coche-yellow-dark text-gray-900 font-bold text-lg py-5 px-6 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm mt-auto">
+          Finalizar y Enviar a Caja
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</section>
+<!-- END: RightColumn - Services and Order -->
+</main>
+<!-- END: MainContent -->
+
+
+</body></html>

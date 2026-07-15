@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { PasswordInput, ErrorMessage } from '@/components/ui';
@@ -22,6 +22,18 @@ export function LoginClient() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const router = useRouter();
   const login = useAuthStore(state => state.login);
+  const user = useAuthStore(state => state.user);
+  const hasHydrated = useAuthStore(state => state._hasHydrated);
+
+  useEffect(() => {
+    if (hasHydrated && user) {
+      if (user.role === 'technical') {
+        router.push('/tecnico');
+      } else {
+        // Redirigir a otras pantallas en el futuro, por ahora no hacemos nada o mandamos a un dashboard generico
+      }
+    }
+  }, [user, hasHydrated, router]);
 
   const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
     setLoginError(null);

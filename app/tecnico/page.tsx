@@ -11,23 +11,23 @@ export default function TecnicoScreen() {
   const router = useRouter();
   const user = useAuthStore(state => state.user);
   const logout = useAuthStore(state => state.logout);
-  const [mounted, setMounted] = useState(false);
+  const hasHydrated = useAuthStore(state => state._hasHydrated);
 
   useEffect(() => {
-    setMounted(true);
-    if (!user || user.role !== 'technical') {
-      router.push('/auth');
+    if (hasHydrated) {
+      if (!user || user.role !== 'technical') {
+        router.push('/auth');
+      }
     }
-  }, [user, router]);
+  }, [user, hasHydrated, router]);
 
   const handleLogout = () => {
     logout();
     router.push('/auth');
   };
 
-  // Prevent flash of content during hydration
-  if (!mounted) return null;
-  if (!user || user.role !== 'technical') return null;
+  // Prevent flash of content during hydration or invalid user
+  if (!hasHydrated || !user || user.role !== 'technical') return null;
 
   return (
     <div className="bg-gray-50 h-screen flex flex-col font-[family-name:var(--font-sora)] overflow-hidden">

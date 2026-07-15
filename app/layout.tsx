@@ -12,11 +12,6 @@ const sora = Sora({
   variable: "--font-sora",
 });
 
-export const metadata: Metadata = {
-  title: "AUTO-TECH - Iniciar Sesión",
-  description: "Don Coche login",
-};
-
 /**
  * Layout principal de la aplicación Next.js.
  * 

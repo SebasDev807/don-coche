@@ -31,11 +31,14 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           {label}
         </label>
         <div className="relative">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant z-10 pointer-events-none">
+            lock
+          </span>
           <input
             {...props}
             ref={ref}
             type={showPassword ? 'text' : 'password'}
-            className={`w-full h-touch-target-min px-4 bg-white border border-outline-variant rounded text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary-fixed-dim focus:border-primary-fixed-dim transition-colors pr-12 ${className}`}
+            className={`w-full h-touch-target-min pl-12 pr-12 bg-white border border-outline-variant rounded text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary-fixed-dim focus:border-primary-fixed-dim transition-colors ${className}`}
             style={{ backgroundColor: 'white' }}
           />
           <button

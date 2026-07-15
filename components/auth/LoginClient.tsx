@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { PasswordInput, ErrorMessage } from '@/components/ui';
 import { MOCK_USERS } from '@/data/mocks';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/useAuthStore';
 
 type LoginFormInputs = {
   documento: string;
@@ -18,13 +20,20 @@ type LoginFormInputs = {
 export function LoginClient() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
   const [loginError, setLoginError] = useState<string | null>(null);
+  const router = useRouter();
+  const login = useAuthStore(state => state.login);
 
   const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
     setLoginError(null);
     const user = MOCK_USERS.find(u => u.id === data.documento && u.password === data.password);
 
     if (user) {
-      alert(`Bienvenido, ${user.name} (${user.role})`);
+      login(user);
+      if (user.role === 'technical') {
+        router.push('/tecnico');
+      } else {
+        alert(`Bienvenido, ${user.name} (${user.role}) - Pantalla no implementada`);
+      }
     } else {
       setLoginError("Credenciales incorrectas");
     }

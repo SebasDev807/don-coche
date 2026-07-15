@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   description: "Don Coche login",
 };
 
+/**
+ * Layout principal de la aplicación Next.js.
+ * 
+ * Se encarga de envolver a toda la aplicación, configurando el documento HTML base,
+ * e inyectando las fuentes tipográficas globales (Public Sans y Sora) a través de
+ * variables CSS, así como la carga de Google Material Symbols y estilos CSS globales de Tailwind.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

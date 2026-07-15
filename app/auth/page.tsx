@@ -13,6 +13,13 @@ type LoginFormInputs = {
 
 
 
+/**
+ * Pantalla de inicio de sesión principal de la aplicación Don Coche.
+ * 
+ * Permite a los usuarios autenticarse usando su número de cédula (CC) y contraseña.
+ * Maneja validaciones locales con `react-hook-form` y simula la validación de ingreso
+ * comprobando las credenciales contra el archivo de datos mock.
+ */
 export default function LoginScreen() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
   const [loginError, setLoginError] = useState<string | null>(null);

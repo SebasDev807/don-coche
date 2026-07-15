@@ -8,6 +8,19 @@ interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement>
   helperText?: string;
 }
 
+/**
+ * Componente de entrada de contraseña reutilizable.
+ * Proporciona un campo de texto con un botón integrado para alternar
+ * la visibilidad de la contraseña (texto plano vs oculto).
+ * 
+ * Está diseñado para ser compatible con `react-hook-form` gracias al uso de `forwardRef`.
+ *
+ * @param props - Propiedades del input y las extendidas de HTMLInputElement
+ * @param props.label - Etiqueta a mostrar encima del campo
+ * @param props.error - Indica si hay un error visual asociado (opcional)
+ * @param props.helperText - Texto de ayuda adicional para el input (opcional)
+ * @param ref - Referencia retransmitida al elemento input HTML
+ */
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ label, className = '', ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);

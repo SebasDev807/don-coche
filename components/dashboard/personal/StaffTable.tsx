@@ -41,7 +41,7 @@ export function StaffTable({ users }: StaffTableProps) {
       cancelButtonColor: 'rgba(2, 14, 30, 1)',
       customClass: {
         confirmButton: '!text-black',
-        cancelButton: '!text-black'
+        cancelButton: '!text-white'
       },
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'

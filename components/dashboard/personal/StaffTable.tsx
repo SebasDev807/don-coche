@@ -1,6 +1,9 @@
 'use client';
 
 import { User } from '@prisma/client';
+import { useTransition } from 'react';
+import { deleteStaffUser } from '@/actions/personal';
+import { useRouter } from 'next/navigation';
 
 /**
  * Propiedades del componente StaffTable.
@@ -21,6 +24,23 @@ interface StaffTableProps {
  * @returns {JSX.Element} El componente de React para visualizar la tabla.
  */
 export function StaffTable({ users }: StaffTableProps) {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleDelete = (userId: string, userName: string) => {
+    if (confirm(`¿Estás seguro de que deseas eliminar (desactivar) a ${userName}?`)) {
+      startTransition(async () => {
+        const result = await deleteStaffUser(userId);
+        if (result.success) {
+          alert(result.message);
+          router.refresh();
+        } else {
+          alert(result.message);
+        }
+      });
+    }
+  };
+
   return (
     <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container-highest overflow-hidden">
       <div className="overflow-x-auto">
@@ -79,7 +99,12 @@ export function StaffTable({ users }: StaffTableProps) {
                     <button title="Actualizar Contraseña" className="text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors">
                       <span className="material-symbols-outlined text-[20px]">password</span>
                     </button>
-                    <button title="Eliminar (Soft Delete)" className="text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors">
+                    <button 
+                      title="Eliminar (Soft Delete)" 
+                      className={`text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => handleDelete(user.id, user.name)}
+                      disabled={!user.isActive || isPending}
+                    >
                       <span className="material-symbols-outlined text-[20px]">delete</span>
                     </button>
                   </div>

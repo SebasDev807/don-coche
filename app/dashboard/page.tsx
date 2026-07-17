@@ -11,7 +11,7 @@
  */
 
 import type { Metadata } from 'next';
-import { DashboardHeader } from './DashboardHeader';
+import { DashboardHeader } from '../../components/dashboard/DashboardHeader';
 import {
   DASHBOARD_KPIS,
   DASHBOARD_CHART_DATA,

@@ -3,7 +3,7 @@ import { getStaffUsers } from '@/actions/personal';
 import { StaffKPIs, StaffToolbar, StaffTable } from '@/components/dashboard/personal';
 
 export const metadata: Metadata = {
-  title: 'Directorio de Personal | AutoPro',
+  title: 'Gestión de Personal | Don Coche',
   description: 'Gestión de operarios, administradores y accesos al sistema',
 };
 
@@ -28,10 +28,10 @@ export default async function PersonalPage() {
 
       {/* KPI Cards */}
       <StaffKPIs users={users} />
-      
+
       {/* Action Bar */}
       <StaffToolbar />
-      
+
       {/* Employee Table */}
       <StaffTable users={users} />
     </>

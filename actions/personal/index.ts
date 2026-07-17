@@ -6,3 +6,4 @@
  */
 
 export { getStaffUsers } from './getStaffUsers';
+export { deleteStaffUser } from './deleteStaffUser';

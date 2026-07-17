@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import { getStaffUsers } from '@/actions/personal';
 import { StaffKPIs, StaffToolbar, StaffTable } from '@/components/dashboard/personal';
 
@@ -16,8 +17,10 @@ export const metadata: Metadata = {
  * 
  * @returns {Promise<JSX.Element>} La estructura completa de la página de Personal.
  */
-export default async function PersonalPage() {
-  const users = await getStaffUsers();
+export default async function PersonalPage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const searchParams = await props.searchParams;
+  const query = typeof searchParams.q === 'string' ? searchParams.q : undefined;
+  const users = await getStaffUsers(query);
 
   return (
     <div className='fade-in'>
@@ -30,7 +33,9 @@ export default async function PersonalPage() {
       <StaffKPIs users={users} />
 
       {/* Action Bar */}
-      <StaffToolbar />
+      <Suspense fallback={<div className="h-touch-target-min w-full bg-surface-container-lowest border border-outline-variant rounded-lg animate-pulse mb-stack-md" />}>
+        <StaffToolbar />
+      </Suspense>
 
       {/* Employee Table */}
       <StaffTable users={users} />

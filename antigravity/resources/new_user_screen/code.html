@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nuevo Empleado - AutoGestión Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&amp;family=Sora:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed": "#e5e2e1",
+                        "tertiary": "#5f5e5e",
+                        "on-background": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#686000",
+                        "on-primary-container": "#736a00",
+                        "primary-container": "#ffec00",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "tertiary-container": "#ebe8e7",
+                        "inverse-on-surface": "#f0f1f1",
+                        "secondary": "#5e5e5e",
+                        "outline": "#7c785f",
+                        "surface-dim": "#dadada",
+                        "surface-container-highest": "#e2e2e2",
+                        "primary-fixed-dim": "#d9c900",
+                        "secondary-fixed-dim": "#c6c6c6",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#f8e600",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#eeeeee",
+                        "on-secondary-fixed": "#1b1b1b",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f3f3f4",
+                        "surface-variant": "#e2e2e2",
+                        "secondary-container": "#e2e2e2",
+                        "on-secondary-container": "#646464",
+                        "surface": "#f9f9f9",
+                        "on-surface-variant": "#4a4731",
+                        "on-secondary-fixed-variant": "#474747",
+                        "background": "#f9f9f9",
+                        "on-primary-fixed": "#1f1c00",
+                        "inverse-surface": "#2f3131",
+                        "secondary-fixed": "#e2e2e2",
+                        "on-tertiary-container": "#696868",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "inverse-primary": "#d9c900",
+                        "surface-bright": "#f9f9f9",
+                        "error-container": "#ffdad6",
+                        "primary": "#686000",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "on-primary-fixed-variant": "#4e4800",
+                        "surface-container-high": "#e8e8e8",
+                        "outline-variant": "#cdc7aa"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "touch-target-min": "56px",
+                        "margin-desktop": "64px",
+                        "base": "8px",
+                        "stack-lg": "48px",
+                        "margin-mobile": "16px",
+                        "stack-sm": "12px",
+                        "stack-md": "24px",
+                        "gutter": "24px"
+                    },
+                    fontFamily: {
+                        "display-lg": ["Sora"],
+                        "label-bold": ["Sora"],
+                        "headline-lg": ["Sora"],
+                        "cta": ["Sora"],
+                        "body-md": ["Public Sans"],
+                        "headline-lg-mobile": ["Sora"],
+                        "headline-md": ["Sora"],
+                        "body-lg": ["Public Sans"]
+                    },
+                    fontSize: {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-bold": ["14px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "cta": ["16px", { "lineHeight": "1.0", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #f9f9f9; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Custom input styles for minimum touch target */
+        .form-input, .form-select {
+            height: var(--spacing-touch-target-min, 56px);
+        }
+    </style>
+</head>
+<body class="text-on-surface font-body-md bg-surface antialiased flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant p-stack-sm z-50">
+<!-- Header -->
+<div class="px-4 py-6 mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined icon-fill">directions_car</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">Taller Elite</h1>
+<p class="text-sm text-secondary">Gestión Administrativa</p>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 space-y-1">
+<!-- Inactive Tab -->
+<a class="flex items-center gap-3 px-4 py-3 h-12 text-secondary hover:bg-surface-container-high hover:translate-x-1 duration-200 transition-all rounded-lg font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Active Tab (Personal) -->
+<a class="flex items-center gap-3 px-4 py-3 h-12 bg-primary-container text-on-primary-container font-bold rounded-lg font-label-bold text-label-bold transition-all" href="#">
+<span class="material-symbols-outlined icon-fill">badge</span>
+<span>Personal</span>
+</a>
+<!-- Inactive Tabs -->
+<a class="flex items-center gap-3 px-4 py-3 h-12 text-secondary hover:bg-surface-container-high hover:translate-x-1 duration-200 transition-all rounded-lg font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">directions_car</span>
+<span>Vehículos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 h-12 text-secondary hover:bg-surface-container-high hover:translate-x-1 duration-200 transition-all rounded-lg font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">build</span>
+<span>Servicios</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 h-12 text-secondary hover:bg-surface-container-high hover:translate-x-1 duration-200 transition-all rounded-lg font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span>Reportes</span>
+</a>
+</div>
+<!-- CTA & Footer -->
+<div class="mt-auto space-y-4 pt-4 border-t border-outline-variant">
+<button class="w-full h-[56px] bg-primary-container text-on-primary-container font-cta text-cta rounded-full flex items-center justify-center gap-2 hover:bg-primary-fixed-dim transition-colors shadow-sm">
+<span class="material-symbols-outlined">add</span>
+                Nuevo Empleado
+            </button>
+<a class="flex items-center gap-3 px-4 py-3 h-12 text-secondary hover:bg-surface-container-high hover:translate-x-1 duration-200 transition-all rounded-lg font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Cerrar Sesión</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 flex flex-col min-h-screen relative">
+<!-- TopNavBar (Shared Component adapted for internal placement) -->
+<header class="flex justify-between items-center px-margin-desktop py-4 w-full z-40 sticky top-0 bg-surface/90 backdrop-blur-md border-b border-outline-variant shadow-sm transition-colors">
+<div class="flex items-center gap-4">
+<span class="font-display-lg text-display-lg font-black text-on-surface md:hidden">AutoGestión Pro</span>
+<!-- Breadcrumb for context on desktop -->
+<div class="hidden md:flex items-center text-sm text-secondary gap-2">
+<span class="material-symbols-outlined text-[18px]">badge</span>
+<span>Personal</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-on-surface font-medium">Nuevo Empleado</span>
+</div>
+</div>
+<!-- Trailing Actions & Profile -->
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-high transition-colors flex items-center justify-center text-secondary active:scale-95 duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-high transition-colors flex items-center justify-center text-secondary active:scale-95 duration-150">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="h-8 w-px bg-outline-variant hidden md:block"></div>
+<!-- Profile Section requested by user -->
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right hidden sm:block">
+<p class="font-label-bold text-label-bold text-on-surface group-hover:text-primary transition-colors">Lized Vanessa Trujillo</p>
+<p class="text-xs text-secondary mt-0.5">Gerente</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant overflow-hidden">
+<img alt="Avatar del Usuario" class="w-full h-full object-cover" data-alt="Professional portrait photograph of a confident young latina businesswoman in a modern office, bright lighting, high quality, corporate headshot style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDV0qeQWB9evHsQbsu8zt4ob0IuNt01TRTvPcTDInTHRXH8PwirjdyXhQ2q2M_HWCUycdsXAGz_Mi2ExoQQ9evFiCWE8dko4ceLHahnF1-mr7Fxd-yDWa54r_TatcdZJc5HjOkxVbbESxpArdb89d97Iy2K0W6aKLR46psUeDC_lHB6ojeE8QKde1WIhYiUATKwMkNB4jNXAhHlIA_DQK3f8W9VwRlH749L8emQjv1ScW3pWIXZTD_lkNFL7KuzoaMzATHdz5gGZVwz"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<div class="flex-1 p-margin-mobile md:px-margin-desktop md:py-12">
+<!-- Header Section -->
+<div class="mb-stack-lg max-w-4xl mx-auto">
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface mb-2">Agregar Nuevo Empleado</h2>
+<p class="font-body-lg text-body-lg text-secondary">Complete la información para registrar un nuevo integrante al sistema.</p>
+</div>
+<!-- Form Card -->
+<div class="max-w-4xl mx-auto bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant p-6 md:p-8">
+<form class="space-y-8">
+<!-- Grid Layout for Fields -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-gutter gap-y-6">
+<!-- Cédula -->
+<div class="col-span-1">
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-2">Número de Cédula (CC)</label>
+<input class="form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim" placeholder="Ej. 1023456789" type="text"/>
+</div>
+<!-- Nombre Completo -->
+<div class="col-span-1">
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-2">Nombre Completo</label>
+<input class="form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim" placeholder="Nombres y Apellidos" type="text"/>
+</div>
+<!-- Correo Electrónico -->
+<div class="col-span-1">
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-2">Correo Electrónico</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-secondary">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+<input class="form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow pl-11 pr-4 text-on-surface placeholder:text-secondary-fixed-dim" placeholder="correo@empresa.com" type="email"/>
+</div>
+</div>
+<!-- Teléfono con Prefijo -->
+<div class="col-span-1">
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-2">Número de Celular</label>
+<div class="flex">
+<span class="inline-flex items-center px-4 rounded-l-lg border border-r-0 border-outline-variant bg-surface-container-low text-secondary font-medium">
+                                    +57
+                                </span>
+<input class="form-input flex-1 min-w-0 rounded-none rounded-r-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim" placeholder="300 000 0000" type="tel"/>
+</div>
+</div>
+<!-- Rol Dropdown -->
+<div class="col-span-1">
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-2">Rol Asignado</label>
+<div class="relative">
+<select class="form-select w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 pr-10 text-on-surface appearance-none cursor-pointer">
+<option disabled="" selected="" value="">Seleccione un rol...</option>
+<option value="tecnico">Técnico</option>
+<option value="administrador">Administrador</option>
+<option value="supervisor">Supervisor</option>
+<option value="recepcionista">Recepcionista</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-secondary">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Contraseña -->
+<div class="col-span-1">
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-2">Contraseña Temporal</label>
+<div class="relative">
+<input class="form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 pr-12 text-on-surface placeholder:text-secondary-fixed-dim" id="passwordInput" placeholder="••••••••" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-4 flex items-center text-secondary hover:text-on-surface transition-colors focus:outline-none" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined text-[20px]" id="visibilityIcon">visibility</span>
+</button>
+</div>
+<p class="text-xs text-secondary mt-2">Mínimo 8 caracteres, incluir números y letras.</p>
+</div>
+</div>
+<!-- Divider -->
+<hr class="border-outline-variant/50 border-t my-8"/>
+<!-- Actions -->
+<div class="flex flex-col-reverse sm:flex-row justify-end items-center gap-4">
+<button class="w-full sm:w-auto h-[56px] px-8 rounded-full border-2 border-outline-variant text-secondary font-cta text-cta hover:bg-surface-container-high transition-colors focus:ring-2 focus:ring-outline focus:outline-none" type="button">
+                            Cancelar
+                        </button>
+<button class="w-full sm:w-auto h-[56px] px-8 rounded-full bg-primary-container text-on-primary-container font-cta text-cta hover:bg-primary-fixed-dim transition-all shadow-sm active:scale-95 duration-150 flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined">save</span>
+                            Guardar Empleado
+                        </button>
+</div>
+</form>
+</div>
+</div>
+</main>
+<script>
+        // Simple password toggle interaction
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('visibilityIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
+    </script>
+</body></html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AutoPro - Directorio de Personal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Sora:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#686000",
+                        "background": "#f9f9f9",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#736a00",
+                        "surface-container-high": "#e8e8e8",
+                        "on-secondary": "#ffffff",
+                        "secondary": "#5e5e5e",
+                        "on-tertiary-container": "#696868",
+                        "inverse-on-surface": "#f0f1f1",
+                        "on-background": "#1a1c1c",
+                        "surface-variant": "#e2e2e2",
+                        "primary": "#686000",
+                        "surface-container": "#eeeeee",
+                        "on-surface-variant": "#4a4731",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#d9c900",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f3f3f4",
+                        "tertiary-container": "#ebe8e7",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#d9c900",
+                        "on-secondary-fixed-variant": "#474747",
+                        "on-primary-fixed-variant": "#4e4800",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "secondary-container": "#e2e2e2",
+                        "on-secondary-fixed": "#1b1b1b",
+                        "tertiary-fixed": "#e5e2e1",
+                        "surface": "#f9f9f9",
+                        "outline": "#7c785f",
+                        "on-primary-fixed": "#1f1c00",
+                        "surface-dim": "#dadada",
+                        "primary-container": "#ffec00",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "primary-fixed": "#f8e600",
+                        "on-secondary-container": "#646464",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "secondary-fixed": "#e2e2e2",
+                        "inverse-surface": "#2f3131",
+                        "outline-variant": "#cdc7aa",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#5f5e5e",
+                        "secondary-fixed-dim": "#c6c6c6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "stack-md": "24px",
+                        "touch-target-min": "56px",
+                        "stack-lg": "48px",
+                        "stack-sm": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Sora"],
+                        "label-bold": ["Sora"],
+                        "headline-md": ["Sora"],
+                        "body-md": ["Public Sans"],
+                        "body-lg": ["Public Sans"],
+                        "display-lg": ["Sora"],
+                        "cta": ["Sora"],
+                        "headline-lg-mobile": ["Sora"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "label-bold": ["14px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "cta": ["16px", { "lineHeight": "1.0", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col py-6 bg-surface-container-lowest border-r border-outline-variant h-screen w-64 fixed left-0 top-0 z-50">
+<div class="px-6 mb-8 flex items-center gap-3">
+<img alt="Logo de la plataforma automotriz" class="w-10 h-10 rounded" data-alt="A modern, high-contrast logo for an automotive platform, featuring sharp geometric lines in electric yellow on a pristine white background. High-tech, clean, vector art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8m4bA-qmz_ftFQS9qHPTb3-eui8htN72Rf6xxn6qg0-R_gfjeylWb2loSU6gTN_NZCY3OWswJqJvrQ4pW4fZXqiJt2kdSdSLnrs03KumJiv9X8uP1iZfnCyGnvuJ5mLejqXd8hXyDTgrSJOmk_xdpdzZRQWC8KDnwBrLvSGtq5IAAgAxmsIY0WBIsoEyUDrlKSQu_rDz96ccJk9568wdgOy6dPtZajGIv-HPs6lsG-GUhvv8kbCy_5cncVVHpOctPLsDLQ0U5DzlG"/>
+<div>
+<h1 class="font-headline-md text-headline-md font-extrabold text-on-surface">AutoPro</h1>
+<p class="text-xs text-secondary">Gestión de Servicios</p>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 text-secondary hover:bg-surface-container-high rounded-lg px-4 py-3 mx-2 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-bold text-label-bold">Escritorio</span>
+</a>
+<a class="flex items-center gap-3 text-secondary hover:bg-surface-container-high rounded-lg px-4 py-3 mx-2 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">car_repair</span>
+<span class="font-label-bold text-label-bold">Servicios</span>
+</a>
+<a class="flex items-center gap-3 text-secondary hover:bg-surface-container-high rounded-lg px-4 py-3 mx-2 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">directions_car</span>
+<span class="font-label-bold text-label-bold">Vehículos</span>
+</a>
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-lg px-4 py-3 mx-2 transition-transform duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">badge</span>
+<span class="font-label-bold text-label-bold">Personal</span>
+</a>
+<a class="flex items-center gap-3 text-secondary hover:bg-surface-container-high rounded-lg px-4 py-3 mx-2 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-bold text-label-bold">Configuración</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area Wrapper -->
+<div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="h-[72px] sticky top-0 z-40 bg-surface border-b border-outline-variant shadow-sm flex justify-between items-center px-margin-desktop w-full">
+<div class="flex-1 flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-extrabold text-primary hidden lg:block">AutoPro Service</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3 text-secondary">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-bold text-label-bold hidden sm:block">Oct 24, 2023</span>
+</div>
+<button class="text-secondary hover:bg-surface-container rounded-full p-2 transition-all relative active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-3 border-l border-outline-variant pl-6">
+<div class="text-right hidden sm:block">
+<p class="font-label-bold text-label-bold text-on-surface">Lized Vanessa Trujillo</p>
+<p class="text-xs text-secondary">Gerente</p>
+</div>
+<img alt="Avatar del gerente" class="w-10 h-10 rounded-full object-cover border-2 border-primary-container" data-alt="Professional portrait of a female automotive service manager, wearing a crisp uniform, smiling confidently in a brightly lit, modern garage environment. High contrast, sharp focus, professional photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfXkFRvJ37lk5EDP_oBcnrBy49XB13JktQK9IooxZ--fkzuoSBCHBSog_oqvAjztqy4_Zu7a41l9dNqkxDEd0HDpzB-2kan_tFBrgmMKqGxdFAtgHiU2rbOaNSPqM1bwAq08UAJh15403B335f0xqobx4d2s_kXxJxHxxmyQBufiN6HuESAGJpa4gnEIWDSzQ_sfvJisVLpoFelCMyy-2dKiejBk_ENWr2vbGD3b_R8ET_lG9V0-bly3mZ5ybM1yHuDa13FXEt4CFx"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 p-margin-mobile md:p-margin-desktop bg-[#F8F9FA]">
+<header class="mb-stack-lg">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Directorio de Personal</h1>
+<p class="font-body-lg text-body-lg text-secondary">Gestión de operarios, administrators y accesos al sistema</p>
+</header>
+<!-- KPI Cards -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-gutter mb-stack-lg">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-surface-container-highest flex items-center gap-4">
+<div class="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-2xl">group</span>
+</div>
+<div>
+<p class="font-label-bold text-label-bold text-secondary mb-1">Total Empleados</p>
+<p class="font-display-lg text-display-lg text-on-surface">6</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-surface-container-highest flex items-center gap-4">
+<div class="w-12 h-12 bg-secondary-container rounded-full flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-2xl">schedule</span>
+</div>
+<div>
+<p class="font-label-bold text-label-bold text-secondary mb-1">Turno Actual</p>
+<p class="font-headline-md text-headline-md text-on-surface mt-1">4 Activos en Pista</p>
+</div>
+</div>
+</section>
+<!-- Action Bar -->
+<section class="flex flex-col lg:flex-row justify-between items-center gap-4 mb-stack-md">
+<div class="w-full lg:w-1/2 relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary">search</span>
+<input class="w-full h-touch-target-min pl-12 pr-4 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary-container focus:ring-1 focus:ring-primary-container font-body-md text-on-surface outline-none transition-colors" placeholder="Buscar empleado por nombre, CC, email, teléfono..." type="text"/>
+</div>
+<div class="flex items-center gap-4 w-full lg:w-auto">
+<button class="h-touch-target-min px-6 bg-surface-container-lowest border border-outline-variant text-on-surface font-cta text-cta rounded-lg hover:bg-surface-container transition-colors flex items-center gap-2 flex-1 lg:flex-none justify-center">
+<span class="material-symbols-outlined">filter_list</span>
+                        Filtrar por Rol
+                    </button>
+<button class="h-touch-target-min px-6 bg-primary-container text-[#000000] font-cta text-cta rounded-lg hover:bg-primary-fixed-dim transition-colors flex items-center gap-2 shadow-sm flex-1 lg:flex-none justify-center active:scale-[0.98]">
+<span class="material-symbols-outlined">add</span>
+                        Agregar Empleado
+                    </button>
+</div>
+</section>
+<!-- Employee Table -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container-highest overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container border-b border-outline-variant">
+<th class="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">Nombre Completo</th>
+<th class="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">Documento (CC)</th>
+<th class="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">Rol</th>
+<th class="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">Estado</th>
+<th class="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-body-md text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest/50 transition-colors">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<img alt="Avatar Juan Pérez" class="w-10 h-10 rounded-full object-cover" data-alt="Avatar portrait of a male mechanic in an orange work shirt, bright studio lighting, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3PaOo2t2YM3NSkwA2hgXSEhJnerW_k0Sa5D2uOtM4IRRe2x-1VR1rLTYo0EWhqaLXy-_42o-bZJOransbS86szDzNi71S_kFPL2U46U3guCI7buXYTAReYOaCqpVj-Jt_12HM9VmyQKQdsZ5EhhJ5WE-cuOjpL_1BSvOFCe6OdNUhB3uxS3sUGNfq16SeY1EpZgy5OgQhuhWMYcil3wRGYtdSrLPBxy3C6jfduqMgvEA5haObvArpIFRenT87HSoPcxsxVof9u_6X"/>
+<span class="font-medium">Juan Pérez</span>
+</div>
+</td>
+<td class="py-4 px-6 text-secondary">1023456789</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                        Técnico
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 text-sm font-medium text-green-700">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        Activo
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-secondary hover:text-on-surface p-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-lowest/50 transition-colors">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<img alt="Avatar Maria Garcia" class="w-10 h-10 rounded-full object-cover" data-alt="Avatar portrait of a female administrator in a professional blazer, bright studio lighting, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-vfKEr3lKnHaChUCz1AzTS7eAydeV9z88UcK-N5s1NIUhAetlEkyQzVPXwms1dKcvk9fXiE65FT6BGr31Qq-ECf1KitjCjAa33Mp7l_47KtyaCXBmvj4u4DaBQAPqoJqwjzAOrnSK3ss8hdFBvQuevV8fI301ZJ0YzRzavbUMpi5FpNHFlb59SDOdmixFfiAIrYNWHYLBwAz42JicYcQLMmlGmB-AfEMk1PN-04WAAdcNo2FgMiVwSe8sPvL383BYoNKBE8AFy0Vq"/>
+<span class="font-medium">Maria Garcia</span>
+</div>
+</td>
+<td class="py-4 px-6 text-secondary">1098765432</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
+                                        Administrador
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 text-sm font-medium text-green-700">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        Activo
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-secondary hover:text-on-surface p-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-lowest/50 transition-colors">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<img alt="Avatar Carlos Rodriguez" class="w-10 h-10 rounded-full object-cover" data-alt="Avatar portrait of a male supervisor wearing a safety vest, bright studio lighting, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByBuldOGryM0xHPgPfrE2m3GJJ3W2kusSJblrAK48TzQBhsydv54mfPlp9XQ3odNozGf2vouEGPuDp4XP3HgvVdSm8pk7Qua4FJPe_jDAs8MWYk6uLVwaLMXJ6V2C6NHJSS_g2rpNvtC-xvEn1BTHFG88CgLwtHwTOUygTJz2brRcZeJZiHKqmqPaHWfTY_FR23DOUuHBTte6Jm3A72nm28gKD0_gF24sYAA6tm-F6OUYdKkcbgxSFgjq8tenUPDyMCfgw8W9oqB6p"/>
+<span class="font-medium">Carlos Rodriguez</span>
+</div>
+</td>
+<td class="py-4 px-6 text-secondary">1122334455</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">
+                                        Supervisor
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 text-sm font-medium text-green-700">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        Activo
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-secondary hover:text-on-surface p-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-lowest/50 transition-colors">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<img alt="Avatar Luis Martinez" class="w-10 h-10 rounded-full object-cover" data-alt="Avatar portrait of a young male technician, bright studio lighting, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAT1GzSyIIwXHg2r6EMHhwUrnsNbq4QUXwPXyfripNFWCgV2sLg2Wi4-X4Wxb1Aw-Z1MdqulPM0yKvP99WaTtcYFfwoFHSw2MI_7j6qeBi8DZMiANtGI9AdF-4IDD4Rc5WAuAQO2lIH1ecZJk7ftlJ_eIY99HT_2MUf-53x299ykKeLsV7bRkGMCQVSfMCi_3Gw1iEYYcTQHMUdNIS62OJ5u25jZlkxC7-T42DN1q8OnhJtYOh9rINAPws9c8Qx_M5wJl_Gq5O7KriE"/>
+<span class="font-medium">Luis Martinez</span>
+</div>
+</td>
+<td class="py-4 px-6 text-secondary">1055667788</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                        Técnico
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 text-sm font-medium text-secondary">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                                        Inactivo
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-secondary hover:text-on-surface p-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-lowest/50 transition-colors">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<img alt="Avatar Ana Silva" class="w-10 h-10 rounded-full object-cover" data-alt="Avatar portrait of a female technician, bright studio lighting, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGriZ325YHejEy61QCB5v2EQYOxUx7HCLMPW54Y_F59bX4CfjW8fu7WQ8l4Cd9PjXwmXHswYbA5TFXnRgV0b2h2UptopQt4LhE4v3MWvrdvtQOwg6WXhO0qYZD_h1i03m-N-XK4By6r5vQhalETJOjcTyCfH4j-oYm6QYvW_Ins3WXwIIx4uyGDL7_c6gxSDXauLsuqIe3mTi0c4imCYTz21x1hK8jhRZdIHa07uYMv2-k5VAiaDPym16jai2oZsUvAwJWQ3sHjJPH"/>
+<span class="font-medium">Ana Silva</span>
+</div>
+</td>
+<td class="py-4 px-6 text-secondary">1044332211</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                        Técnico
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 text-sm font-medium text-green-700">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        Activo
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-secondary hover:text-on-surface p-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="bg-surface border-t border-outline-variant p-4 flex items-center justify-between">
+<p class="text-sm text-secondary">Mostrando 1 a 5 de 6 empleados</p>
+<div class="flex gap-2">
+<button class="p-2 border border-outline-variant rounded hover:bg-surface-container text-secondary transition-colors" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="p-2 border border-outline-variant rounded hover:bg-surface-container text-secondary transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

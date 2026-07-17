@@ -1,12 +1,25 @@
 'use client';
 
 import { User } from '@prisma/client';
-import Image from 'next/image';
 
+/**
+ * Propiedades del componente StaffTable.
+ */
 interface StaffTableProps {
+  /** Array de usuarios del personal para poblar la tabla */
   users: User[];
 }
 
+/**
+ * Tabla interactiva que muestra el listado detallado del personal.
+ * 
+ * Expone la información principal (nombre, documento, contacto, rol y estado)
+ * y provee botones de acción rápida para actualizar datos, cambiar la contraseña
+ * y realizar un borrado lógico (soft delete) del usuario.
+ * 
+ * @param {StaffTableProps} props - Propiedades del componente con el array de usuarios.
+ * @returns {JSX.Element} El componente de React para visualizar la tabla.
+ */
 export function StaffTable({ users }: StaffTableProps) {
   return (
     <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container-highest overflow-hidden">
@@ -102,7 +115,13 @@ export function StaffTable({ users }: StaffTableProps) {
   );
 }
 
-function getRoleStyles(role: string) {
+/**
+ * Obtiene las clases CSS correspondientes al estilo del "badge" de cada rol.
+ * 
+ * @param {string} role - El rol del empleado (e.g., GERENTE, TECNICO).
+ * @returns {string} Las clases de Tailwind para el diseño del rol.
+ */
+function getRoleStyles(role: string): string {
   switch (role) {
     case 'SUPERUSUARIO':
       return 'bg-red-100 text-red-800';
@@ -117,6 +136,13 @@ function getRoleStyles(role: string) {
   }
 }
 
-function formatRole(role: string) {
+/**
+ * Formatea el texto del rol para que sea Capitalizado (e.g., GERENTE -> Gerente).
+ * 
+ * @param {string} role - El rol del usuario en mayúsculas sostenidas.
+ * @returns {string} El rol en formato de palabra capitalizada.
+ */
+function formatRole(role: string): string {
+  if (!role) return '';
   return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 }

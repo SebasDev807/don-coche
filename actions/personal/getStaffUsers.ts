@@ -4,8 +4,10 @@ import { prisma } from '@/lib/prisma';
 import { User } from '@prisma/client';
 
 /**
- * Obtiene todos los usuarios (personal) de la base de datos
+ * Obtiene todos los usuarios (personal) de la base de datos,
  * ordenados alfabéticamente por nombre.
+ *
+ * @returns {Promise<User[]>} Promesa que resuelve en un arreglo de usuarios.
  */
 export async function getStaffUsers(): Promise<User[]> {
   try {

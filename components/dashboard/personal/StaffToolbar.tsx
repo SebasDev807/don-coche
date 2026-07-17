@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * Componente que renderiza la barra de herramientas (Toolbar) de la sección personal.
+ * 
+ * Contiene el campo de búsqueda de empleados y los botones de acción para
+ * filtrar el listado y para agregar a un nuevo empleado.
+ * 
+ * @returns {JSX.Element} Barra de herramientas interactiva para la gestión de personal.
+ */
 export function StaffToolbar() {
   return (
     <section className="flex flex-col lg:flex-row justify-between items-center gap-4 mb-stack-md">

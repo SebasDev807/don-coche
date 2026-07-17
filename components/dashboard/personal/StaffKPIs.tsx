@@ -1,9 +1,22 @@
 import { User } from '@prisma/client';
 
+/**
+ * Propiedades del componente StaffKPIs.
+ */
 interface StaffKPIsProps {
+  /** Lista de usuarios del personal (staff) traída desde la BD */
   users: User[];
 }
 
+/**
+ * Componente que muestra las métricas principales (KPIs) del personal.
+ * 
+ * Calcula y renderiza el total de empleados registrados en el sistema,
+ * así como los que se encuentran actualmente activos.
+ * 
+ * @param {StaffKPIsProps} props - Propiedades del componente, que incluyen el listado de usuarios.
+ * @returns {JSX.Element} El componente de React para visualizar las tarjetas de métricas.
+ */
 export function StaffKPIs({ users }: StaffKPIsProps) {
   const activeCount = users.filter((u) => u.isActive).length;
 

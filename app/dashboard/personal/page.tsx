@@ -20,7 +20,8 @@ export const metadata: Metadata = {
 export default async function PersonalPage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const searchParams = await props.searchParams;
   const query = typeof searchParams.q === 'string' ? searchParams.q : undefined;
-  const users = await getStaffUsers(query);
+  const role = typeof searchParams.role === 'string' ? searchParams.role : undefined;
+  const users = await getStaffUsers(query, role);
 
   return (
     <div className='fade-in'>

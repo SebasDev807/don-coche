@@ -9,13 +9,17 @@ import { User } from '@prisma/client';
  *
  * @returns {Promise<User[]>} Promesa que resuelve en un arreglo de usuarios.
  */
-export async function getStaffUsers(query?: string): Promise<User[]> {
+export async function getStaffUsers(query?: string, role?: string): Promise<User[]> {
   try {
-    const whereClause: any = {
-      role: {
+    const whereClause: any = {};
+
+    if (role && role !== 'SUPERUSUARIO') {
+      whereClause.role = role;
+    } else {
+      whereClause.role = {
         not: 'SUPERUSUARIO',
-      },
-    };
+      };
+    }
 
     if (query) {
       whereClause.OR = [

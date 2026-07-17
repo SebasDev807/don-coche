@@ -12,6 +12,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 /**
@@ -57,18 +58,15 @@ export function Sidebar({ onLogout }: SidebarProps) {
   return (
     <aside className="hidden lg:flex flex-col h-screen py-8 bg-surface-container-lowest w-72 left-0 top-0 border-r border-surface-variant shrink-0 relative z-20">
       {/* Logo / Branding */}
-      <div className="mb-stack-lg flex flex-col items-center gap-2 px-6">
-        <div className="flex items-center gap-3">
-          <span
-            className="material-symbols-outlined fill-icon text-on-surface text-5xl"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
-            settings
-          </span>
-        </div>
-        <p className="font-body-md text-body-md text-on-surface-variant text-sm font-semibold">
-          Serviteca &amp; Lavadero
-        </p>
+      <div className="mb-stack-lg flex justify-center px-6">
+        <Image
+          src="/images/logo_2.png"
+          alt="Don Coche Logo"
+          width={180}
+          height={60}
+          priority
+          className="object-contain w-auto h-auto"
+        />
       </div>
 
       {/* Navegación principal */}

@@ -82,7 +82,7 @@ export function CreateStaffForm() {
             <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Número de Cédula (CC)</label>
             <input 
               {...register('cc')}
-              className={`form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.cc ? 'border-error focus:border-error focus:ring-error' : ''}`}
+              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.cc ? 'border-error focus:border-error focus:ring-error' : ''}`}
               placeholder="Ej. 1023456789" 
               type="text"
             />
@@ -94,7 +94,7 @@ export function CreateStaffForm() {
             <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Nombre Completo</label>
             <input 
               {...register('name')}
-              className={`form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.name ? 'border-error focus:border-error focus:ring-error' : ''}`}
+              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.name ? 'border-error focus:border-error focus:ring-error' : ''}`}
               placeholder="Nombres y Apellidos" 
               type="text"
             />
@@ -110,7 +110,7 @@ export function CreateStaffForm() {
               </div>
               <input 
                 {...register('email')}
-                className={`form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow pl-11 pr-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.email ? 'border-error focus:border-error focus:ring-error' : ''}`}
+                className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow pl-11 pr-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.email ? 'border-error focus:border-error focus:ring-error' : ''}`}
                 placeholder="correo@empresa.com" 
                 type="email"
               />
@@ -127,7 +127,7 @@ export function CreateStaffForm() {
               </span>
               <input 
                 {...register('celular')}
-                className={`form-input flex-1 min-w-0 rounded-none rounded-r-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.celular ? 'border-error focus:border-error focus:ring-error' : ''}`}
+                className={`h-[56px] form-input flex-1 min-w-0 rounded-none rounded-r-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.celular ? 'border-error focus:border-error focus:ring-error' : ''}`}
                 placeholder="300 000 0000" 
                 type="tel"
               />
@@ -141,7 +141,7 @@ export function CreateStaffForm() {
             <div className="relative">
               <select 
                 {...register('role')}
-                className={`form-select w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 pr-10 text-on-surface appearance-none cursor-pointer ${errors.role ? 'border-error focus:border-error focus:ring-error' : ''}`}
+                className={`h-[56px] form-select w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 pr-10 text-on-surface appearance-none cursor-pointer ${errors.role ? 'border-error focus:border-error focus:ring-error' : ''}`}
               >
                 <option disabled value="">Seleccione un rol...</option>
                 <option value="TECNICO">Técnico</option>
@@ -162,7 +162,7 @@ export function CreateStaffForm() {
             <div className="relative">
               <input 
                 {...register('password')}
-                className={`form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 pr-12 text-on-surface placeholder:text-secondary-fixed-dim ${errors.password ? 'border-error focus:border-error focus:ring-error' : ''}`}
+                className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 pr-12 text-on-surface placeholder:text-secondary-fixed-dim ${errors.password ? 'border-error focus:border-error focus:ring-error' : ''}`}
                 id="passwordInput" 
                 placeholder="••••••••" 
                 type={showPassword ? 'text' : 'password'}

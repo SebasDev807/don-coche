@@ -147,7 +147,6 @@ export function CreateStaffForm() {
                 <option value="TECNICO">Técnico</option>
                 <option value="ADMINISTRADOR">Administrador</option>
                 <option value="GERENTE">Gerente</option>
-                <option value="SUPERUSUARIO">Superusuario</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-secondary">
                 <span className="material-symbols-outlined text-[20px]">expand_more</span>

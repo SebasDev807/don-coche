@@ -28,6 +28,8 @@ interface SeedUser {
   name: string;
   role: Role;
   password: string;
+  email?: string;
+  celular?: string;
 }
 
 /** Usuarios a insertar en la base de datos. */
@@ -56,6 +58,87 @@ const SEED_USERS: SeedUser[] = [
     role: Role.TECNICO,
     password: 'ingreso12345',
   },
+  // Nuevos empleados añadidos
+  {
+    name: 'Juan David Ramírez',
+    cc: '1002456789',
+    email: 'juan.ramirez@serviteca.test',
+    password: 'Admin2026!',
+    celular: '3104567890',
+    role: Role.ADMINISTRADOR,
+  },
+  {
+    name: 'María Fernanda López',
+    cc: '1003125478',
+    email: 'maria.lopez@serviteca.test',
+    password: 'Admin2026!',
+    celular: '3116789452',
+    role: Role.ADMINISTRADOR,
+  },
+  {
+    name: 'Carlos Andrés Gómez',
+    cc: '1098456721',
+    email: 'carlos.gomez@serviteca.test',
+    password: 'Tec2026#1',
+    celular: '3125489631',
+    role: Role.TECNICO,
+  },
+  {
+    name: 'Sebastián Herrera',
+    cc: '1087654321',
+    email: 'sebastian.herrera@serviteca.test',
+    password: 'Tec2026#2',
+    celular: '3137894521',
+    role: Role.TECNICO,
+  },
+  {
+    name: 'Andrés Felipe Muñoz',
+    cc: '1009988776',
+    email: 'andres.munoz@serviteca.test',
+    password: 'Tec2026#3',
+    celular: '3149658742',
+    role: Role.TECNICO,
+  },
+  {
+    name: 'Luis Eduardo Castillo',
+    cc: '1012345678',
+    email: 'luis.castillo@serviteca.test',
+    password: 'Tec2026#4',
+    celular: '3158741236',
+    role: Role.TECNICO,
+  },
+  {
+    name: 'Natalia Rodríguez',
+    cc: '1099876543',
+    email: 'natalia.rodriguez@serviteca.test',
+    password: 'Admin2026!',
+    celular: '3164521987',
+    role: Role.ADMINISTRADOR,
+  },
+  {
+    name: 'Camilo Esteban Vargas',
+    cc: '1004567891',
+    email: 'camilo.vargas@serviteca.test',
+    password: 'Tec2026#5',
+    celular: '3173652148',
+    role: Role.TECNICO,
+  },
+  {
+    name: 'Diana Carolina Pérez',
+    cc: '1011122233',
+    email: 'diana.perez@serviteca.test',
+    password: 'Tec2026#6',
+    celular: '3187412365',
+    role: Role.TECNICO,
+  },
+  {
+    name: 'Felipe Santiago Torres',
+    cc: '1091234567',
+    email: 'felipe.torres@serviteca.test',
+    password: 'Tec2026#7',
+    celular: '3206549871',
+    role: Role.TECNICO,
+  },
 ];
 
 async function main() {
@@ -69,12 +152,16 @@ async function main() {
       update: {
         name: seedUser.name,
         role: seedUser.role,
+        email: seedUser.email || null,
+        celular: seedUser.celular || null,
         passwordHash,
       },
       create: {
         cc: seedUser.cc,
         name: seedUser.name,
         role: seedUser.role,
+        email: seedUser.email || null,
+        celular: seedUser.celular || null,
         passwordHash,
         isActive: true,
       },

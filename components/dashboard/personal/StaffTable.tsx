@@ -1,7 +1,7 @@
 'use client';
 
 import { User } from '@prisma/client';
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { deleteStaffUser } from '@/actions/personal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -31,6 +31,11 @@ interface StaffTableProps {
 export function StaffTable({ users }: StaffTableProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(users.length / itemsPerPage);
+  const paginatedUsers = users.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleDelete = (userId: string, userName: string) => {
     MySwal.fire({
@@ -76,7 +81,7 @@ export function StaffTable({ users }: StaffTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant font-body-md text-on-surface">
-            {users.map((user) => (
+            {paginatedUsers.map((user) => (
               <tr key={user.id} className="hover:bg-surface-container-lowest/50 transition-colors">
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-3">
@@ -149,14 +154,29 @@ export function StaffTable({ users }: StaffTableProps) {
       {/* Pagination Footer */}
       {users.length > 0 && (
         <div className="bg-surface border-t border-outline-variant p-4 flex items-center justify-between">
-          <p className="text-sm text-secondary">Mostrando {users.length} empleados</p>
-          <div className="flex gap-2">
-            <button className="cursor-pointer p-2 border border-outline-variant rounded hover:bg-surface-container text-secondary transition-colors disabled:cursor-not-allowed disabled:opacity-50" disabled>
-              <span className="material-symbols-outlined text-sm">chevron_left</span>
-            </button>
-            <button className="cursor-pointer p-2 border border-outline-variant rounded hover:bg-surface-container text-secondary transition-colors disabled:cursor-not-allowed disabled:opacity-50" disabled>
-              <span className="material-symbols-outlined text-sm">chevron_right</span>
-            </button>
+          <p className="text-sm text-secondary">
+            Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, users.length)} de {users.length} empleados
+          </p>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-secondary">
+              Página {currentPage} de {totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="cursor-pointer p-2 border border-outline-variant rounded hover:bg-surface-container text-secondary transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-sm">chevron_left</span>
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="cursor-pointer p-2 border border-outline-variant rounded hover:bg-surface-container text-secondary transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-sm">chevron_right</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

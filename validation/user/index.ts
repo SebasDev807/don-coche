@@ -16,3 +16,7 @@ export const createUserSchema = z.object({
 });
 
 export type CreateUserFormValues = z.infer<typeof createUserSchema>;
+
+export const updateUserSchema = createUserSchema.omit({ password: true });
+
+export type UpdateUserFormValues = z.infer<typeof updateUserSchema>;

@@ -9,3 +9,4 @@ export { StaffTable } from './StaffTable';
 export { StaffToolbar } from './StaffToolbar';
 export { StaffKPIs } from './StaffKPIs';
 export { CreateStaffForm } from './CreateStaffForm';
+export { UpdateStaffForm } from './UpdateStaffForm';

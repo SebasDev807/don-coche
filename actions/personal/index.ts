@@ -5,6 +5,7 @@
  * con los empleados para facilitar su importación.
  */
 
-export { getStaffUsers } from './getStaffUsers';
-export { deleteStaffUser } from './deleteStaffUser';
-export { createStaffUser } from './createStaffUser';
+export { getStaffUsers } from './actions/getStaffUsers.actions';
+export { deleteStaffUser } from './actions/deleteStaffUser.actions';
+export { createStaffUser } from './actions/createStaffUser.actions';
+export { updateStaffUser } from './actions/updateStaffUser.actions';

@@ -3,6 +3,7 @@
 import { User } from '@prisma/client';
 import { useTransition } from 'react';
 import { deleteStaffUser } from '@/actions/personal';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -112,9 +113,13 @@ export function StaffTable({ users }: StaffTableProps) {
                 </td>
                 <td className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button title="Actualizar Datos" className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors">
+                    <Link
+                      href={`/dashboard/personal/edit/${user.id}`}
+                      title="Editar"
+                      className={`cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                    >
                       <span className="material-symbols-outlined text-[20px]">edit</span>
-                    </button>
+                    </Link>
                     <button title="Actualizar Contraseña" className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors">
                       <span className="material-symbols-outlined text-[20px]">password</span>
                     </button>

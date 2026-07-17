@@ -15,7 +15,7 @@ export default function TecnicoScreen() {
 
   useEffect(() => {
     if (hasHydrated) {
-      if (!user || user.role !== 'technical') {
+      if (!user || (user.role !== 'TECNICO' && user.role !== 'SUPERUSUARIO')) {
         router.push('/auth');
       }
     }
@@ -27,7 +27,7 @@ export default function TecnicoScreen() {
   };
 
   // Prevent flash of content during hydration or invalid user
-  if (!hasHydrated || !user || user.role !== 'technical') return null;
+  if (!hasHydrated || !user || (user.role !== 'TECNICO' && user.role !== 'SUPERUSUARIO')) return null;
 
   return (
     <div className="bg-gray-50 h-screen flex flex-col font-[family-name:var(--font-sora)] overflow-hidden">

@@ -1,8 +1,16 @@
-export const MOCK_USERS = [
-  { id: '1010101010', name: 'Lized Vanessa Trujillo Mona', role: 'superUser', password: 'ingreso12345' },
-  { id: '1020202020', name: 'Fernanda Alvarez', role: 'admin', password: 'ingreso12345' },
-  { id: '1030303030', name: 'Andres Lopez', role: 'technical', password: 'ingreso12345' },
-];
+/**
+ * @fileoverview Datos mock para desarrollo local.
+ *
+ * Contiene datos estáticos para alimentar el dashboard (KPIs y movimientos)
+ * y servicios frecuentes de la pantalla técnico. Los roles coinciden con el
+ * enum `Role` del schema Prisma.
+ *
+ * La autenticación de usuarios se realiza contra la base de datos real.
+ */
+
+// ---------------------------------------------------------------------------
+// Servicios frecuentes (pantalla técnico)
+// ---------------------------------------------------------------------------
 
 export const FREQUENT_SERVICES = [
   {
@@ -35,4 +43,90 @@ export const FREQUENT_SERVICES = [
     name: 'Revisión Frenos',
     iconPath: 'M3 8.25V18a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18V8.25m-18 0V6a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 6v2.25m-18 0h18M5.25 6h.008v.008H5.25V6zM7.5 6h.008v.008H7.5V6zm2.25 0h.008v.008H9.75V6z'
   }
+];
+
+// ---------------------------------------------------------------------------
+// Dashboard Mock Data
+// ---------------------------------------------------------------------------
+
+/** Datos KPI para las tarjetas del dashboard principal. */
+export const DASHBOARD_KPIS = {
+  ventasTotales: {
+    valor: '$1,240.50',
+    porcentaje: '+12.5%',
+    progreso: 65,
+  },
+  rentabilidad: {
+    valor: '24.5%',
+    meta: 'META: 20%',
+    progreso: 80,
+  },
+  inventarioGlobal: {
+    valor: '$45,800.00',
+    nota: 'Sujeto a auditoria de cierres',
+  },
+};
+
+/** Datos de la gráfica de barras comparativa semanal. */
+export const DASHBOARD_CHART_DATA = [
+  { dia: 'Lun', lavadero: 55, serviteca: 55 },
+  { dia: 'Mar', lavadero: 75, serviteca: 75 },
+  { dia: 'Mie', lavadero: 85, serviteca: 85 },
+  { dia: 'Jue', lavadero: 65, serviteca: 65 },
+  { dia: 'Vie', lavadero: 100, serviteca: 100 },
+  { dia: 'Sab', lavadero: 45, serviteca: 45 },
+];
+
+/**
+ * Estados posibles de un movimiento en la tabla del dashboard.
+ * Cada estado define sus colores de fondo y texto para el badge.
+ */
+export const MOVEMENT_STATUS_STYLES: Record<string, { bg: string; text: string }> = {
+  COMPLETADO: { bg: 'bg-[#E6F4EA]', text: 'text-[#137333]' },
+  AUDITADO:   { bg: 'bg-surface-variant', text: 'text-on-surface-variant' },
+  'EN PROCESO': { bg: 'bg-[#FEF7E0]', text: 'text-[#B06000]' },
+};
+
+/** Últimos movimientos para la tabla del dashboard. */
+export const DASHBOARD_MOVEMENTS = [
+  {
+    id: '1',
+    fecha: '24 Oct, 2023',
+    hora: '14:20 PM',
+    concepto: 'Lavado Premium + Encerado',
+    detalle: 'Ticket #88412',
+    monto: '$45.00',
+    montoColor: 'text-on-surface',
+    estado: 'COMPLETADO',
+  },
+  {
+    id: '2',
+    fecha: '24 Oct, 2023',
+    hora: '13:45 PM',
+    concepto: 'Cambio de Aceite Sintético',
+    detalle: 'Ticket #88411',
+    monto: '$120.00',
+    montoColor: 'text-on-surface',
+    estado: 'COMPLETADO',
+  },
+  {
+    id: '3',
+    fecha: '24 Oct, 2023',
+    hora: '12:10 PM',
+    concepto: 'Reposición Stock Filtros AIRE',
+    detalle: 'Egreso de Caja',
+    monto: '-$210.00',
+    montoColor: 'text-[#ba1a1a]',
+    estado: 'AUDITADO',
+  },
+  {
+    id: '4',
+    fecha: '24 Oct, 2023',
+    hora: '11:30 AM',
+    concepto: 'Tratamiento Cerámico',
+    detalle: 'Ticket #88410',
+    monto: '$350.00',
+    montoColor: 'text-on-surface',
+    estado: 'EN PROCESO',
+  },
 ];

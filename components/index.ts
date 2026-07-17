@@ -1,4 +1,5 @@
 export * from './auth/LoginClient';
+export * from './dashboard';
 export * from './tecnico/Header';
 export * from './tecnico/RegistrationForm';
 export * from './tecnico/ServiceCard';

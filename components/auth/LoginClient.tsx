@@ -1,53 +1,131 @@
+/**
+ * @fileoverview Componente cliente para la vista de inicio de sesión.
+ *
+ * Autentica al usuario contra la base de datos vía el server action
+ * `loginAction`. Usa SweetAlert2 para feedback visual de bienvenida
+ * (éxito) o error 401 (credenciales incorrectas).
+ *
+ * El estado de sesión se persiste en Zustand (`useAuthStore`) con
+ * `localStorage` para mantener la sesión entre recargas.
+ */
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { PasswordInput, ErrorMessage } from '@/components/ui';
-import { MOCK_USERS } from '@/data/mocks';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
+import { loginAction } from '@/app/auth/actions';
+import Swal from 'sweetalert2';
 
 type LoginFormInputs = {
   documento: string;
   password: string;
 };
 
+/** Roles que redirigen al dashboard de gestión. */
+const DASHBOARD_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
+
+/**
+ * Mapea el rol del usuario a una etiqueta legible para SweetAlert2.
+ *
+ * @param role - Rol del usuario.
+ * @returns Etiqueta legible.
+ */
+function getRoleLabel(role: string): string {
+  const labels: Record<string, string> = {
+    SUPERUSUARIO: 'Superusuario',
+    GERENTE: 'Gerente',
+    ADMINISTRADOR: 'Administrador',
+    TECNICO: 'Técnico',
+  };
+  return labels[role] ?? role;
+}
+
+/**
+ * Determina la ruta de redirección según el rol del usuario.
+ *
+ * @param role - Rol del usuario autenticado.
+ * @returns Ruta destino.
+ */
+function getRedirectPath(role: string): string {
+  if (role === 'TECNICO') return '/tecnico';
+  if (DASHBOARD_ROLES.includes(role)) return '/dashboard';
+  return '/auth';
+}
+
 /**
  * Componente cliente para la vista de inicio de sesión.
- * Contiene todo el marcado visual, formularios y manejo de estado local con react-hook-form.
+ * Autentica contra la DB vía server action y muestra SweetAlert2 como feedback.
  */
 export function LoginClient() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const login = useAuthStore(state => state.login);
   const user = useAuthStore(state => state.user);
   const hasHydrated = useAuthStore(state => state._hasHydrated);
 
+  // Redirigir si ya hay sesión activa
   useEffect(() => {
     if (hasHydrated && user) {
-      if (user.role === 'technical') {
-        router.push('/tecnico');
-      } else {
-        // Redirigir a otras pantallas en el futuro, por ahora no hacemos nada o mandamos a un dashboard generico
-      }
+      router.push(getRedirectPath(user.role));
     }
   }, [user, hasHydrated, router]);
 
-  const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
-    setLoginError(null);
-    const user = MOCK_USERS.find(u => u.id === data.documento && u.password === data.password);
+  /**
+   * Maneja el envío del formulario: llama al server action,
+   * muestra SweetAlert2 y redirige según resultado.
+   */
+  const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
+    setIsSubmitting(true);
 
-    if (user) {
-      login(user);
-      if (user.role === 'technical') {
-        router.push('/tecnico');
+    try {
+      const result = await loginAction(data.documento, data.password);
+
+      if (result.success) {
+        // Guardar sesión en Zustand
+        login(result.user);
+
+        // SweetAlert de bienvenida
+        await Swal.fire({
+          icon: 'success',
+          title: `¡Bienvenido/a!`,
+          html: `<strong>${result.user.name}</strong><br/><span style="color:#686000;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">${getRoleLabel(result.user.role)}</span>`,
+          confirmButtonColor: '#FFEC00',
+          confirmButtonText: 'Continuar',
+          color: '#1a1c1c',
+          timer: 2500,
+          timerProgressBar: true,
+          showConfirmButton: true,
+        });
+
+        // Redirigir según rol
+        router.push(getRedirectPath(result.user.role));
       } else {
-        alert(`Bienvenido, ${user.name} (${user.role}) - Pantalla no implementada`);
+        // SweetAlert de error 401
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error 401',
+          text: result.message,
+          confirmButtonColor: '#ba1a1a',
+          confirmButtonText: 'Intentar de nuevo',
+          color: '#1a1c1c',
+        });
       }
-    } else {
-      setLoginError("Credenciales incorrectas");
+    } catch {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error de conexión',
+        text: 'No se pudo conectar con el servidor. Intente de nuevo.',
+        confirmButtonColor: '#ba1a1a',
+        confirmButtonText: 'Aceptar',
+        color: '#1a1c1c',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -118,7 +196,8 @@ export function LoginClient() {
                   inputMode="numeric"
                   placeholder="Ingrese su cédula"
                   autoComplete="username"
-                  className="w-full h-touch-target-min pl-12 pr-4 bg-white border border-outline-variant rounded text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary-fixed-dim focus:border-primary-fixed-dim transition-colors"
+                  disabled={isSubmitting}
+                  className="w-full h-touch-target-min pl-12 pr-4 bg-white border border-outline-variant rounded text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary-fixed-dim focus:border-primary-fixed-dim transition-colors disabled:opacity-50"
                   style={{ backgroundColor: 'white' }}
                 />
               </div>
@@ -133,20 +212,28 @@ export function LoginClient() {
                 id="password"
                 placeholder="Ingrese su contraseña"
                 autoComplete="current-password"
+                disabled={isSubmitting}
               />
               <ErrorMessage message={errors.password?.message} />
             </div>
 
-            {loginError && (
-              <ErrorMessage message={loginError} />
-            )}
-
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full h-touch-target-min mt-base bg-primary-container text-on-surface font-cta text-label-bold rounded shadow-sm hover:bg-primary-fixed-dim transition-all duration-150 cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full h-touch-target-min mt-base bg-primary-container text-on-surface font-cta text-label-bold rounded shadow-sm hover:bg-primary-fixed-dim transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Ingresar al Sistema
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-on-surface" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Verificando...
+                </>
+              ) : (
+                'Ingresar al Sistema'
+              )}
             </button>
           </form>
 

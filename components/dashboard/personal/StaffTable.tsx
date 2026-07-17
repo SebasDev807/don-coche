@@ -4,6 +4,10 @@ import { User } from '@prisma/client';
 import { useTransition } from 'react';
 import { deleteStaffUser } from '@/actions/personal';
 import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 /**
  * Propiedades del componente StaffTable.
@@ -28,17 +32,28 @@ export function StaffTable({ users }: StaffTableProps) {
   const router = useRouter();
 
   const handleDelete = (userId: string, userName: string) => {
-    if (confirm(`¿Estás seguro de que deseas eliminar (desactivar) a ${userName}?`)) {
-      startTransition(async () => {
-        const result = await deleteStaffUser(userId);
-        if (result.success) {
-          alert(result.message);
-          router.refresh();
-        } else {
-          alert(result.message);
-        }
-      });
-    }
+    MySwal.fire({
+      title: `¿Estás seguro?`,
+      text: `¿Deseas eliminar a ${userName}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: 'rgba(221, 213, 51, 1)',
+      cancelButtonColor: 'rgba(2, 14, 30, 1)',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        startTransition(async () => {
+          const res = await deleteStaffUser(userId);
+          if (res.success) {
+            MySwal.fire('¡Eliminado!', res.message, 'success');
+            router.refresh();
+          } else {
+            MySwal.fire('Error', res.message, 'error');
+          }
+        });
+      }
+    });
   };
 
   return (
@@ -93,15 +108,15 @@ export function StaffTable({ users }: StaffTableProps) {
                 </td>
                 <td className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button title="Actualizar Datos" className="text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors">
+                    <button title="Actualizar Datos" className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors">
                       <span className="material-symbols-outlined text-[20px]">edit</span>
                     </button>
-                    <button title="Actualizar Contraseña" className="text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors">
+                    <button title="Actualizar Contraseña" className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors">
                       <span className="material-symbols-outlined text-[20px]">password</span>
                     </button>
-                    <button 
-                      title="Eliminar (Soft Delete)" 
-                      className={`text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    <button
+                      title="Eliminar (Soft Delete)"
+                      className={`cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleDelete(user.id, user.name)}
                       disabled={!user.isActive || isPending}
                     >
@@ -111,7 +126,7 @@ export function StaffTable({ users }: StaffTableProps) {
                 </td>
               </tr>
             ))}
-            
+
             {users.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-8 text-center text-secondary">
@@ -127,10 +142,10 @@ export function StaffTable({ users }: StaffTableProps) {
         <div className="bg-surface border-t border-outline-variant p-4 flex items-center justify-between">
           <p className="text-sm text-secondary">Mostrando {users.length} empleados</p>
           <div className="flex gap-2">
-            <button className="p-2 border border-outline-variant rounded hover:bg-surface-container text-secondary transition-colors" disabled>
+            <button className="cursor-pointer p-2 border border-outline-variant rounded hover:bg-surface-container text-secondary transition-colors disabled:cursor-not-allowed disabled:opacity-50" disabled>
               <span className="material-symbols-outlined text-sm">chevron_left</span>
             </button>
-            <button className="p-2 border border-outline-variant rounded hover:bg-surface-container text-secondary transition-colors" disabled>
+            <button className="cursor-pointer p-2 border border-outline-variant rounded hover:bg-surface-container text-secondary transition-colors disabled:cursor-not-allowed disabled:opacity-50" disabled>
               <span className="material-symbols-outlined text-sm">chevron_right</span>
             </button>
           </div>

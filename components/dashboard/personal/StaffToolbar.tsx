@@ -20,11 +20,11 @@ export function StaffToolbar() {
         />
       </div>
       <div className="flex items-center gap-4 w-full lg:w-auto">
-        <button className="h-touch-target-min px-6 bg-surface-container-lowest border border-outline-variant text-on-surface font-cta text-cta rounded-lg hover:bg-surface-container transition-colors flex items-center gap-2 flex-1 lg:flex-none justify-center">
+        <button className="cursor-pointer h-touch-target-min px-6 bg-surface-container-lowest border border-outline-variant text-on-surface font-cta text-cta rounded-lg hover:bg-surface-container transition-colors flex items-center gap-2 flex-1 lg:flex-none justify-center">
           <span className="material-symbols-outlined">filter_list</span>
           Filtrar por Rol
         </button>
-        <button className="h-touch-target-min px-6 bg-primary-container text-[#000000] font-cta text-cta rounded-lg hover:bg-primary-fixed-dim transition-colors flex items-center gap-2 shadow-sm flex-1 lg:flex-none justify-center active:scale-[0.98]">
+        <button className="cursor-pointer h-touch-target-min px-6 bg-primary-container text-[#000000] font-cta text-cta rounded-lg hover:bg-primary-fixed-dim transition-colors flex items-center gap-2 shadow-sm flex-1 lg:flex-none justify-center active:scale-[0.98]">
           <span className="material-symbols-outlined">add</span>
           Agregar Empleado
         </button>

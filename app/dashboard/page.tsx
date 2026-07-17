@@ -10,9 +10,8 @@
  * Consume datos mock de `@/data/mocks` para la presentación visual.
  */
 
-'use client';
-
-import { useAuthStore } from '@/store/useAuthStore';
+import type { Metadata } from 'next';
+import { DashboardHeader } from './DashboardHeader';
 import {
   DASHBOARD_KPIS,
   DASHBOARD_CHART_DATA,
@@ -20,39 +19,19 @@ import {
   MOVEMENT_STATUS_STYLES,
 } from '@/data/mocks';
 
-/**
- * Mapea el rol del usuario a una etiqueta visible en el header.
- *
- * @param role - Rol del usuario.
- * @returns Etiqueta en mayúsculas para el subtítulo.
- */
-function getRoleSubtitle(role: string): string {
-  const labels: Record<string, string> = {
-    SUPERUSUARIO: 'SUPERUSUARIO',
-    GERENTE: 'SUPERUSUARIO',
-    ADMINISTRADOR: 'ADMINISTRADOR',
-  };
-  return labels[role] ?? role;
-}
+export const metadata: Metadata = {
+  title: 'Dashboard | Don Coche',
+  description: 'Resumen financiero consolidado',
+};
 
 /**
  * Página principal del dashboard con KPIs, gráfica y tabla.
  */
 export default function DashboardPage() {
-  const user = useAuthStore((state) => state.user);
-  const roleSubtitle = getRoleSubtitle(user?.role ?? '');
-
   return (
     <div className="max-w-7xl mx-auto flex flex-col gap-8">
       {/* ─── Dashboard Header ─── */}
-      <div>
-        <h1 className="font-headline-lg text-headline-lg text-on-surface mb-1">
-          Dashboard Principal
-        </h1>
-        <p className="font-label-bold text-xs text-on-surface-variant uppercase tracking-wider">
-          RESUMEN FINANCIERO CONSOLIDADO | {roleSubtitle}
-        </p>
-      </div>
+      <DashboardHeader />
 
       {/* ─── KPI Cards ─── */}
       <section>

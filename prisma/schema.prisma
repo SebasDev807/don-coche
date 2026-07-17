@@ -54,7 +54,7 @@ model User {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   cc           String   @unique /// Cédula de Ciudadanía - Usuario de acceso
   name         String
-  email        String?
+  email        String?  @unique
   celular      String?
   passwordHash String   @map("password_hash")
   role         Role     @default(TECNICO)

@@ -7,3 +7,4 @@
 
 export { getStaffUsers } from './getStaffUsers';
 export { deleteStaffUser } from './deleteStaffUser';
+export { createStaffUser } from './createStaffUser';

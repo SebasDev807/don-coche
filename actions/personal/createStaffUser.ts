@@ -1,0 +1,61 @@
+'use server';
+
+import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
+import bcrypt from 'bcryptjs';
+import { createUserSchema } from '@/validation';
+
+export async function createStaffUser(formData: FormData) {
+  try {
+    const data = Object.fromEntries(formData.entries());
+    
+    // Parse using Zod
+    const parsedData = createUserSchema.safeParse(data);
+    
+    if (!parsedData.success) {
+      return { success: false, message: 'Revisa los campos del formulario.' };
+    }
+
+    const { cc, name, email, celular, role, password } = parsedData.data;
+
+    // Check if user already exists
+    const existingUserByCC = await prisma.user.findUnique({
+      where: { cc },
+    });
+
+    if (existingUserByCC) {
+      return { success: false, message: 'Ya existe un usuario con esa cédula (CC).' };
+    }
+
+    if (email) {
+      const existingUserByEmail = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (existingUserByEmail) {
+        return { success: false, message: 'Ya existe un usuario con este correo electrónico.' };
+      }
+    }
+
+    // Hash the password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Create user
+    await prisma.user.create({
+      data: {
+        cc,
+        name,
+        email: email || null,
+        celular: celular || null,
+        role,
+        passwordHash,
+      },
+    });
+
+    revalidatePath('/dashboard/personal');
+
+    return { success: true, message: 'Empleado creado correctamente.' };
+  } catch (error) {
+    console.error('Error creating staff user:', error);
+    return { success: false, message: 'Ocurrió un error inesperado al intentar crear el usuario.' };
+  }
+}

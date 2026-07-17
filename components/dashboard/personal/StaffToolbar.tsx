@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 /**
  * Componente que renderiza la barra de herramientas (Toolbar) de la sección personal.
  * 
@@ -24,10 +26,10 @@ export function StaffToolbar() {
           <span className="material-symbols-outlined">filter_list</span>
           Filtrar por Rol
         </button>
-        <button className="cursor-pointer h-touch-target-min px-6 bg-primary-container text-[#000000] font-cta text-cta rounded-lg hover:bg-primary-fixed-dim transition-colors flex items-center gap-2 shadow-sm flex-1 lg:flex-none justify-center active:scale-[0.98]">
+        <Link href="/dashboard/personal/new" className="cursor-pointer h-touch-target-min px-6 bg-primary-container text-[#000000] font-cta text-cta rounded-lg hover:bg-primary-fixed-dim transition-colors flex items-center gap-2 shadow-sm flex-1 lg:flex-none justify-center active:scale-[0.98]">
           <span className="material-symbols-outlined">add</span>
           Agregar Empleado
-        </button>
+        </Link>
       </div>
     </section>
   );

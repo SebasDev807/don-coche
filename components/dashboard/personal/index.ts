@@ -5,6 +5,7 @@
  * para simplificar las importaciones desde `@/components/dashboard/personal`.
  */
 
-export { StaffKPIs } from './StaffKPIs';
-export { StaffToolbar } from './StaffToolbar';
 export { StaffTable } from './StaffTable';
+export { StaffToolbar } from './StaffToolbar';
+export { StaffKPIs } from './StaffKPIs';
+export { CreateStaffForm } from './CreateStaffForm';

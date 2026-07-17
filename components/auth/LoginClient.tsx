@@ -130,7 +130,7 @@ export function LoginClient() {
   };
 
   return (
-    <div className="antialiased relative min-h-screen bg-white flex flex-col">
+    <div className="antialiased relative min-h-screen bg-white flex flex-col fade-in">
       {/* Header */}
       <header className="w-full flex justify-between items-center p-4 border-b border-outline-variant/30">
         <div className="flex items-center">

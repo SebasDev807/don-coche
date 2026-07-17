@@ -20,7 +20,7 @@ export default async function PersonalPage() {
   const users = await getStaffUsers();
 
   return (
-    <>
+    <div className='fade-in'>
       <header className="mb-stack-lg">
         <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Directorio de Personal</h1>
         <p className="font-body-lg text-body-lg text-secondary">Gestión de operarios, administradores y accesos al sistema</p>
@@ -34,6 +34,6 @@ export default async function PersonalPage() {
 
       {/* Employee Table */}
       <StaffTable users={users} />
-    </>
+    </div>
   );
 }

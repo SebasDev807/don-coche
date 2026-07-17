@@ -15,7 +15,7 @@ export function ErrorMessage({ message }: ErrorMessageProps) {
   if (!message) return null;
 
   return (
-    <div className="bg-error-container text-error text-sm font-body-md mt-2 p-2 rounded flex items-center justify-center gap-2">
+    <div className="fade-in bg-error-container text-error text-sm font-body-md mt-2 p-2 rounded flex items-center justify-center gap-2">
       <span className="material-symbols-outlined text-base">warning</span>
       <span>{message}</span>
     </div>

@@ -29,7 +29,7 @@ export const metadata: Metadata = {
  */
 export default function DashboardPage() {
   return (
-    <div className="max-w-7xl mx-auto flex flex-col gap-8">
+    <div className="max-w-7xl mx-auto flex flex-col gap-8 fade-in">
       {/* ─── Dashboard Header ─── */}
       <DashboardHeader />
 

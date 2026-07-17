@@ -47,7 +47,7 @@ export default function DashboardLayout({
   if (isLoading || !isAuthorized || !user) return null;
 
   return (
-    <div className="bg-background text-on-background font-body-md antialiased overflow-hidden flex h-screen">
+    <div className="fade-in bg-background text-on-background font-body-md antialiased overflow-hidden flex h-screen">
       {/* Sidebar (solo desktop) */}
       <Sidebar onLogout={handleLogout} />
 

@@ -30,10 +30,10 @@ export default function TecnicoScreen() {
   if (!hasHydrated || !user || (user.role !== 'TECNICO' && user.role !== 'SUPERUSUARIO')) return null;
 
   return (
-    <div className="bg-gray-50 h-screen flex flex-col font-[family-name:var(--font-sora)] overflow-hidden">
-      <Header 
-        technicianName={user.name} 
-        onLogout={handleLogout} 
+    <div className="fade-in bg-gray-50 h-screen flex flex-col font-[family-name:var(--font-sora)] overflow-hidden">
+      <Header
+        technicianName={user.name}
+        onLogout={handleLogout}
       />
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
         <RegistrationForm />

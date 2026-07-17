@@ -12,6 +12,11 @@ import { User } from '@prisma/client';
 export async function getStaffUsers(): Promise<User[]> {
   try {
     const users = await prisma.user.findMany({
+      where: {
+        role: {
+          not: 'SUPERUSUARIO',
+        },
+      },
       orderBy: { name: 'asc' },
     });
     return users;

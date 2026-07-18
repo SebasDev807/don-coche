@@ -126,7 +126,7 @@ export function StaffTable({ users }: StaffTableProps) {
                       <span className="material-symbols-outlined text-[20px]">edit</span>
                     </Link>
                     <button title="Actualizar Contraseña" className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">password</span>
+                      <span className="material-symbols-outlined text-[20px]">lock</span>
                     </button>
                     <button
                       title="Eliminar (Soft Delete)"

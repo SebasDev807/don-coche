@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * Componente que renderiza la barra de herramientas (Toolbar) de la sección personal.
@@ -19,9 +19,14 @@ export function StaffToolbar() {
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
 
+  // Guardamos searchParams en un ref para leerlo dentro del efecto
+  // sin convertirlo en dependencia reactiva (evita el bucle infinito).
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      const params = new URLSearchParams(searchParams);
+      const params = new URLSearchParams(searchParamsRef.current);
       if (searchTerm) {
         params.set('q', searchTerm);
       } else {
@@ -31,7 +36,7 @@ export function StaffToolbar() {
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, pathname, router, searchParams]);
+  }, [searchTerm, pathname, router]);
 
   return (
     <section className="flex flex-col lg:flex-row justify-between items-center gap-4 mb-stack-md">

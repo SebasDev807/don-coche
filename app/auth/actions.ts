@@ -1,59 +1,56 @@
 /**
- * @fileoverview Server Action de autenticación.
+ * @fileoverview Server Actions de autenticación.
  *
- * Valida las credenciales del usuario contra la base de datos PostgreSQL
- * usando Prisma para la consulta y bcrypt para la comparación del hash.
+ * - `loginAction`: Valida credenciales contra la DB y crea la sesión HttpOnly.
+ * - `logoutAction`: Elimina la cookie de sesión y redirige a `/auth`.
  *
- * Retorna un objeto con el resultado de la operación, sin exponer
- * datos sensibles (hash, id interno) al cliente.
+ * Ambas acciones corren exclusivamente en el servidor (`'use server'`).
  */
 
 'use server';
 
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { createSession, deleteSession } from '@/lib/session';
+import { redirect } from 'next/navigation';
+
+// ─── Tipos ─────────────────────────────────────────────────────────────────────
 
 /**
- * Resultado exitoso de la autenticación.
+ * Resultado exitoso del login: incluye los datos básicos del usuario
+ * para que el cliente pueda mostrar el mensaje de bienvenida.
  */
-interface LoginSuccess {
+export interface LoginSuccess {
   success: true;
   user: {
-    id: string;
     name: string;
     role: string;
   };
 }
 
-/**
- * Resultado fallido de la autenticación.
- */
-interface LoginFailure {
+/** Resultado fallido del login con mensaje de error para mostrar al usuario. */
+export interface LoginFailure {
   success: false;
   message: string;
 }
 
-/** Tipo unión del resultado de login. */
-type LoginResult = LoginSuccess | LoginFailure;
+/** Tipo unión del resultado de `loginAction`. */
+export type LoginResult = LoginSuccess | LoginFailure;
+
+// ─── Login ─────────────────────────────────────────────────────────────────────
 
 /**
- * Autentica a un usuario verificando su cédula y contraseña contra la DB.
+ * Autentica un usuario verificando su cédula y contraseña contra la DB.
+ *
+ * En caso de éxito, crea una sesión HttpOnly firmada con JWT y retorna
+ * los datos básicos del usuario para mostrar el feedback visual en el cliente.
  *
  * @param cc - Número de cédula de ciudadanía.
- * @param password - Contraseña en texto plano para comparar con el hash.
- * @returns Resultado de la autenticación con datos del usuario o mensaje de error.
- *
- * @example
- * ```ts
- * const result = await loginAction('1002968695', 'devmode12345!');
- * if (result.success) {
- *   // result.user.name, result.user.role
- * }
- * ```
+ * @param password - Contraseña en texto plano.
+ * @returns Resultado de la autenticación.
  */
 export async function loginAction(cc: string, password: string): Promise<LoginResult> {
   try {
-    // Buscar usuario por cédula
     const user = await prisma.user.findUnique({
       where: { cc },
       select: {
@@ -65,28 +62,30 @@ export async function loginAction(cc: string, password: string): Promise<LoginRe
       },
     });
 
-    // Usuario no encontrado
     if (!user) {
       return { success: false, message: 'Credenciales incorrectas' };
     }
 
-    // Usuario desactivado
     if (!user.isActive) {
       return { success: false, message: 'Esta cuenta ha sido desactivada' };
     }
 
-    // Comparar contraseña con hash
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
     if (!isPasswordValid) {
       return { success: false, message: 'Credenciales incorrectas' };
     }
 
-    // Autenticación exitosa — no exponer hash al cliente
+    // Crear sesión segura en cookie HttpOnly
+    await createSession({
+      userId: user.id,
+      name: user.name,
+      role: user.role,
+    });
+
+    // Retornar datos mínimos para el feedback de bienvenida en el cliente
     return {
       success: true,
       user: {
-        id: user.id,
         name: user.name,
         role: user.role,
       },
@@ -95,4 +94,17 @@ export async function loginAction(cc: string, password: string): Promise<LoginRe
     console.error('[loginAction] Error de autenticación:', error);
     return { success: false, message: 'Error interno del servidor' };
   }
+}
+
+// ─── Logout ────────────────────────────────────────────────────────────────────
+
+/**
+ * Cierra la sesión del usuario eliminando la cookie de sesión
+ * y redirigiendo a la pantalla de login.
+ *
+ * Debe llamarse desde un Server Component o Server Action.
+ */
+export async function logoutAction(): Promise<never> {
+  await deleteSession();
+  redirect('/auth');
 }

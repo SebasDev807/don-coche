@@ -1,19 +1,16 @@
 /**
  * @fileoverview Layout del área de gestión (dashboard).
  *
- * Protege el acceso verificando que el usuario tenga rol `GERENTE` o
- * `ADMINISTRADOR` mediante el hook `useRequireRole`. Renderiza la
- * estructura principal: Sidebar + Navbar + contenido + MobileBottomNav.
+ * Server Component que verifica la sesión usando el DAL antes de renderizar.
+ * Si el usuario no tiene sesión o el rol no es permitido, el DAL redirige
+ * automáticamente a `/auth` antes de que cualquier HTML sea enviado al cliente.
  *
  * Este layout envuelve automáticamente a todas las páginas hijas
  * bajo la ruta `/dashboard/*`.
  */
 
-'use client';
-
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useRequireRole } from '@/hooks/useRequireRole';
+import { verifyRole } from '@/lib/dal';
+import { logoutAction } from '@/app/auth/actions';
 import { Sidebar, Navbar, MobileBottomNav } from '@/components/dashboard';
 
 /** Roles que tienen acceso al área de gestión. */
@@ -28,28 +25,18 @@ const ALLOWED_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
  *
  * @param props - Children renderizados por Next.js (la página activa).
  */
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const logout = useAuthStore((state) => state.logout);
-  const { isLoading, isAuthorized, user } = useRequireRole(ALLOWED_ROLES);
-
-  /** Cierra la sesión y redirige al login. */
-  const handleLogout = () => {
-    logout();
-    router.push('/auth');
-  };
-
-  // Prevenir flash de contenido durante hidratación o acceso no autorizado
-  if (isLoading || !isAuthorized || !user) return null;
+  // Verificación server-side: redirige a /auth si no hay sesión o rol no permitido
+  const user = await verifyRole(ALLOWED_ROLES);
 
   return (
     <div className="fade-in bg-background text-on-background font-body-md antialiased overflow-hidden flex h-screen">
       {/* Sidebar (solo desktop) */}
-      <Sidebar onLogout={handleLogout} />
+      <Sidebar logoutAction={logoutAction} />
 
       {/* Área de contenido principal */}
       <main className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative">

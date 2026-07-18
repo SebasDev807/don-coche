@@ -1,39 +1,27 @@
-'use client';
+/**
+ * @fileoverview Pantalla principal de la vista del técnico.
+ *
+ * Server Component que verifica la sesión y el rol antes de renderizar.
+ * Solo accesible por usuarios con rol TECNICO o SUPERUSUARIO.
+ *
+ * El logout se ejecuta vía Server Action pasado como prop al Header.
+ */
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { verifyRole } from '@/lib/dal';
+import { logoutAction } from '@/app/auth/actions';
 import { Header } from '../../components/tecnico/Header';
 import { RegistrationForm } from '../../components/tecnico/RegistrationForm';
 import { ServicesPanel } from '../../components/tecnico/ServicesPanel';
-import { useAuthStore } from '@/store/useAuthStore';
 
-export default function TecnicoScreen() {
-  const router = useRouter();
-  const user = useAuthStore(state => state.user);
-  const logout = useAuthStore(state => state.logout);
-  const hasHydrated = useAuthStore(state => state._hasHydrated);
-
-  useEffect(() => {
-    if (hasHydrated) {
-      if (!user || (user.role !== 'TECNICO' && user.role !== 'SUPERUSUARIO')) {
-        router.push('/auth');
-      }
-    }
-  }, [user, hasHydrated, router]);
-
-  const handleLogout = () => {
-    logout();
-    router.push('/auth');
-  };
-
-  // Prevent flash of content during hydration or invalid user
-  if (!hasHydrated || !user || (user.role !== 'TECNICO' && user.role !== 'SUPERUSUARIO')) return null;
+export default async function TecnicoScreen() {
+  // Verifica sesión y rol en el servidor; redirige a /auth si no autorizado
+  const user = await verifyRole(['TECNICO', 'SUPERUSUARIO']);
 
   return (
     <div className="fade-in bg-gray-50 h-screen flex flex-col font-[family-name:var(--font-sora)] overflow-hidden">
       <Header
         technicianName={user.name}
-        onLogout={handleLogout}
+        logoutAction={logoutAction}
       />
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
         <RegistrationForm />

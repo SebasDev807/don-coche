@@ -2,10 +2,10 @@ import Image from 'next/image';
 
 interface HeaderProps {
   technicianName: string;
-  onLogout: () => void;
+  logoutAction: () => Promise<never>;
 }
 
-export const Header = ({ technicianName, onLogout }: HeaderProps) => {
+export const Header = ({ technicianName, logoutAction }: HeaderProps) => {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center" data-purpose="main-header">
       <div className="flex items-center gap-4">
@@ -18,15 +18,17 @@ export const Header = ({ technicianName, onLogout }: HeaderProps) => {
           </svg>
           Técnico Activo: {technicianName}
         </div>
-        <button 
-          onClick={onLogout}
-          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm cursor-pointer"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" strokeLinecap="round" strokeLinejoin="round"></path>
-          </svg>
-          Cerrar Sesión
-        </button>
+        <form action={logoutAction}>
+          <button 
+            type="submit"
+            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm cursor-pointer"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" strokeLinecap="round" strokeLinejoin="round"></path>
+            </svg>
+            Cerrar Sesión
+          </button>
+        </form>
       </div>
     </header>
   );

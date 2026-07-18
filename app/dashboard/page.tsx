@@ -12,6 +12,7 @@
 
 import type { Metadata } from 'next';
 import { DashboardHeader } from '../../components/dashboard/DashboardHeader';
+import { verifySession } from '@/lib/dal';
 import {
   DASHBOARD_KPIS,
   DASHBOARD_CHART_DATA,
@@ -27,11 +28,13 @@ export const metadata: Metadata = {
 /**
  * Página principal del dashboard con KPIs, gráfica y tabla.
  */
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = await verifySession();
+
   return (
     <div className="max-w-7xl mx-auto flex flex-col gap-8 fade-in">
       {/* ─── Dashboard Header ─── */}
-      <DashboardHeader />
+      <DashboardHeader user={user} />
 
       {/* ─── KPI Cards ─── */}
       <section>

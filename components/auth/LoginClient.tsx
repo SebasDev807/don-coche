@@ -1,22 +1,20 @@
 /**
  * @fileoverview Componente cliente para la vista de inicio de sesión.
  *
- * Autentica al usuario contra la base de datos vía el server action
- * `loginAction`. Usa SweetAlert2 para feedback visual de bienvenida
- * (éxito) o error 401 (credenciales incorrectas).
+ * Llama al server action `loginAction` que valida las credenciales
+ * y crea la cookie de sesión HttpOnly en el servidor.
+ * El cliente solo maneja el feedback visual (SweetAlert2) y la redirección.
  *
- * El estado de sesión se persiste en Zustand (`useAuthStore`) con
- * `localStorage` para mantener la sesión entre recargas.
+ * Ya no persiste datos de usuario en el cliente (Zustand eliminado).
  */
 
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { PasswordInput, ErrorMessage } from '@/components/ui';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/useAuthStore';
 import { loginAction } from '@/app/auth/actions';
 import Swal from 'sweetalert2';
 
@@ -58,26 +56,18 @@ function getRedirectPath(role: string): string {
 
 /**
  * Componente cliente para la vista de inicio de sesión.
- * Autentica contra la DB vía server action y muestra SweetAlert2 como feedback.
+ *
+ * Autentica contra la DB vía server action. La sesión se crea en el servidor
+ * como cookie HttpOnly — el cliente solo recibe nombre/rol para el feedback.
  */
 export function LoginClient() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const login = useAuthStore(state => state.login);
-  const user = useAuthStore(state => state.user);
-  const hasHydrated = useAuthStore(state => state._hasHydrated);
-
-  // Redirigir si ya hay sesión activa
-  useEffect(() => {
-    if (hasHydrated && user) {
-      router.push(getRedirectPath(user.role));
-    }
-  }, [user, hasHydrated, router]);
 
   /**
-   * Maneja el envío del formulario: llama al server action,
-   * muestra SweetAlert2 y redirige según resultado.
+   * Envía las credenciales al server action, muestra SweetAlert2
+   * y redirige según el rol del usuario.
    */
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     setIsSubmitting(true);
@@ -86,10 +76,7 @@ export function LoginClient() {
       const result = await loginAction(data.documento, data.password);
 
       if (result.success) {
-        // Guardar sesión en Zustand
-        login(result.user);
-
-        // SweetAlert de bienvenida
+        // Feedback de bienvenida
         await Swal.fire({
           icon: 'success',
           title: `¡Bienvenido/a!`,
@@ -102,10 +89,9 @@ export function LoginClient() {
           showConfirmButton: true,
         });
 
-        // Redirigir según rol
+        // Redirigir según rol (la cookie ya fue creada en el servidor)
         router.push(getRedirectPath(result.user.role));
       } else {
-        // SweetAlert de error 401
         await Swal.fire({
           icon: 'error',
           title: 'Error 401',
@@ -184,12 +170,12 @@ export function LoginClient() {
                   badge
                 </span>
                 <input
-                  {...register("documento", {
-                    required: "El número de cédula es obligatorio",
+                  {...register('documento', {
+                    required: 'El número de cédula es obligatorio',
                     pattern: {
                       value: /^[0-9]+$/,
-                      message: "La cédula solo puede contener números"
-                    }
+                      message: 'La cédula solo puede contener números',
+                    },
                   })}
                   id="documento"
                   type="text"
@@ -207,7 +193,7 @@ export function LoginClient() {
             {/* Input Field: Contraseña */}
             <div className="w-full">
               <PasswordInput
-                {...register("password", { required: "La contraseña es obligatoria" })}
+                {...register('password', { required: 'La contraseña es obligatoria' })}
                 label="Contraseña"
                 id="password"
                 placeholder="Ingrese su contraseña"

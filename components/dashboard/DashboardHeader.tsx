@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuthStore } from '@/store/useAuthStore';
+import type { VerifiedSession } from '@/lib/dal';
 
 /**
  * Mapea el rol del usuario a una etiqueta visible en el header.
@@ -11,15 +11,27 @@ import { useAuthStore } from '@/store/useAuthStore';
 function getRoleSubtitle(role: string): string {
   const labels: Record<string, string> = {
     SUPERUSUARIO: 'SUPERUSUARIO',
-    GERENTE: 'SUPERUSUARIO',
+    GERENTE: 'GERENTE',
     ADMINISTRADOR: 'ADMINISTRADOR',
   };
   return labels[role] ?? role;
 }
 
-export function DashboardHeader() {
-  const user = useAuthStore((state) => state.user);
-  const roleSubtitle = getRoleSubtitle(user?.role ?? '');
+/**
+ * Props del componente DashboardHeader.
+ */
+interface DashboardHeaderProps {
+  /** Datos del usuario autenticado, provenientes del DAL server-side. */
+  user: VerifiedSession;
+}
+
+/**
+ * Encabezado del dashboard principal que muestra el título y el rol del usuario.
+ *
+ * @param props - {@link DashboardHeaderProps}
+ */
+export function DashboardHeader({ user }: DashboardHeaderProps) {
+  const roleSubtitle = getRoleSubtitle(user.role);
 
   return (
     <div>

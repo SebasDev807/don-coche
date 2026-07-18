@@ -40,8 +40,8 @@ const NAV_ITEMS: NavItem[] = [
  * Props del componente Sidebar.
  */
 interface SidebarProps {
-  /** Callback ejecutado al presionar "Cerrar Sesión". */
-  onLogout: () => void;
+  /** Server Action de logout pasado desde el layout del servidor. */
+  logoutAction: () => Promise<never>;
 }
 
 /**
@@ -52,7 +52,7 @@ interface SidebarProps {
  *
  * @param props - {@link SidebarProps}
  */
-export function Sidebar({ onLogout }: SidebarProps) {
+export function Sidebar({ logoutAction }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -118,15 +118,17 @@ export function Sidebar({ onLogout }: SidebarProps) {
           <span className="font-body-md text-sm">Soporte</span>
         </a>
 
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-4 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer group w-full"
-        >
-          <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform">
-            logout
-          </span>
-          <span className="font-body-md text-sm">Cerrar Sesión</span>
-        </button>
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            className="flex items-center gap-4 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer group w-full"
+          >
+            <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform">
+              logout
+            </span>
+            <span className="font-body-md text-sm">Cerrar Sesión</span>
+          </button>
+        </form>
       </div>
     </aside>
   );

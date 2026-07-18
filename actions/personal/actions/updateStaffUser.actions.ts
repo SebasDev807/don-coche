@@ -3,8 +3,12 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { updateUserSchema } from '@/validation';
+import { verifyRole } from '@/lib/dal';
 
 export async function updateStaffUser(id: string, formData: FormData) {
+  // Verificar sesión y rol en el servidor antes de cualquier operación
+  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+
   try {
     const data = Object.fromEntries(formData.entries());
     

@@ -10,14 +10,14 @@
 
 'use client';
 
-import type { User } from '@/store/useAuthStore';
+import type { VerifiedSession } from '@/lib/dal';
 
 /**
  * Props del componente Navbar.
  */
 interface NavbarProps {
   /** Datos del usuario autenticado activo. */
-  user: User;
+  user: VerifiedSession;
 }
 
 /**

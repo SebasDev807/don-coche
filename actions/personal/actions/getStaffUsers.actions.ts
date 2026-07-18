@@ -5,7 +5,8 @@ import { User } from '@prisma/client';
 
 /**
  * Obtiene todos los usuarios (personal) de la base de datos,
- * ordenados alfabéticamente por nombre.
+ * ordenados por jerarquía de rol (Gerente, Administrador, Técnico) y
+ * secundariamente alfabéticamente por nombre.
  *
  * @returns {Promise<User[]>} Promesa que resuelve en un arreglo de usuarios.
  */
@@ -34,7 +35,28 @@ export async function getStaffUsers(query?: string, role?: string): Promise<User
       where: whereClause,
       orderBy: { name: 'asc' },
     });
-    return users;
+
+    const getRolePriority = (uRole: string): number => {
+      switch (uRole) {
+        case 'GERENTE':
+          return 1;
+        case 'ADMINISTRADOR':
+          return 2;
+        case 'TECNICO':
+          return 3;
+        default:
+          return 4;
+      }
+    };
+
+    return users.sort((a, b) => {
+      const priorityA = getRolePriority(a.role);
+      const priorityB = getRolePriority(b.role);
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+      return a.name.localeCompare(b.name);
+    });
   } catch (error) {
     console.error('Error fetching staff users:', error);
     return [];

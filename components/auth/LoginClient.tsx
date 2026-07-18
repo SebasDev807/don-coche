@@ -94,10 +94,10 @@ export function LoginClient() {
       } else {
         await Swal.fire({
           icon: 'error',
-          title: 'Error 401',
+          title: 'Error de autenticación',
           text: result.message,
           confirmButtonColor: '#ba1a1a',
-          confirmButtonText: 'Intentar de nuevo',
+          confirmButtonText: 'Entendido',
           color: '#1a1c1c',
         });
       }

@@ -28,7 +28,7 @@ const DASHBOARD_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Determinar si la ruta actual está protegida

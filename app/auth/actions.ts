@@ -67,6 +67,7 @@ export async function loginAction(cc: string, password: string): Promise<LoginRe
     }
 
     if (!user.isActive) {
+      https://fedoraproject.org/start
       return { success: false, message: 'Esta cuenta ha sido desactivada' };
     }
 

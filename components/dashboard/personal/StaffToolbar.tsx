@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
+import { ExportExcelButton } from '@/components/ui';
 
 /**
  * Componente que renderiza la barra de herramientas (Toolbar) de la sección personal.
@@ -22,7 +23,10 @@ export function StaffToolbar() {
   // Guardamos searchParams en un ref para leerlo dentro del efecto
   // sin convertirlo en dependencia reactiva (evita el bucle infinito).
   const searchParamsRef = useRef(searchParams);
-  searchParamsRef.current = searchParams;
+  
+  useEffect(() => {
+    searchParamsRef.current = searchParams;
+  }, [searchParams]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -74,6 +78,12 @@ export function StaffToolbar() {
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">filter_list</span>
           <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
         </div>
+        <ExportExcelButton 
+          onClick={() => {
+            // TODO: Implementar lógica de exportación a Excel próximamente.
+            console.log('Exportar personal a Excel iniciado...');
+          }}
+        />
         <Link href="/dashboard/personal/new" className="cursor-pointer h-touch-target-min px-6 bg-primary-container text-[#000000] font-cta text-cta rounded-lg hover:bg-primary-fixed-dim transition-colors flex items-center gap-2 shadow-sm flex-1 lg:flex-none justify-center active:scale-[0.98]">
           <span className="material-symbols-outlined">add</span>
           Agregar Empleado

@@ -15,10 +15,11 @@ interface EditStaffPageProps {
 }
 
 export default async function EditStaffPage(props: EditStaffPageProps) {
+  // ─── Resolve Route Parameters ───
   const params = await props.params;
   const { cc } = params;
 
-  // Retrieve user from database
+  // ─── Retrieve User from Database ───
   const user = await prisma.user.findUnique({
     where: { cc },
   });

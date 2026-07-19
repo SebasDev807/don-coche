@@ -7,7 +7,7 @@
  * Ejecutar con: `npx prisma db seed`
  */
 
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient, Role, ItemCategory, Prisma } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
@@ -141,9 +141,104 @@ const SEED_USERS: SeedUser[] = [
   },
 ];
 
+/** Productos a insertar en la base de datos. */
+const SEED_PRODUCTS = [
+  {
+    code: 'LUB-SN-10W30',
+    name: 'Aceite 10W-30 Premium - Marca: Mobil 1 • Galón',
+    category: ItemCategory.LUBRICANTES,
+    stock: 45,
+    unitCost: new Prisma.Decimal(24.50),
+    salePrice: new Prisma.Decimal(38.00),
+    profitPercentage: new Prisma.Decimal(35.53),
+  },
+  {
+    code: 'FIL-AS-0092',
+    name: 'Filtro de Aceite Sintético - Marca: Bosch • Universal',
+    category: ItemCategory.ACCESORIOS,
+    stock: 5,
+    unitCost: new Prisma.Decimal(8.20),
+    salePrice: new Prisma.Decimal(15.50),
+    profitPercentage: new Prisma.Decimal(47.10),
+  },
+  {
+    code: 'FRN-CER-BK9',
+    name: 'Pastillas de Freno Cerámicas - Marca: Akebono • Juego Delantero',
+    category: ItemCategory.SERVITECA,
+    stock: 18,
+    unitCost: new Prisma.Decimal(45.00),
+    salePrice: new Prisma.Decimal(72.00),
+    profitPercentage: new Prisma.Decimal(37.50),
+  },
+  {
+    code: 'LUB-MG-20W50',
+    name: 'Aceite Mineral 20W-50 - Marca: Castrol • Cuarto',
+    category: ItemCategory.LUBRICANTES,
+    stock: 120,
+    unitCost: new Prisma.Decimal(6.50),
+    salePrice: new Prisma.Decimal(10.00),
+    profitPercentage: new Prisma.Decimal(35.00),
+  },
+  {
+    code: 'LAV-SH-001',
+    name: 'Shampoo con Cera - Marca: Meguiars • Galón',
+    category: ItemCategory.LAVADERO,
+    stock: 8,
+    unitCost: new Prisma.Decimal(35.00),
+    salePrice: new Prisma.Decimal(55.00),
+    profitPercentage: new Prisma.Decimal(36.36),
+  },
+  {
+    code: 'ACC-AR-099',
+    name: 'Aromatizante Pino - Marca: Little Trees • Unidad',
+    category: ItemCategory.ACCESORIOS,
+    stock: 200,
+    unitCost: new Prisma.Decimal(1.20),
+    salePrice: new Prisma.Decimal(3.50),
+    profitPercentage: new Prisma.Decimal(65.71),
+  },
+  {
+    code: 'SRV-ALN-01',
+    name: 'Pesas para Balanceo 5g - Marca: TR413 • Caja 100',
+    category: ItemCategory.SERVITECA,
+    stock: 3,
+    unitCost: new Prisma.Decimal(12.00),
+    salePrice: new Prisma.Decimal(25.00),
+    profitPercentage: new Prisma.Decimal(52.00),
+  },
+  {
+    code: 'LUB-GR-002',
+    name: 'Grasa Litio Multipropósito - Marca: Texaco • Libra',
+    category: ItemCategory.LUBRICANTES,
+    stock: 35,
+    unitCost: new Prisma.Decimal(4.50),
+    salePrice: new Prisma.Decimal(8.00),
+    profitPercentage: new Prisma.Decimal(43.75),
+  },
+  {
+    code: 'LAV-DG-005',
+    name: 'Desengrasante Motor - Marca: Simoniz • 5 Galones',
+    category: ItemCategory.LAVADERO,
+    stock: 12,
+    unitCost: new Prisma.Decimal(42.00),
+    salePrice: new Prisma.Decimal(70.00),
+    profitPercentage: new Prisma.Decimal(40.00),
+  },
+  {
+    code: 'ACC-LM-010',
+    name: 'Líquido Limpiaparabrisas - Marca: Qualitor • Galón',
+    category: ItemCategory.ACCESORIOS,
+    stock: 25,
+    unitCost: new Prisma.Decimal(5.80),
+    salePrice: new Prisma.Decimal(12.00),
+    profitPercentage: new Prisma.Decimal(51.66),
+  }
+];
+
 async function main() {
   console.log('Iniciando el seed de la base de datos...\n');
 
+  console.log('--- Sembrando Usuarios ---');
   for (const seedUser of SEED_USERS) {
     const passwordHash = await bcrypt.hash(seedUser.password, BCRYPT_ROUNDS);
 
@@ -170,6 +265,34 @@ async function main() {
     console.log(`  ✓ ${user.role.padEnd(14)} | ${user.cc} | ${user.name}`);
   }
 
+  console.log('\n--- Sembrando Productos ---');
+  for (const seedProduct of SEED_PRODUCTS) {
+    const product = await prisma.product.upsert({
+      where: { code: seedProduct.code },
+      update: {
+        name: seedProduct.name,
+        category: seedProduct.category,
+        stock: seedProduct.stock,
+        unitCost: seedProduct.unitCost,
+        salePrice: seedProduct.salePrice,
+        profitPercentage: seedProduct.profitPercentage,
+        isActive: true,
+      },
+      create: {
+        code: seedProduct.code,
+        name: seedProduct.name,
+        category: seedProduct.category,
+        stock: seedProduct.stock,
+        unitCost: seedProduct.unitCost,
+        salePrice: seedProduct.salePrice,
+        profitPercentage: seedProduct.profitPercentage,
+        isActive: true,
+      },
+    });
+
+    console.log(`  ✓ PRODUCTO       | ${product.code?.padEnd(14)} | ${product.name}`);
+  }
+
   console.log('\nSeed exitoso.');
 }
 
@@ -181,3 +304,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+

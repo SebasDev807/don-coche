@@ -3,6 +3,7 @@ import { InventoryHeader } from '@/components/dashboard/inventario/InventoryHead
 import { InventoryKpiCards } from '@/components/dashboard/inventario/InventoryKpiCards';
 import { InventoryTable } from '@/components/dashboard/inventario/InventoryTable';
 import { getSeedProducts } from '@/lib/data/seed-inventory';
+import { prisma } from '@/lib/prisma';
 
 /**
  * Metadata de la página de Inventario para SEO y título.
@@ -14,20 +15,28 @@ export const metadata = {
 
 /**
  * Server Component principal que representa la pantalla de Inventario (InventoryScreen).
- * Mantiene la lógica del servidor (obtención de mock data en este caso) y renderiza 
- * los componentes atómicos correspondientes de la interfaz.
+ * Mantiene la lógica del servidor (obtención de datos desde la base de datos con fallback)
+ * y renderiza los componentes atómicos correspondientes de la interfaz.
  * Utiliza la clase fade-in para una transición suave.
  * 
  * @returns {Promise<React.JSX.Element>} La página renderizada.
  */
 export default async function InventoryScreenPage() {
-  // Simulamos la obtención de 10 productos desde la base de datos
-  const products = getSeedProducts();
+  // Intentamos obtener los productos desde la base de datos
+  let products = await prisma.product.findMany({
+    where: { isActive: true },
+    orderBy: { code: 'asc' },
+  });
 
-  // Cálculos mock de KPIs (Normalmente vendrían del backend)
-  const totalValue = 42500000;
-  const totalProducts = 842;
-  const lowStockAlerts = 12;
+  // Si no hay productos en la base de datos, usamos los de seed como fallback
+  if (products.length === 0) {
+    products = getSeedProducts();
+  }
+
+  // Cálculos mock de KPIs (Normalmente vendrían del backend o calculados dinámicamente)
+  const totalValue = products.reduce((acc, p) => acc + (Number(p.unitCost) * p.stock), 0);
+  const totalProducts = products.length;
+  const lowStockAlerts = products.filter(p => p.stock <= 10).length;
   const leadingCategory = 'Lubricantes';
 
   return (

@@ -145,7 +145,7 @@ const SEED_USERS: SeedUser[] = [
 const SEED_PRODUCTS = [
   {
     code: 'LUB-SN-10W30',
-    name: 'Aceite 10W-30 Premium - Marca: Mobil 1 • Galón',
+    name: 'Aceite 10W-30 Premium - Marca: Mobil 1 | Galón',
     slug: 'aceite_10w_30_premium_marca_mobil_1_gal_n',
     category: ItemCategory.LUBRICANTES,
     stock: 45,
@@ -155,7 +155,7 @@ const SEED_PRODUCTS = [
   },
   {
     code: 'FIL-AS-0092',
-    name: 'Filtro de Aceite Sintético - Marca: Bosch • Universal',
+    name: 'Filtro de Aceite Sintético - Marca: Bosch | Universal',
     slug: 'filtro_de_aceite_sint_tico_marca_bosch_universal',
     category: ItemCategory.ACCESORIOS,
     stock: 5,
@@ -165,7 +165,7 @@ const SEED_PRODUCTS = [
   },
   {
     code: 'FRN-CER-BK9',
-    name: 'Pastillas de Freno Cerámicas - Marca: Akebono • Juego Delantero',
+    name: 'Pastillas de Freno Cerámicas - Marca: Akebono | Juego Delantero',
     slug: 'pastillas_de_freno_cer_micas_marca_akebono_juego_delantero',
     category: ItemCategory.SERVITECA,
     stock: 18,
@@ -175,7 +175,7 @@ const SEED_PRODUCTS = [
   },
   {
     code: 'LUB-MG-20W50',
-    name: 'Aceite Mineral 20W-50 - Marca: Castrol • Cuarto',
+    name: 'Aceite Mineral 20W-50 - Marca: Castrol | Cuarto',
     slug: 'aceite_mineral_20w_50_marca_castrol_cuarto',
     category: ItemCategory.LUBRICANTES,
     stock: 120,
@@ -185,7 +185,7 @@ const SEED_PRODUCTS = [
   },
   {
     code: 'LAV-SH-001',
-    name: 'Shampoo con Cera - Marca: Meguiars • Galón',
+    name: 'Shampoo con Cera - Marca: Meguiars | Galón',
     slug: 'shampoo_con_cera_marca_meguiars_gal_n',
     category: ItemCategory.LAVADERO,
     stock: 8,
@@ -195,7 +195,7 @@ const SEED_PRODUCTS = [
   },
   {
     code: 'ACC-AR-099',
-    name: 'Aromatizante Pino - Marca: Little Trees • Unidad',
+    name: 'Aromatizante Pino - Marca: Little Trees | Unidad',
     slug: 'aromatizante_pino_marca_little_trees_unidad',
     category: ItemCategory.ACCESORIOS,
     stock: 200,
@@ -205,7 +205,7 @@ const SEED_PRODUCTS = [
   },
   {
     code: 'SRV-ALN-01',
-    name: 'Pesas para Balanceo 5g - Marca: TR413 • Caja 100',
+    name: 'Pesas para Balanceo 5g - Marca: TR413 | Caja 100',
     slug: 'pesas_para_balanceo_5g_marca_tr413_caja_100',
     category: ItemCategory.SERVITECA,
     stock: 3,
@@ -215,7 +215,7 @@ const SEED_PRODUCTS = [
   },
   {
     code: 'LUB-GR-002',
-    name: 'Grasa Litio Multipropósito - Marca: Texaco • Libra',
+    name: 'Grasa Litio Multipropósito - Marca: Texaco | Libra',
     slug: 'grasa_litio_multiprop_sito_marca_texaco_libra',
     category: ItemCategory.LUBRICANTES,
     stock: 35,
@@ -225,7 +225,7 @@ const SEED_PRODUCTS = [
   },
   {
     code: 'LAV-DG-005',
-    name: 'Desengrasante Motor - Marca: Simoniz • 5 Galones',
+    name: 'Desengrasante Motor - Marca: Simoniz | 5 Galones',
     slug: 'desengrasante_motor_marca_simoniz_5_galones',
     category: ItemCategory.LAVADERO,
     stock: 12,
@@ -235,7 +235,7 @@ const SEED_PRODUCTS = [
   },
   {
     code: 'ACC-LM-010',
-    name: 'Líquido Limpiaparabrisas - Marca: Qualitor • Galón',
+    name: 'Líquido Limpiaparabrisas - Marca: Qualitor | Galón',
     slug: 'l_quido_limpiaparabrisas_marca_qualitor_gal_n',
     category: ItemCategory.ACCESORIOS,
     stock: 25,

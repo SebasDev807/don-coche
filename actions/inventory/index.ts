@@ -5,4 +5,4 @@
  * con el inventario para facilitar su importación.
  */
 
-export { createProduct } from './actions/createProduct.actions';
+export { createProduct } from './createProduct.actions';

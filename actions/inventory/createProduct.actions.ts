@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { ItemCategory, Prisma } from '@prisma/client';
 import { generateSKU } from '@/lib/utils/sku';
+import { generateSlug } from '@/lib/utils/slug';
 
 /**
  * Propiedades de entrada para la creación de un nuevo producto.
@@ -50,7 +51,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
 
     // Generar SKU automático y slug
     const code = generateSKU(category);
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    const slug = generateSlug(name);
 
     // Guardar en base de datos
     const newProduct = await prisma.product.create({

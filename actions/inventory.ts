@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { createProductSchema } from '@/validation';
+import { createProductSchema, createCategorySchema } from '@/validation';
 import { generateSKU } from '@/lib/utils/sku';
 import { generateSlug } from '@/lib/utils/slug';
 import { verifySession } from '@/lib/dal';
@@ -14,16 +14,59 @@ import { ItemCategory } from '@prisma/client';
  */
 export async function getCategories() {
   try {
-    // Retornamos las categorías basadas en el enum ItemCategory que se usa en el schema de Product
-    return [
-      { id: ItemCategory.LAVADERO, name: 'Lavadero' },
-      { id: ItemCategory.SERVITECA, name: 'Serviteca' },
-      { id: ItemCategory.LUBRICANTES, name: 'Lubricantes' },
-      { id: ItemCategory.ACCESORIOS, name: 'Accesorios' },
-    ];
+    const categories = await prisma.category.findMany({
+      orderBy: { name: 'asc' }
+    });
+    return categories.map(cat => ({
+      id: cat.id,
+      name: cat.name
+    }));
   } catch (error) {
     console.error('Error fetching categories:', error);
     return [];
+  }
+}
+
+/**
+ * Server action para crear una nueva categoría.
+ * 
+ * @param {FormData} formData - Datos de la categoría
+ * @returns {Promise<{success: boolean, message: string, category?: any}>}
+ */
+export async function createCategory(formData: FormData) {
+  try {
+    await verifySession();
+
+    const rawData = Object.fromEntries(formData.entries());
+    const validatedData = createCategorySchema.parse(rawData);
+
+    // Check if category exists
+    const existing = await prisma.category.findFirst({
+      where: {
+        name: {
+          equals: validatedData.name,
+          mode: 'insensitive'
+        }
+      }
+    });
+
+    if (existing) {
+      return { success: false, message: 'Ya existe una categoría con ese nombre' };
+    }
+
+    const slug = generateSlug(validatedData.name);
+
+    const category = await prisma.category.create({
+      data: {
+        name: validatedData.name,
+        slug
+      }
+    });
+
+    return { success: true, message: 'Categoría creada exitosamente', category };
+  } catch (error: any) {
+    console.error('Error creating category:', error);
+    return { success: false, message: error.message || 'Error al crear la categoría' };
   }
 }
 
@@ -40,12 +83,16 @@ export async function createProduct(formData: FormData) {
 
     // Extraer y formatear los datos del FormData
     const rawData = Object.fromEntries(formData.entries());
-    
+
     // Validar usando Zod (incluye coerción para los números)
     const validatedData = createProductSchema.parse(rawData);
 
     // Generar SKU y Slug
-    const sku = generateSKU(validatedData.category as ItemCategory);
+    const categoryRecord = await prisma.category.findUnique({
+      where: { id: validatedData.category }
+    });
+    const categoryName = categoryRecord?.name || 'GEN';
+    const sku = generateSKU(categoryName);
     const slug = generateSlug(`${validatedData.name} ${validatedData.brand || ''}`);
 
     // Insertar en la base de datos
@@ -53,7 +100,7 @@ export async function createProduct(formData: FormData) {
       data: {
         name: validatedData.name,
         brand: validatedData.brand,
-        category: validatedData.category as ItemCategory,
+        categoryId: validatedData.category,
         stock: validatedData.stock,
         unitCost: validatedData.unitCost,
         salePrice: validatedData.salePrice,

@@ -111,6 +111,7 @@ model Category {
   createdAt DateTime  @default(now()) @map("created_at")
 
   products  Product[]
+  services  ServiceCatalog[]
 
   @@map("categories")
 }
@@ -121,7 +122,7 @@ model Product {
   name             String
   slug             String       @unique
   brand            String?                                                         /// Marca del producto
-  category         ItemCategory
+  category         ItemCategory?
   categoryId       String?      @map("category_id") @db.Uuid
   stock            Int          @default(0)
   unitCost         Decimal      @map("unit_cost") @db.Decimal(10, 2)              /// Costo de compra
@@ -141,12 +142,14 @@ model Product {
 model ServiceCatalog {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String
-  category    ItemCategory
+  category    ItemCategory?
+  categoryId  String?      @map("category_id") @db.Uuid
   basePrice   Decimal      @map("base_price") @db.Decimal(10, 2)
   description String?
   isActive    Boolean      @default(true) @map("is_active")
   createdAt   DateTime     @default(now()) @map("created_at")
 
+  category_rel  Category?      @relation(fields: [categoryId], references: [id])
   orderServices OrderService[]
 
   @@map("service_catalog")

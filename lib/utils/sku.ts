@@ -17,22 +17,29 @@ import { ItemCategory } from '@prisma/client';
  * @param {ItemCategory} category - La categoría del producto al que se le asignará el SKU.
  * @returns {string} El código SKU autogenerado.
  */
-export function generateSKU(category: ItemCategory): string {
+export function generateSKU(categoryName: string): string {
   let prefix = 'GEN';
 
-  switch (category) {
-    case ItemCategory.LUBRICANTES:
-      prefix = 'LUB';
-      break;
-    case ItemCategory.ACCESORIOS:
-      prefix = 'ACC';
-      break;
-    case ItemCategory.SERVITECA:
-      prefix = 'SRV';
-      break;
-    case ItemCategory.LAVADERO:
-      prefix = 'LAV';
-      break;
+  if (categoryName) {
+    switch (categoryName.toUpperCase()) {
+      case 'LUBRICANTES':
+        prefix = 'LUB';
+        break;
+      case 'ACCESORIOS':
+        prefix = 'ACC';
+        break;
+      case 'SERVITECA':
+        prefix = 'SRV';
+        break;
+      case 'LAVADERO':
+        prefix = 'LAV';
+        break;
+      default:
+        // Toma las primeras 3 letras de la categoría, elimina espacios
+        prefix = categoryName.replace(/\s+/g, '').substring(0, 3).toUpperCase();
+        if (prefix.length < 3) prefix = 'GEN';
+        break;
+    }
   }
 
   // Genera un sufijo aleatorio de 6 caracteres alfanuméricos en mayúsculas

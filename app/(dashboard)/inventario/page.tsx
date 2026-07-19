@@ -29,9 +29,12 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
 
   // Intentamos obtener los productos desde la base de datos
   let products = await prisma.product.findMany({
+    include: {
+      category_rel: true
+    },
     where: { 
       isActive: true,
-      ...(category && { category: category as ItemCategory }),
+      ...(category && { categoryId: category }),
       ...(query && {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
@@ -45,7 +48,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
 
   // Si no hay productos en la base de datos (y no hay filtros), usamos los de seed como fallback
   if (products.length === 0 && !query && !category) {
-    products = getSeedProducts();
+    products = getSeedProducts() as any;
   }
 
   // Cálculos mock de KPIs (Normalmente vendrían del backend o calculados dinámicamente)
@@ -60,7 +63,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     code: p.code,
     name: p.name,
     brand: p.brand,
-    category: p.category,
+    category: p.category_rel?.name || p.category || 'Sin Categoría',
     stock: p.stock,
     unitCost: Number(p.unitCost),
     salePrice: Number(p.salePrice)

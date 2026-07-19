@@ -2,6 +2,15 @@ import { Product, ItemCategory, Prisma } from '@prisma/client';
 import { generateSKU } from '../utils/sku';
 import { generateSlug } from '../utils/slug';
 
+export function getSeedCategories() {
+  return [
+    { name: 'Lubricantes', slug: generateSlug('Lubricantes') },
+    { name: 'Accesorios', slug: generateSlug('Accesorios') },
+    { name: 'Serviteca', slug: generateSlug('Serviteca') },
+    { name: 'Lavadero', slug: generateSlug('Lavadero') },
+  ];
+}
+
 /**
  * Función que genera un seed de 10 productos de inventario falsos
  * para simular la respuesta de la base de datos.
@@ -19,7 +28,7 @@ export function getSeedProducts(): Product[] {
       brand: 'Mobil',
       slug: generateSlug('Aceite 10W-30 Premium Mobil'),
       category: ItemCategory.LUBRICANTES,
-      categoryId: null,
+      categoryId: null, // Será enlazado en prisma/seed.ts
       stock: 45,
       unitCost: new Prisma.Decimal(24.50),
       salePrice: new Prisma.Decimal(38.00),

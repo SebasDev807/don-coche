@@ -11,7 +11,8 @@ import { PrismaClient, Role, ItemCategory, Prisma } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
-import { getSeedProducts } from '../lib/data/seed-inventory';
+import { getSeedProducts, getSeedCategories } from '../lib/data/seed-inventory';
+import { generateSlug } from '../lib/utils/slug';
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -175,15 +176,36 @@ async function main() {
     console.log(`  ✓ ${user.role.padEnd(14)} | ${user.cc} | ${user.name}`);
   }
 
+  console.log('\n--- Sembrando Categorías ---');
+  const SEED_CATEGORIES = getSeedCategories();
+  for (const seedCategory of SEED_CATEGORIES) {
+    const category = await prisma.category.upsert({
+      where: { slug: seedCategory.slug },
+      update: {
+        name: seedCategory.name,
+      },
+      create: {
+        name: seedCategory.name,
+        slug: seedCategory.slug,
+      },
+    });
+    console.log(`  ✓ CATEGORÍA      | ${category.slug.padEnd(14)} | ${category.name}`);
+  }
+
   console.log('\n--- Sembrando Productos ---');
   for (const seedProduct of SEED_PRODUCTS) {
+    const categorySlug = generateSlug(seedProduct.category);
+    
     const product = await prisma.product.upsert({
-      where: { code: seedProduct.code as string },
+      where: { slug: seedProduct.slug },
       update: {
         name: seedProduct.name,
         slug: seedProduct.slug,
         brand: seedProduct.brand,
         category: seedProduct.category,
+        category_rel: {
+          connect: { slug: categorySlug }
+        },
         stock: seedProduct.stock,
         unitCost: seedProduct.unitCost,
         salePrice: seedProduct.salePrice,
@@ -196,6 +218,9 @@ async function main() {
         slug: seedProduct.slug,
         brand: seedProduct.brand,
         category: seedProduct.category,
+        category_rel: {
+          connect: { slug: categorySlug }
+        },
         stock: seedProduct.stock,
         unitCost: seedProduct.unitCost,
         salePrice: seedProduct.salePrice,

@@ -39,6 +39,18 @@ export default async function InventoryScreenPage() {
   const lowStockAlerts = products.filter(p => p.stock <= 10).length;
   const leadingCategory = 'Lubricantes';
 
+  // Serializar objetos Decimal y Date para enviarlos al Client Component
+  const serializedProducts = products.map((p) => ({
+    id: p.id,
+    code: p.code,
+    name: p.name,
+    brand: p.brand,
+    category: p.category,
+    stock: p.stock,
+    unitCost: Number(p.unitCost),
+    salePrice: Number(p.salePrice)
+  }));
+
   return (
     <div className="fade-in">
       <main className="flex-grow p-margin-mobile md:p-margin-desktop max-w-[1440px] mx-auto w-full">
@@ -54,7 +66,7 @@ export default async function InventoryScreenPage() {
         />
 
         {/* Contenedor Principal de la Tabla */}
-        <InventoryTable products={products} />
+        <InventoryTable products={serializedProducts} />
       </main>
     </div>
   );

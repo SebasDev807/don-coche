@@ -1,13 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Product } from '@prisma/client';
+export interface InventoryProduct {
+  id: string;
+  code: string | null;
+  name: string;
+  brand: string | null;
+  category: string;
+  stock: number;
+  unitCost: number;
+  salePrice: number;
+}
 
 /**
  * Propiedades del componente InventoryTable.
  */
 interface InventoryTableProps {
-  products: Product[];
+  products: InventoryProduct[];
 }
 
 /**

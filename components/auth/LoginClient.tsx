@@ -50,7 +50,7 @@ function getRoleLabel(role: string): string {
  */
 function getRedirectPath(role: string): string {
   if (role === 'TECNICO') return '/tecnico';
-  if (DASHBOARD_ROLES.includes(role)) return '/dashboard';
+  if (DASHBOARD_ROLES.includes(role)) return '/';
   return '/auth';
 }
 

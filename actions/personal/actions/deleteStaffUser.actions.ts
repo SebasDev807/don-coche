@@ -21,7 +21,7 @@ export async function deleteStaffUser(userId: string): Promise<{ success: boolea
     });
 
     // Revalidar la página del directorio de personal para reflejar el cambio
-    revalidatePath('/dashboard/personal');
+    revalidatePath('/personal');
 
     return { success: true, message: 'Usuario eliminado correctamente.' };
   } catch (error) {

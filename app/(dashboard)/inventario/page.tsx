@@ -1,9 +1,10 @@
-import React from 'react';
-import { InventoryHeader } from '@/components/dashboard/inventario/InventoryHeader';
+import React, { Suspense } from 'react';
 import { InventoryKpiCards } from '@/components/dashboard/inventario/InventoryKpiCards';
 import { InventoryTable } from '@/components/dashboard/inventario/InventoryTable';
+import { InventoryToolbar } from '@/components/dashboard/inventario/InventoryToolbar';
 import { getSeedProducts } from '@/lib/data/seed-inventory';
 import { prisma } from '@/lib/prisma';
+import { ItemCategory } from '@prisma/client';
 
 /**
  * Metadata de la página de Inventario para SEO y título.
@@ -21,15 +22,29 @@ export const metadata = {
  * 
  * @returns {Promise<React.JSX.Element>} La página renderizada.
  */
-export default async function InventoryScreenPage() {
+export default async function InventoryScreenPage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const searchParams = await props.searchParams;
+  const query = typeof searchParams.q === 'string' ? searchParams.q : undefined;
+  const category = typeof searchParams.category === 'string' ? searchParams.category : undefined;
+
   // Intentamos obtener los productos desde la base de datos
   let products = await prisma.product.findMany({
-    where: { isActive: true },
+    where: { 
+      isActive: true,
+      ...(category && { category: category as ItemCategory }),
+      ...(query && {
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { code: { contains: query, mode: 'insensitive' } },
+          { brand: { contains: query, mode: 'insensitive' } },
+        ]
+      })
+    },
     orderBy: { code: 'asc' },
   });
 
-  // Si no hay productos en la base de datos, usamos los de seed como fallback
-  if (products.length === 0) {
+  // Si no hay productos en la base de datos (y no hay filtros), usamos los de seed como fallback
+  if (products.length === 0 && !query && !category) {
     products = getSeedProducts();
   }
 
@@ -55,7 +70,10 @@ export default async function InventoryScreenPage() {
     <div className="fade-in">
       <main className="flex-grow p-margin-mobile md:p-margin-desktop max-w-[1440px] mx-auto w-full">
         {/* Encabezado Principal */}
-        <InventoryHeader />
+        <header className="mb-stack-lg">
+          <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Inventario Maestro</h1>
+          <p className="font-body-lg text-body-lg text-secondary">Control detallado de existencias y valoración de activos.</p>
+        </header>
 
         {/* Tarjetas de Indicadores (KPIs) */}
         <InventoryKpiCards 
@@ -64,6 +82,11 @@ export default async function InventoryScreenPage() {
           lowStockAlerts={lowStockAlerts}
           leadingCategory={leadingCategory}
         />
+
+        {/* Barra de Búsqueda y Filtros */}
+        <Suspense fallback={<div className="h-touch-target-min w-full bg-surface-container-lowest border border-outline-variant rounded-lg animate-pulse mb-stack-md" />}>
+          <InventoryToolbar />
+        </Suspense>
 
         {/* Contenedor Principal de la Tabla */}
         <InventoryTable products={serializedProducts} />

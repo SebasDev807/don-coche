@@ -56,7 +56,7 @@ export function CreateStaffForm() {
           confirmButton: '!text-black'
         }
       }).then(() => {
-        router.push('/dashboard/personal');
+        router.push('/personal');
       });
     } else {
       MySwal.fire({
@@ -189,7 +189,7 @@ export function CreateStaffForm() {
         <div className="flex flex-col-reverse sm:flex-row justify-end items-center gap-4">
           <button 
             type="button"
-            onClick={() => router.push('/dashboard/personal')}
+            onClick={() => router.push('/personal')}
             className="cursor-pointer w-full sm:w-auto h-[56px] px-8 rounded-full border-2 border-outline-variant text-secondary font-cta text-cta hover:bg-surface-container-high transition-colors focus:ring-2 focus:ring-outline focus:outline-none"
             disabled={isSubmitting}
           >

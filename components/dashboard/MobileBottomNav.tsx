@@ -26,9 +26,9 @@ interface BottomNavItem {
 
 /** Ítems de la barra de navegación inferior. */
 const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
-  { icon: 'home_app_logo', label: 'Inicio',    href: '/dashboard' },
-  { icon: 'minor_crash',   label: 'Servicios', href: '/dashboard/servicios' },
-  { icon: 'directions_car', label: 'Vehículos', href: '/dashboard/vehiculos' },
+  { icon: 'home_app_logo', label: 'Inicio',    href: '/' },
+  { icon: 'minor_crash',   label: 'Servicios', href: '/servicios' },
+  { icon: 'directions_car', label: 'Vehículos', href: '/vehiculos' },
 ];
 
 /**

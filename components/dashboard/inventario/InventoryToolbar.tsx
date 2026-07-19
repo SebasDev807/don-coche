@@ -6,14 +6,14 @@ import { useState, useEffect, useRef } from 'react';
 import { ExportExcelButton } from '@/components/ui';
 
 /**
- * Componente que renderiza la barra de herramientas (Toolbar) de la sección personal.
+ * Componente que renderiza la barra de herramientas (Toolbar) de la sección inventario.
  * 
- * Contiene el campo de búsqueda de empleados y los botones de acción para
- * filtrar el listado y para agregar a un nuevo empleado.
+ * Contiene el campo de búsqueda por coincidencia parcial y los botones de acción para
+ * filtrar el inventario por categoría y para agregar un nuevo producto.
  * 
- * @returns {JSX.Element} Barra de herramientas interactiva para la gestión de personal.
+ * @returns {JSX.Element} Barra de herramientas interactiva para la gestión de inventario.
  */
-export function StaffToolbar() {
+export function InventoryToolbar() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -48,7 +48,7 @@ export function StaffToolbar() {
         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary">search</span>
         <input 
           className="w-full h-touch-target-min pl-12 pr-4 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary-container focus:ring-1 focus:ring-primary-container font-body-md text-on-surface outline-none transition-colors" 
-          placeholder="Buscar empleado por nombre, CC, email, teléfono..." 
+          placeholder="Buscar producto por SKU, nombre, marca..." 
           type="text" 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -58,35 +58,35 @@ export function StaffToolbar() {
         <div className="relative flex-1 lg:flex-none">
           <select 
             className="appearance-none cursor-pointer h-touch-target-min pl-10 pr-10 bg-surface-container-lowest border border-outline-variant text-on-surface font-cta text-cta rounded-lg hover:bg-surface-container transition-colors w-full outline-none focus:ring-1 focus:ring-primary-container"
-            value={searchParams.get('role') || ''}
+            value={searchParams.get('category') || ''}
             onChange={(e) => {
               const val = e.target.value;
               const params = new URLSearchParams(searchParams);
               if (val) {
-                params.set('role', val);
+                params.set('category', val);
               } else {
-                params.delete('role');
+                params.delete('category');
               }
               router.push(`${pathname}?${params.toString()}`);
             }}
           >
-            <option value="">Filtrar por Rol</option>
-            <option value="GERENTE">Gerente</option>
-            <option value="ADMINISTRADOR">Administrador</option>
-            <option value="TECNICO">Técnico</option>
+            <option value="">Filtrar por Categoría</option>
+            <option value="LUBRICANTES">Lubricantes</option>
+            <option value="ACCESORIOS">Accesorios</option>
+            <option value="SERVITECA">Serviteca</option>
+            <option value="LAVADERO">Lavadero</option>
           </select>
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">filter_list</span>
           <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
         </div>
         <ExportExcelButton 
           onClick={() => {
-            // TODO: Implementar lógica de exportación a Excel próximamente.
-            console.log('Exportar personal a Excel iniciado...');
+            console.log('Exportar inventario a Excel iniciado...');
           }}
         />
-        <Link href="/personal/new" className="cursor-pointer h-touch-target-min px-6 bg-primary-container text-[#000000] font-cta text-cta rounded-lg hover:bg-primary-fixed-dim transition-colors flex items-center gap-2 shadow-sm flex-1 lg:flex-none justify-center active:scale-[0.98]">
+        <Link href="/inventario/new" className="cursor-pointer h-touch-target-min px-6 bg-primary-container text-[#000000] font-cta text-cta rounded-lg hover:bg-primary-fixed-dim transition-colors flex items-center gap-2 shadow-sm flex-1 lg:flex-none justify-center active:scale-[0.98] whitespace-nowrap">
           <span className="material-symbols-outlined">add</span>
-          Agregar Empleado
+          Agregar Producto
         </Link>
       </div>
     </section>

@@ -52,7 +52,7 @@ export async function updateStaffUser(id: string, formData: FormData) {
       },
     });
 
-    revalidatePath('/dashboard/personal');
+    revalidatePath('/personal');
 
     return { success: true, message: 'Empleado actualizado correctamente.' };
   } catch (error) {

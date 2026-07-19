@@ -55,7 +55,7 @@ export async function createStaffUser(formData: FormData) {
       },
     });
 
-    revalidatePath('/dashboard/personal');
+    revalidatePath('/personal');
 
     return { success: true, message: 'Empleado creado correctamente.' };
   } catch (error) {

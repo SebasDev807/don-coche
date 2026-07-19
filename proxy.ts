@@ -17,11 +17,8 @@ import { decrypt, updateSession } from '@/lib/session';
 
 // ─── Configuración de Rutas ────────────────────────────────────────────────────
 
-/** Prefijos de rutas que requieren autenticación. */
-const PROTECTED_PREFIXES = ['/dashboard', '/tecnico'];
-
 /** Rutas públicas que no requieren autenticación. */
-const PUBLIC_ROUTES = ['/auth', '/'];
+const PUBLIC_ROUTES = ['/auth'];
 
 /** Roles que acceden al dashboard de gestión. */
 const DASHBOARD_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
@@ -31,11 +28,9 @@ const DASHBOARD_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Determinar si la ruta actual está protegida
-  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
-  const isPublic = PUBLIC_ROUTES.includes(pathname);
+  // Determinar si la ruta actual está protegida (todo menos las públicas)
+  const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  const isProtected = !isPublic;
 
   // Leer y verificar la sesión desde la cookie (sin usar cookies() de next/headers
   // ya que en middleware se usa req.cookies directamente)
@@ -50,7 +45,7 @@ export default async function proxy(req: NextRequest) {
   // ── Redirigir si ya autenticado y trata de acceder a /auth ──────────────────
   if (isPublic && pathname === '/auth' && session?.userId) {
     const destination = DASHBOARD_ROLES.includes(session.role)
-      ? '/dashboard'
+      ? '/'
       : '/tecnico';
     return NextResponse.redirect(new URL(destination, req.url));
   }

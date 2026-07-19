@@ -29,23 +29,46 @@ export function InventoryKpiCards({
   }).format(totalValue);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mb-stack-lg">
-      <div className="glass-card rounded-xl p-6">
-        <div className="font-body-md text-body-md text-on-surface-variant mb-2">Valor Total Bodega</div>
-        <div className="font-headline-lg text-headline-lg text-on-surface">{formattedValue}</div>
+    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mb-stack-lg">
+      <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-surface-container-highest flex items-center gap-4">
+        <div className="w-12 h-12 shrink-0 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container">
+          <span className="material-symbols-outlined text-2xl">account_balance_wallet</span>
+        </div>
+        <div className="truncate">
+          <p className="font-label-bold text-label-bold text-secondary mb-1 truncate">Valor Bodega</p>
+          <p className="font-headline-md text-headline-md text-on-surface truncate" title={formattedValue}>{formattedValue}</p>
+        </div>
       </div>
-      <div className="glass-card rounded-xl p-6">
-        <div className="font-body-md text-body-md text-on-surface-variant mb-2">Productos Totales</div>
-        <div className="font-headline-lg text-headline-lg text-on-surface">{totalProducts} SKUs</div>
+
+      <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-surface-container-highest flex items-center gap-4">
+        <div className="w-12 h-12 shrink-0 bg-secondary-container rounded-full flex items-center justify-center text-on-secondary-container">
+          <span className="material-symbols-outlined text-2xl">inventory_2</span>
+        </div>
+        <div className="truncate">
+          <p className="font-label-bold text-label-bold text-secondary mb-1 truncate">Productos Totales</p>
+          <p className="font-headline-md text-headline-md text-on-surface truncate">{totalProducts} SKUs</p>
+        </div>
       </div>
-      <div className="glass-card rounded-xl p-6">
-        <div className="font-body-md text-body-md text-on-surface-variant mb-2">Alertas Stock Bajo</div>
-        <div className="font-headline-lg text-headline-lg text-error">{lowStockAlerts}</div>
+
+      <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-surface-container-highest flex items-center gap-4">
+        <div className="w-12 h-12 shrink-0 bg-red-100 rounded-full flex items-center justify-center text-red-800">
+          <span className="material-symbols-outlined text-2xl">warning</span>
+        </div>
+        <div className="truncate">
+          <p className="font-label-bold text-label-bold text-secondary mb-1 truncate">Alertas Stock</p>
+          <p className={`font-headline-md text-headline-md ${lowStockAlerts > 0 ? 'text-error' : 'text-on-surface'} truncate`}>{lowStockAlerts}</p>
+        </div>
       </div>
-      <div className="glass-card rounded-xl p-6 border-l-4 border-l-primary-container">
-        <div className="font-body-md text-body-md text-on-surface-variant mb-2">Categoría Líder</div>
-        <div className="font-headline-lg text-headline-lg text-on-surface">{leadingCategory}</div>
+
+      <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-surface-container-highest flex items-center gap-4">
+        <div className="w-12 h-12 shrink-0 bg-blue-100 rounded-full flex items-center justify-center text-blue-800">
+          <span className="material-symbols-outlined text-2xl">category</span>
+        </div>
+        <div className="truncate">
+          <p className="font-label-bold text-label-bold text-secondary mb-1 truncate">Categoría Líder</p>
+          <p className="font-headline-md text-headline-md text-on-surface truncate">{leadingCategory}</p>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

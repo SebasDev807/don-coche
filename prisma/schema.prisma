@@ -104,20 +104,34 @@ model Vehicle {
 // MODELOS DE INVENTARIO Y SERVICIOS (CATÁLOGO)
 // -----------------------------------------------------------------------
 
+model Category {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  products  Product[]
+
+  @@map("categories")
+}
+
 model Product {
   id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code             String?      @unique
   name             String
   slug             String       @unique
+  brand            String?                                                         /// Marca del producto
   category         ItemCategory
+  categoryId       String?      @map("category_id") @db.Uuid
   stock            Int          @default(0)
-  unitCost         Decimal      @map("unit_cost") @db.Decimal(10, 2) /// Costo de compra
-  salePrice        Decimal      @map("sale_price") @db.Decimal(10, 2) /// Precio de venta
-  profitPercentage Decimal?     @map("profit_percentage") @db.Decimal(5, 2) /// % Ganancia (Exclusivo Gerencia)
-  isActive         Boolean      @default(true) @map("is_active") /// Soft delete
+  unitCost         Decimal      @map("unit_cost") @db.Decimal(10, 2)              /// Costo de compra
+  salePrice        Decimal      @map("sale_price") @db.Decimal(10, 2)             /// Precio de venta
+  profitPercentage Decimal?     @map("profit_percentage") @db.Decimal(5, 2)      /// % Ganancia (Exclusivo Gerencia)
+  isActive         Boolean      @default(true) @map("is_active")                 /// Soft delete
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
 
+  category_rel     Category?    @relation(fields: [categoryId], references: [id])
   orderProducts    OrderProduct[]
   movements        InventoryMovement[]
 

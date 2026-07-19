@@ -11,6 +11,7 @@ import { PrismaClient, Role, ItemCategory, Prisma } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
+import { getSeedProducts } from '../lib/data/seed-inventory';
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -142,108 +143,7 @@ const SEED_USERS: SeedUser[] = [
 ];
 
 /** Productos a insertar en la base de datos. */
-const SEED_PRODUCTS = [
-  {
-    code: 'LUB-SN-10W30',
-    name: 'Aceite 10W-30 Premium - Marca: Mobil 1 | Galón',
-    slug: 'aceite_10w_30_premium_marca_mobil_1_gal_n',
-    category: ItemCategory.LUBRICANTES,
-    stock: 45,
-    unitCost: new Prisma.Decimal(24.50),
-    salePrice: new Prisma.Decimal(38.00),
-    profitPercentage: new Prisma.Decimal(35.53),
-  },
-  {
-    code: 'FIL-AS-0092',
-    name: 'Filtro de Aceite Sintético - Marca: Bosch | Universal',
-    slug: 'filtro_de_aceite_sint_tico_marca_bosch_universal',
-    category: ItemCategory.ACCESORIOS,
-    stock: 5,
-    unitCost: new Prisma.Decimal(8.20),
-    salePrice: new Prisma.Decimal(15.50),
-    profitPercentage: new Prisma.Decimal(47.10),
-  },
-  {
-    code: 'FRN-CER-BK9',
-    name: 'Pastillas de Freno Cerámicas - Marca: Akebono | Juego Delantero',
-    slug: 'pastillas_de_freno_cer_micas_marca_akebono_juego_delantero',
-    category: ItemCategory.SERVITECA,
-    stock: 18,
-    unitCost: new Prisma.Decimal(45.00),
-    salePrice: new Prisma.Decimal(72.00),
-    profitPercentage: new Prisma.Decimal(37.50),
-  },
-  {
-    code: 'LUB-MG-20W50',
-    name: 'Aceite Mineral 20W-50 - Marca: Castrol | Cuarto',
-    slug: 'aceite_mineral_20w_50_marca_castrol_cuarto',
-    category: ItemCategory.LUBRICANTES,
-    stock: 120,
-    unitCost: new Prisma.Decimal(6.50),
-    salePrice: new Prisma.Decimal(10.00),
-    profitPercentage: new Prisma.Decimal(35.00),
-  },
-  {
-    code: 'LAV-SH-001',
-    name: 'Shampoo con Cera - Marca: Meguiars | Galón',
-    slug: 'shampoo_con_cera_marca_meguiars_gal_n',
-    category: ItemCategory.LAVADERO,
-    stock: 8,
-    unitCost: new Prisma.Decimal(35.00),
-    salePrice: new Prisma.Decimal(55.00),
-    profitPercentage: new Prisma.Decimal(36.36),
-  },
-  {
-    code: 'ACC-AR-099',
-    name: 'Aromatizante Pino - Marca: Little Trees | Unidad',
-    slug: 'aromatizante_pino_marca_little_trees_unidad',
-    category: ItemCategory.ACCESORIOS,
-    stock: 200,
-    unitCost: new Prisma.Decimal(1.20),
-    salePrice: new Prisma.Decimal(3.50),
-    profitPercentage: new Prisma.Decimal(65.71),
-  },
-  {
-    code: 'SRV-ALN-01',
-    name: 'Pesas para Balanceo 5g - Marca: TR413 | Caja 100',
-    slug: 'pesas_para_balanceo_5g_marca_tr413_caja_100',
-    category: ItemCategory.SERVITECA,
-    stock: 3,
-    unitCost: new Prisma.Decimal(12.00),
-    salePrice: new Prisma.Decimal(25.00),
-    profitPercentage: new Prisma.Decimal(52.00),
-  },
-  {
-    code: 'LUB-GR-002',
-    name: 'Grasa Litio Multipropósito - Marca: Texaco | Libra',
-    slug: 'grasa_litio_multiprop_sito_marca_texaco_libra',
-    category: ItemCategory.LUBRICANTES,
-    stock: 35,
-    unitCost: new Prisma.Decimal(4.50),
-    salePrice: new Prisma.Decimal(8.00),
-    profitPercentage: new Prisma.Decimal(43.75),
-  },
-  {
-    code: 'LAV-DG-005',
-    name: 'Desengrasante Motor - Marca: Simoniz | 5 Galones',
-    slug: 'desengrasante_motor_marca_simoniz_5_galones',
-    category: ItemCategory.LAVADERO,
-    stock: 12,
-    unitCost: new Prisma.Decimal(42.00),
-    salePrice: new Prisma.Decimal(70.00),
-    profitPercentage: new Prisma.Decimal(40.00),
-  },
-  {
-    code: 'ACC-LM-010',
-    name: 'Líquido Limpiaparabrisas - Marca: Qualitor | Galón',
-    slug: 'l_quido_limpiaparabrisas_marca_qualitor_gal_n',
-    category: ItemCategory.ACCESORIOS,
-    stock: 25,
-    unitCost: new Prisma.Decimal(5.80),
-    salePrice: new Prisma.Decimal(12.00),
-    profitPercentage: new Prisma.Decimal(51.66),
-  }
-];
+const SEED_PRODUCTS = getSeedProducts();
 
 async function main() {
   console.log('Iniciando el seed de la base de datos...\n');
@@ -278,10 +178,11 @@ async function main() {
   console.log('\n--- Sembrando Productos ---');
   for (const seedProduct of SEED_PRODUCTS) {
     const product = await prisma.product.upsert({
-      where: { code: seedProduct.code },
+      where: { code: seedProduct.code as string },
       update: {
         name: seedProduct.name,
         slug: seedProduct.slug,
+        brand: seedProduct.brand,
         category: seedProduct.category,
         stock: seedProduct.stock,
         unitCost: seedProduct.unitCost,
@@ -293,6 +194,7 @@ async function main() {
         code: seedProduct.code,
         name: seedProduct.name,
         slug: seedProduct.slug,
+        brand: seedProduct.brand,
         category: seedProduct.category,
         stock: seedProduct.stock,
         unitCost: seedProduct.unitCost,

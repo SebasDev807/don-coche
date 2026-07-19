@@ -10,17 +10,17 @@ export const metadata: Metadata = {
 
 interface EditStaffPageProps {
   params: Promise<{
-    id: string;
+    cc: string;
   }>;
 }
 
 export default async function EditStaffPage(props: EditStaffPageProps) {
   const params = await props.params;
-  const { id } = params;
+  const { cc } = params;
 
   // Retrieve user from database
   const user = await prisma.user.findUnique({
-    where: { id },
+    where: { cc },
   });
 
   if (!user) {

@@ -119,7 +119,7 @@ export function StaffTable({ users }: StaffTableProps) {
                 <td className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <Link
-                      href={`/personal/edit/${user.id}`}
+                      href={`/personal/editar/${user.cc}`}
                       title="Editar"
                       className={`cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                     >

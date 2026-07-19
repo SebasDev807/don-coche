@@ -108,6 +108,7 @@ model Product {
   id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code             String?      @unique
   name             String
+  slug             String       @unique
   category         ItemCategory
   stock            Int          @default(0)
   unitCost         Decimal      @map("unit_cost") @db.Decimal(10, 2) /// Costo de compra

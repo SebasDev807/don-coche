@@ -48,14 +48,16 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
       };
     }
 
-    // Generar SKU automático
+    // Generar SKU automático y slug
     const code = generateSKU(category);
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 
     // Guardar en base de datos
     const newProduct = await prisma.product.create({
       data: {
         code,
         name,
+        slug,
         category,
         stock,
         unitCost: new Prisma.Decimal(unitCost),

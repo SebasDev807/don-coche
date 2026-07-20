@@ -36,7 +36,7 @@ export function StaffToolbar() {
       } else {
         params.delete('q');
       }
-      router.replace(`${pathname}?${params.toString()}`);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
@@ -67,7 +67,7 @@ export function StaffToolbar() {
               } else {
                 params.delete('role');
               }
-              router.push(`${pathname}?${params.toString()}`);
+              router.push(`${pathname}?${params.toString()}`, { scroll: false });
             }}
           >
             <option value="">Filtrar por Rol</option>

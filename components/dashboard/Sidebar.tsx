@@ -30,11 +30,11 @@ interface NavItem {
 /** Ítems principales del menú de navegación. */
 const NAV_ITEMS: NavItem[] = [
   { icon: 'dashboard',            label: 'Dashboard',             href: '/' },
+  { icon: 'point_of_sale',        label: 'Panel de Caja',         href: '/caja' },
   { icon: 'group',                label: 'Gestión de Personal',   href: '/personal' },
   { icon: 'inventory_2',          label: 'Inventario Maestro',    href: '/inventario' },
   { icon: 'design_services',      label: 'Catálogo de Servicios', href: '/servicios' },
   { icon: 'directions_car',       label: 'Clientes y Vehículos',  href: '/clientes' },
-  { icon: 'account_balance_wallet', label: 'Cierres de Caja',     href: '/cierres' },
 ];
 
 /**

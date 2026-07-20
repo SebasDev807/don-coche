@@ -25,21 +25,23 @@ export default async function PersonalPage(props: { searchParams: Promise<{ [key
 
   return (
     <div className='fade-in'>
-      <header className="mb-stack-lg">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Directorio de Personal</h1>
-        <p className="font-body-lg text-body-lg text-secondary">Gestión de operarios, administradores y accesos al sistema</p>
-      </header>
+      <main className="flex-grow p-margin-mobile md:p-margin-desktop max-w-[1440px] mx-auto w-full">
+        <header className="mb-stack-lg">
+          <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Directorio de Personal</h1>
+          <p className="font-body-lg text-body-lg text-secondary">Gestión de operarios, administradores y accesos al sistema</p>
+        </header>
 
-      {/* KPI Cards */}
-      <StaffKPIs users={users} />
+        {/* KPI Cards */}
+        <StaffKPIs users={users} />
 
-      {/* Action Bar */}
-      <Suspense fallback={<div className="h-touch-target-min w-full bg-surface-container-lowest border border-outline-variant rounded-lg animate-pulse mb-stack-md" />}>
-        <StaffToolbar />
-      </Suspense>
+        {/* Action Bar */}
+        <Suspense fallback={<div className="h-touch-target-min w-full bg-surface-container-lowest border border-outline-variant rounded-lg animate-pulse mb-stack-md" />}>
+          <StaffToolbar />
+        </Suspense>
 
-      {/* Employee Table */}
-      <StaffTable users={users} />
+        {/* Employee Table */}
+        <StaffTable users={users} />
+      </main>
     </div>
   );
 }

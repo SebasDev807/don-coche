@@ -50,11 +50,18 @@ export async function getStaffUsers(query?: string, role?: string): Promise<User
     };
 
     return users.sort((a, b) => {
+      // Prioridad 1: Activos primero
+      if (a.isActive && !b.isActive) return -1;
+      if (!a.isActive && b.isActive) return 1;
+
+      // Prioridad 2: Jerarquía de rol
       const priorityA = getRolePriority(a.role);
       const priorityB = getRolePriority(b.role);
       if (priorityA !== priorityB) {
         return priorityA - priorityB;
       }
+
+      // Prioridad 3: Orden alfabético
       return a.name.localeCompare(b.name);
     });
   } catch (error) {

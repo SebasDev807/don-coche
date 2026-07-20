@@ -30,12 +30,12 @@ interface InventoryTableProps {
 export function InventoryTable({ products }: InventoryTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  
+
   const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
   const paginatedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const formatCurrency = (val: number) => new Intl.NumberFormat('es-CO', { 
-    style: 'currency', 
+  const formatCurrency = (val: number) => new Intl.NumberFormat('es-CO', {
+    style: 'currency',
     currency: 'COP',
     minimumFractionDigits: 0
   }).format(val);
@@ -43,7 +43,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
   return (
     <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container-highest overflow-hidden">
       {/* Contenedor de la Tabla */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto min-h-[460px]">
         <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
             <tr className="bg-surface-container border-b border-outline-variant">
@@ -96,7 +96,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
                 </tr>
               );
             })}
-            
+
             {products.length === 0 && (
               <tr>
                 <td colSpan={7} className="py-8 text-center text-secondary">

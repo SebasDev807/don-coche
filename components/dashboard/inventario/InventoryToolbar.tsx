@@ -5,7 +5,6 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { ExportExcelButton } from '@/components/ui';
 import { getCategories } from '@/actions/inventory';
-import { CreateCategoryModal } from './CreateCategoryModal';
 
 /**
  * Componente que renderiza la barra de herramientas (Toolbar) de la sección inventario.
@@ -22,7 +21,6 @@ export function InventoryToolbar() {
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   // Guardamos searchParams en un ref para leerlo dentro del efecto
   // sin convertirlo en dependencia reactiva (evita el bucle infinito).
@@ -91,13 +89,6 @@ export function InventoryToolbar() {
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">filter_list</span>
           <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
         </div>
-        <button 
-          onClick={() => setIsCategoryModalOpen(true)}
-          className="cursor-pointer h-touch-target-min px-4 border border-outline-variant text-on-surface font-cta text-cta rounded-lg hover:bg-surface-container transition-colors flex items-center gap-2 shadow-sm whitespace-nowrap outline-none focus:ring-1 focus:ring-primary-container"
-        >
-          <span className="material-symbols-outlined text-[20px]">category</span>
-          <span className="hidden xl:inline">Nueva Categoría</span>
-        </button>
         <ExportExcelButton
           onClick={() => {
             console.log('Exportar inventario a Excel iniciado...');
@@ -109,11 +100,6 @@ export function InventoryToolbar() {
         </Link>
       </div>
 
-      <CreateCategoryModal 
-        isOpen={isCategoryModalOpen}
-        onClose={() => setIsCategoryModalOpen(false)}
-        onCategoryCreated={fetchCats}
-      />
     </section>
   );
 }

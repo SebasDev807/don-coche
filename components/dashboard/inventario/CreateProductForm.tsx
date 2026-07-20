@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { createProductSchema, CreateProductFormValues } from '@/validation';
 import { createProduct, getCategories } from '@/actions/inventory';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
+import { CreateCategoryModal } from './CreateCategoryModal';
 
 const MySwal = withReactContent(Swal);
 
@@ -22,6 +23,7 @@ export function CreateProductForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   type FormInput = z.input<typeof createProductSchema>;
 
@@ -50,12 +52,13 @@ export function CreateProductForm() {
 
 
 
+  const fetchCategories = async () => {
+    const cats = await getCategories();
+    setCategories(cats);
+  };
+
   // Cargar las categorías al inicializar el componente
   useEffect(() => {
-    const fetchCategories = async () => {
-      const cats = await getCategories();
-      setCategories(cats);
-    };
     fetchCategories();
   }, []);
 
@@ -149,6 +152,14 @@ export function CreateProductForm() {
               </div>
             </div>
             <ErrorMessage message={errors.category?.message} />
+            <button 
+              type="button"
+              onClick={() => setIsCategoryModalOpen(true)}
+              className="mt-3 text-primary font-cta text-sm flex items-center gap-1 hover:underline outline-none focus:ring-2 focus:ring-primary rounded w-fit"
+            >
+              <span className="material-symbols-outlined text-[18px]">add_circle</span>
+              Crear Nueva Categoría
+            </button>
           </div>
 
           {/* Stock Inicial */}
@@ -223,6 +234,11 @@ export function CreateProductForm() {
           </button>
         </div>
       </form>
+      <CreateCategoryModal 
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onCategoryCreated={fetchCategories}
+      />
     </div>
   );
 }

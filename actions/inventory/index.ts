@@ -6,3 +6,5 @@
  */
 
 export { createProduct } from './createProduct.actions';
+export { updateProduct } from './updateProduct.actions';
+export { deleteProduct } from './deleteProduct.actions';

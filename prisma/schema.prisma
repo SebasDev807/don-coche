@@ -90,6 +90,9 @@ model Customer {
 model Vehicle {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   plate      String   @unique
+  brand      String?
+  model      String?
+  color      String?
   customerId String?  @map("customer_id") @db.Uuid
   createdAt  DateTime @default(now()) @map("created_at")
 

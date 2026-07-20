@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { deleteProduct } from '@/actions/inventory';
-import { EditProductModal } from './EditProductModal';
 
 const MySwal = withReactContent(Swal);
 
@@ -37,8 +36,6 @@ interface InventoryTableProps {
 export function InventoryTable({ products }: InventoryTableProps) {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<InventoryProduct | null>(null);
   const itemsPerPage = 5;
 
   const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
@@ -87,11 +84,6 @@ export function InventoryTable({ products }: InventoryTableProps) {
     }
   };
 
-  const handleEdit = (product: InventoryProduct) => {
-    setSelectedProduct(product);
-    setIsEditModalOpen(true);
-  };
-
   return (
     <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container-highest overflow-hidden">
       {/* Contenedor de la Tabla */}
@@ -138,7 +130,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
                   <td className="py-4 px-6 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button 
-                        onClick={() => handleEdit(product)}
+                        onClick={() => router.push(`/inventario/editar/${product.id}`)}
                         className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors" 
                         title="Editar"
                       >
@@ -197,14 +189,6 @@ export function InventoryTable({ products }: InventoryTableProps) {
           </div>
         </div>
       )}
-
-      {/* Edit Modal */}
-      <EditProductModal 
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onProductUpdated={() => router.refresh()}
-        product={selectedProduct}
-      />
     </div>
   );
 }

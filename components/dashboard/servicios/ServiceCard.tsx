@@ -26,7 +26,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Form state
   const [name, setName] = useState(service.name);
   const [basePrice, setBasePrice] = useState(Number(service.basePrice));
@@ -80,7 +80,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
       category,
       icon: service.icon || undefined
     });
-    
+
     setIsSubmitting(false);
     if (res.success) {
       MySwal.fire({
@@ -106,19 +106,17 @@ export function ServiceCard({ service }: ServiceCardProps) {
             {service.icon || 'car_repair'}
           </span>
         </div>
-        
+
         <div className="flex items-center gap-3">
-          <span className="px-3 py-1 bg-surface-container-high text-on-surface-variant text-label-sm font-label-bold rounded-full uppercase tracking-wider">
-            {service.isActive !== false ? 'Activo' : 'Inactivo'}
-          </span>
-          <button 
+
+          <button
             onClick={handleEdit}
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-primary ${isEditing ? 'bg-primary-container text-on-primary-container' : 'text-secondary hover:bg-secondary-container hover:text-on-secondary-container'}`}
             title="Editar"
           >
             <span className="material-symbols-outlined text-[18px]">{ACTION_ICONS.edit}</span>
           </button>
-          <button 
+          <button
             onClick={handleDelete}
             className="w-8 h-8 rounded-full flex items-center justify-center text-error hover:bg-error-container hover:text-on-error-container transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-error"
             title="Eliminar"
@@ -127,13 +125,13 @@ export function ServiceCard({ service }: ServiceCardProps) {
           </button>
         </div>
       </div>
-      
+
       {/* Body Section */}
       <div className="flex-grow space-y-4">
         <div>
           <label className="block font-label-bold text-label-bold text-on-surface-variant mb-1.5">Nombre del Servicio</label>
           {isEditing ? (
-            <input 
+            <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -145,14 +143,14 @@ export function ServiceCard({ service }: ServiceCardProps) {
             </div>
           )}
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block font-label-bold text-label-bold text-on-surface-variant mb-1.5">Precio (PVP)</label>
             {isEditing ? (
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-fixed-dim">$</span>
-                <input 
+                <input
                   type="text"
                   value={basePrice}
                   onChange={(e) => setBasePrice(Number(e.target.value.replace(/\D/g, '')))}
@@ -165,11 +163,11 @@ export function ServiceCard({ service }: ServiceCardProps) {
               </div>
             )}
           </div>
-          
+
           <div>
             <label className="block font-label-bold text-label-bold text-on-surface-variant mb-1.5">Categoría</label>
             {isEditing ? (
-              <select 
+              <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="h-11 form-select w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 px-3 text-on-surface"
@@ -185,7 +183,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
           </div>
         </div>
       </div>
-      
+
       {/* Action Section */}
       {isEditing && (
         <div className="mt-6 pt-5 border-t border-outline-variant/50 flex justify-end">

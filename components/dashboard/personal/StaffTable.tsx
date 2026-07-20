@@ -68,7 +68,7 @@ export function StaffTable({ users }: StaffTableProps) {
 
   return (
     <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container-highest overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto min-h-[460px]">
         <table className="w-full text-left border-collapse min-w-[800px]">
           <thead>
             <tr className="bg-surface-container border-b border-outline-variant">

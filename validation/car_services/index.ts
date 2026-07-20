@@ -4,7 +4,7 @@ export const createServiceSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   icon: z.string().optional(),
   categoryId: z.string().uuid('Categoría no válida').optional().or(z.literal('')),
-  category: z.enum(['LAVADERO', 'SERVITECA', 'LUBRICANTES', 'ACCESORIOS']).optional(),
+  category: z.enum(['LAVADERO', 'SERVITECA']).optional(),
   basePrice: z.preprocess((val) => {
     if (typeof val === 'string') return parseInt(val.replace(/\D/g, ''), 10) || 0;
     return val;

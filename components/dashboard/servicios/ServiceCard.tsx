@@ -52,10 +52,13 @@ export function ServiceCard({ service }: ServiceCardProps) {
       text: "No podrás revertir esto",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
+      confirmButtonColor: 'rgba(221, 213, 51, 1)',
+      cancelButtonColor: '#6b7280',
       confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        confirmButton: '!text-black'
+      }
     });
 
     if (result.isConfirmed) {
@@ -173,8 +176,6 @@ export function ServiceCard({ service }: ServiceCardProps) {
               >
                 <option value="LAVADERO">LAVADERO</option>
                 <option value="SERVITECA">SERVITECA</option>
-                <option value="TALLER">TALLER</option>
-                <option value="OTROS">OTROS</option>
               </select>
             ) : (
               <div className="h-11 w-full rounded-lg border border-outline-variant/60 bg-surface px-3 flex items-center text-on-surface shadow-sm truncate">

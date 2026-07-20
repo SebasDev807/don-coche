@@ -116,8 +116,6 @@ export function CreateServiceForm() {
                 <option disabled value="">Seleccione una categoría...</option>
                 <option value="LAVADERO">Lavadero</option>
                 <option value="SERVITECA">Serviteca</option>
-                <option value="LUBRICANTES">Lubricantes</option>
-                <option value="ACCESORIOS">Accesorios</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-secondary">
                 <span className="material-symbols-outlined text-[20px]">expand_more</span>

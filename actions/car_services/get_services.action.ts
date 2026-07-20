@@ -3,19 +3,25 @@
 import { prisma } from '@/lib/prisma';
 import { verifySession } from '@/lib/dal';
 
-export async function getServices({ page = 1, limit = 8 }: { page?: number; limit?: number } = {}) {
+export async function getServices({ page = 1, limit = 8, category }: { page?: number; limit?: number; category?: string } = {}) {
   try {
     await verifySession();
 
     const skip = (page - 1) * limit;
+    
+    const whereClause: any = { isActive: true };
+    if (category) {
+      whereClause.category = category.toUpperCase() as any;
+    }
 
     const [services, total] = await Promise.all([
       prisma.serviceCatalog.findMany({
+        where: whereClause,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.serviceCatalog.count(),
+      prisma.serviceCatalog.count({ where: whereClause }),
     ]);
 
     const totalPages = Math.ceil(total / limit);

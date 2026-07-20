@@ -14,7 +14,8 @@ export default async function CatalogServicePage(props: {
 }) {
   const searchParams = await props.searchParams;
   const page = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : 1;
-  const { data: services, pagination } = await getServices({ page, limit: 8 });
+  const currentTab = typeof searchParams.tab === 'string' ? searchParams.tab : 'lavadero';
+  const { data: services, pagination } = await getServices({ page, limit: 8, category: currentTab });
 
   return (
     <div className="fade-in flex flex-col min-h-[calc(100vh-140px)]">
@@ -50,6 +51,28 @@ export default async function CatalogServicePage(props: {
           </PrimaryButton>
         </header>
 
+        {/* Tabs Section */}
+        <div className="flex items-center gap-8 border-b border-outline-variant/60 mb-6">
+          <Link
+            href="/servicios?tab=lavadero"
+            className={`pb-3 font-label-bold text-label-bold transition-colors relative ${currentTab === 'lavadero' ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >
+            Servicios Lavadero
+            {currentTab === 'lavadero' && (
+              <span className="absolute bottom-0 left-0 w-full h-[3px] bg-secondary rounded-t-sm" />
+            )}
+          </Link>
+          <Link
+            href="/servicios?tab=serviteca"
+            className={`pb-3 font-label-bold text-label-bold transition-colors relative ${currentTab === 'serviteca' ? 'text-on-surface' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >
+            Servicios Serviteca
+            {currentTab === 'serviteca' && (
+              <span className="absolute bottom-0 left-0 w-full h-[3px] bg-secondary rounded-t-sm" />
+            )}
+          </Link>
+        </div>
+
         {/* Listado de Servicios */}
         {services && services.length > 0 ? (
           <div className="flex flex-col flex-grow">
@@ -74,7 +97,7 @@ export default async function CatalogServicePage(props: {
             {pagination && pagination.totalPages > 1 && (
               <div className="flex justify-center items-center gap-4 mt-auto pt-8 pb-4">
                 <Link
-                  href={`/servicios?page=${page - 1}`}
+                  href={`/servicios?tab=${currentTab}&page=${page - 1}`}
                   className={`px-4 py-2 border border-outline-variant rounded-lg text-on-surface ${page <= 1 ? 'opacity-50 pointer-events-none' : 'hover:bg-surface-container-high'} transition-colors`}
                 >
                   Anterior
@@ -83,7 +106,7 @@ export default async function CatalogServicePage(props: {
                   Página {page} de {pagination.totalPages}
                 </span>
                 <Link
-                  href={`/servicios?page=${page + 1}`}
+                  href={`/servicios?tab=${currentTab}&page=${page + 1}`}
                   className={`px-4 py-2 border border-outline-variant rounded-lg text-on-surface ${page >= pagination.totalPages ? 'opacity-50 pointer-events-none' : 'hover:bg-surface-container-high'} transition-colors`}
                 >
                   Siguiente

@@ -190,45 +190,45 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-variant bg-surface-container-lowest">
-                {DASHBOARD_MOVEMENTS.map((mov) => {
-                  const statusStyle = MOVEMENT_STATUS_STYLES[mov.estado] ?? {
+                {DASHBOARD_MOVEMENTS.map((movement) => {
+                  const statusStyle = MOVEMENT_STATUS_STYLES[movement.estado] ?? {
                     bg: 'bg-surface-variant',
                     text: 'text-on-surface-variant',
                   };
 
                   return (
                     <tr
-                      key={mov.id}
+                      key={movement.id}
                       className="hover:bg-surface-container-low transition-colors group"
                     >
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-label-bold text-sm text-on-surface">
-                            {mov.fecha}
+                            {movement.fecha}
                           </p>
                           <p className="font-body-md text-xs text-on-surface-variant mt-1">
-                            {mov.hora}
+                            {movement.hora}
                           </p>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <p className="font-body-md text-sm text-on-surface">
-                          {mov.concepto}
+                          {movement.concepto}
                         </p>
                         <p className="font-body-md text-xs text-on-surface-variant mt-1">
-                          {mov.detalle}
+                          {movement.detalle}
                         </p>
                       </td>
                       <td className="px-6 py-4">
-                        <p className={`font-label-bold text-sm font-bold ${mov.montoColor}`}>
-                          {mov.monto}
+                        <p className={`font-label-bold text-sm font-bold ${movement.montoColor}`}>
+                          {movement.monto}
                         </p>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span
                           className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-label-bold ${statusStyle.bg} ${statusStyle.text}`}
                         >
-                          {mov.estado}
+                          {movement.estado}
                         </span>
                       </td>
                     </tr>

@@ -1,21 +1,21 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { PrimaryButton } from '@/components/ui';
+import { getServices } from '@/actions/car_services';
+import { ServiceCard } from '@/components/dashboard/servicios/ServiceCard';
 
 export const metadata: Metadata = {
   title: 'Catálogo de Servicios | Don Coche',
   description: 'Gestione los servicios, precios y márgenes de ganancia.',
 };
 
-/**
- * Página principal del catálogo de servicios (Server Component).
- * 
- * Renderiza la interfaz de usuario para gestionar los servicios ofrecidos,
- * permitiendo configurar sus precios y márgenes de ganancia. 
- * Actualmente muestra el encabezado y las acciones principales como la creación de nuevos servicios.
- * 
- * @returns {JSX.Element} La estructura principal de la página del catálogo de servicios.
- */
-export default function CatalogServicePage() {
+export default async function CatalogServicePage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const searchParams = await props.searchParams;
+  const page = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : 1;
+  const { data: services, pagination } = await getServices({ page, limit: 8 });
+
   return (
     <div className="fade-in">
       <main className="flex-grow max-w-[1440px] mx-auto w-full">
@@ -50,7 +50,56 @@ export default function CatalogServicePage() {
           </PrimaryButton>
         </header>
 
-        {/* Tabs and Cards will go here later */}
+        {/* Listado de Servicios */}
+        {services && services.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {services.map((service: any) => (
+                <ServiceCard 
+                  key={service.id} 
+                  service={{
+                    id: service.id,
+                    name: service.name,
+                    icon: service.icon,
+                    category: service.category,
+                    basePrice: service.basePrice,
+                    description: service.description,
+                    isActive: service.isActive
+                  }} 
+                />
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-8">
+                <Link
+                  href={`/servicios?page=${page - 1}`}
+                  className={`px-4 py-2 border border-outline-variant rounded-lg text-on-surface ${page <= 1 ? 'opacity-50 pointer-events-none' : 'hover:bg-surface-container-high'} transition-colors`}
+                >
+                  Anterior
+                </Link>
+                <span className="text-secondary font-label-lg">
+                  Página {page} de {pagination.totalPages}
+                </span>
+                <Link
+                  href={`/servicios?page=${page + 1}`}
+                  className={`px-4 py-2 border border-outline-variant rounded-lg text-on-surface ${page >= pagination.totalPages ? 'opacity-50 pointer-events-none' : 'hover:bg-surface-container-high'} transition-colors`}
+                >
+                  Siguiente
+                </Link>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-12 bg-surface border border-outline-variant rounded-xl mt-6">
+            <span className="material-symbols-outlined text-[48px] text-secondary mb-4">
+              car_repair
+            </span>
+            <h3 className="text-headline-sm text-on-surface mb-2">No hay servicios registrados</h3>
+            <p className="text-secondary mb-6">Comienza agregando un nuevo servicio a tu catálogo.</p>
+          </div>
+        )}
       </main>
     </div>
   );

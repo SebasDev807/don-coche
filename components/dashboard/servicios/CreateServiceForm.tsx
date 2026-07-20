@@ -64,7 +64,7 @@ export function CreateServiceForm() {
         }
       }).then(() => {
         // Redirigir al catálogo
-        router.push('/dashboard/servicios'); 
+        router.push('/servicios');
       });
     } else {
       MySwal.fire({

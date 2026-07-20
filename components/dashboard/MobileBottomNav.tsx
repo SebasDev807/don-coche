@@ -28,7 +28,7 @@ interface BottomNavItem {
 const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
   { icon: 'home_app_logo', label: 'Inicio',    href: '/' },
   { icon: 'minor_crash',   label: 'Servicios', href: '/servicios' },
-  { icon: 'directions_car', label: 'Vehículos', href: '/vehiculos' },
+  { icon: 'directions_car', label: 'Clientes', href: '/clientes' },
 ];
 
 /**

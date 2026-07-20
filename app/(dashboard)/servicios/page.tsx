@@ -17,8 +17,8 @@ export default async function CatalogServicePage(props: {
   const { data: services, pagination } = await getServices({ page, limit: 8 });
 
   return (
-    <div className="fade-in">
-      <main className="flex-grow max-w-[1440px] mx-auto w-full">
+    <div className="fade-in flex flex-col min-h-[calc(100vh-140px)]">
+      <main className="flex-grow flex flex-col max-w-[1440px] mx-auto w-full">
         {/* Header Section */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-stack-lg gap-4">
           <div>
@@ -52,8 +52,8 @@ export default async function CatalogServicePage(props: {
 
         {/* Listado de Servicios */}
         {services && services.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="flex flex-col flex-grow">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 content-start flex-grow">
               {services.map((service: any) => (
                 <ServiceCard 
                   key={service.id} 
@@ -72,7 +72,7 @@ export default async function CatalogServicePage(props: {
 
             {/* Pagination Controls */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8">
+              <div className="flex justify-center items-center gap-4 mt-auto pt-8 pb-4">
                 <Link
                   href={`/servicios?page=${page - 1}`}
                   className={`px-4 py-2 border border-outline-variant rounded-lg text-on-surface ${page <= 1 ? 'opacity-50 pointer-events-none' : 'hover:bg-surface-container-high'} transition-colors`}
@@ -90,7 +90,7 @@ export default async function CatalogServicePage(props: {
                 </Link>
               </div>
             )}
-          </>
+          </div>
         ) : (
           <div className="text-center py-12 bg-surface border border-outline-variant rounded-xl mt-6">
             <span className="material-symbols-outlined text-[48px] text-secondary mb-4">

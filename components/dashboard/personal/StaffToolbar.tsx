@@ -2,58 +2,19 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
-import { ExportExcelButton, PrimaryButton } from '@/components/ui';
+import { ExportExcelButton, PrimaryButton, SearchBar } from '@/components/ui';
 
-/**
- * Componente que renderiza la barra de herramientas (Toolbar) de la sección personal.
- * 
- * Contiene el campo de búsqueda de empleados y los botones de acción para
- * filtrar el listado y para agregar a un nuevo empleado.
- * 
- * @returns {JSX.Element} Barra de herramientas interactiva para la gestión de personal.
- */
 export function StaffToolbar() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
-
-  // Guardamos searchParams en un ref para leerlo dentro del efecto
-  // sin convertirlo en dependencia reactiva (evita el bucle infinito).
-  const searchParamsRef = useRef(searchParams);
-
-  useEffect(() => {
-    searchParamsRef.current = searchParams;
-  }, [searchParams]);
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      const params = new URLSearchParams(searchParamsRef.current);
-      if (searchTerm) {
-        params.set('q', searchTerm);
-      } else {
-        params.delete('q');
-      }
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, pathname, router]);
-
   return (
     <section className="flex flex-col lg:flex-row justify-between items-center gap-4 mb-stack-md">
-      <div className="w-full lg:w-1/2 relative">
-        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary">search</span>
-        <input
-          className="w-full h-touch-target-min pl-12 pr-4 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary-container focus:ring-1 focus:ring-primary-container font-body-md text-on-surface outline-none transition-colors"
-          placeholder="Buscar empleado por nombre, CC, email, teléfono..."
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+      <SearchBar 
+        className="w-full lg:w-1/2" 
+        placeholder="Buscar empleado por nombre, CC, email, teléfono..."
+      />
       <div className="flex items-center gap-4 w-full lg:w-auto">
         <div className="relative flex-1 lg:flex-none">
           <select

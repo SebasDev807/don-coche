@@ -142,6 +142,7 @@ model Product {
 model ServiceCatalog {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String
+  icon        String?
   category    ItemCategory?
   categoryId  String?      @map("category_id") @db.Uuid
   basePrice   Decimal      @map("base_price") @db.Decimal(10, 2)

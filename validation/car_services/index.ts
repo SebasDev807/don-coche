@@ -1,0 +1,15 @@
+import { z } from 'zod';
+
+export const createServiceSchema = z.object({
+  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+  icon: z.string().optional(),
+  categoryId: z.string().uuid('Categoría no válida').optional().or(z.literal('')),
+  category: z.enum(['LAVADERO', 'SERVITECA', 'LUBRICANTES', 'ACCESORIOS']).optional(),
+  basePrice: z.preprocess((val) => {
+    if (typeof val === 'string') return parseInt(val.replace(/\D/g, ''), 10) || 0;
+    return val;
+  }, z.number({ message: 'Debes ingresar un valor numérico' }).min(0, 'El precio no puede ser negativo')),
+  description: z.string().optional(),
+});
+
+export type CreateServiceFormValues = z.infer<typeof createServiceSchema>;

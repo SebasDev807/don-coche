@@ -47,7 +47,7 @@ export function InventoryToolbar() {
       } else {
         params.delete('q');
       }
-      router.replace(`${pathname}?${params.toString()}`);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
@@ -78,7 +78,7 @@ export function InventoryToolbar() {
               } else {
                 params.delete('category');
               }
-              router.push(`${pathname}?${params.toString()}`);
+              router.push(`${pathname}?${params.toString()}`, { scroll: false });
             }}
           >
             <option value="">Filtrar por Categoría</option>

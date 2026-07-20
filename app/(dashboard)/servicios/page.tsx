@@ -29,7 +29,7 @@ export default function CatalogServicePage() {
               Gestione los servicios, precios y márgenes de ganancia.
             </p>
           </div>
-          <PrimaryButton>
+          <PrimaryButton href="/servicios/nuevo_servicio">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"

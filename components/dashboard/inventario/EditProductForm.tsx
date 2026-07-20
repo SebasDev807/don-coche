@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { createProductSchema, CreateProductFormValues } from '@/validation';
 import { updateProduct, getCategories } from '@/actions/inventory';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
+import { PriceInput } from '@/components/ui/PriceInput';
 
 const MySwal = withReactContent(Swal);
 
@@ -30,13 +31,6 @@ export function EditProductForm({ product }: EditProductFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
 
-  const formatCurrencyValue = (val: string | number) => {
-    const stringVal = val.toString();
-    const rawValue = stringVal.replace(/\D/g, '');
-    if (!rawValue) return '';
-    return new Intl.NumberFormat('es-CO').format(parseInt(rawValue, 10));
-  };
-
   const {
     register,
     handleSubmit,
@@ -49,8 +43,8 @@ export function EditProductForm({ product }: EditProductFormProps) {
       brand: product.brand || '',
       category: product.categoryId || '',
       stock: product.stock,
-      unitCost: formatCurrencyValue(product.unitCost) as any,
-      salePrice: formatCurrencyValue(product.salePrice) as any,
+      unitCost: new Intl.NumberFormat('es-CO').format(product.unitCost) as any,
+      salePrice: new Intl.NumberFormat('es-CO').format(product.salePrice) as any,
     },
   });
 
@@ -161,33 +155,23 @@ export function EditProductForm({ product }: EditProductFormProps) {
             <ErrorMessage message={errors.stock?.message} />
           </div>
 
-          <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Costo Unitario ($)</label>
-            <input
-              {...register('unitCost')}
-              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.unitCost ? 'border-error focus:border-error focus:ring-error' : ''}`}
-              placeholder="0"
-              type="text"
-              onChange={(e) => {
-                setValue('unitCost', formatCurrencyValue(e.target.value) as any, { shouldValidate: true });
-              }}
-            />
-            <ErrorMessage message={errors.unitCost?.message} />
-          </div>
+          <PriceInput
+            name="unitCost"
+            label="Costo Unitario ($)"
+            register={register}
+            setValue={setValue}
+            errors={errors}
+            placeholder="0"
+          />
 
-          <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Precio de Venta ($)</label>
-            <input
-              {...register('salePrice')}
-              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.salePrice ? 'border-error focus:border-error focus:ring-error' : ''}`}
-              placeholder="0"
-              type="text"
-              onChange={(e) => {
-                setValue('salePrice', formatCurrencyValue(e.target.value) as any, { shouldValidate: true });
-              }}
-            />
-            <ErrorMessage message={errors.salePrice?.message} />
-          </div>
+          <PriceInput
+            name="salePrice"
+            label="Precio de Venta ($)"
+            register={register}
+            setValue={setValue}
+            errors={errors}
+            placeholder="0"
+          />
         </div>
 
         <hr className="border-outline-variant/50 border-t my-8" />

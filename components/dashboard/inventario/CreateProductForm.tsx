@@ -152,10 +152,10 @@ export function CreateProductForm() {
               </div>
             </div>
             <ErrorMessage message={errors.category?.message} />
-            <button 
+            <button
               type="button"
               onClick={() => setIsCategoryModalOpen(true)}
-              className="mt-3 text-primary font-cta text-sm flex items-center gap-1 hover:underline outline-none focus:ring-2 focus:ring-primary rounded w-fit"
+              className="mt-3 text-primary font-cta text-sm flex items-center gap-1 cursor-pointer outline-none focus:ring-2 focus:ring-primary rounded w-fit"
             >
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
               Crear Nueva Categoría
@@ -234,7 +234,7 @@ export function CreateProductForm() {
           </button>
         </div>
       </form>
-      <CreateCategoryModal 
+      <CreateCategoryModal
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
         onCategoryCreated={fetchCategories}

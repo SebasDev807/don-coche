@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { PrimaryButton } from '@/components/ui';
+import { PrimaryButton, SearchBar } from '@/components/ui';
 import { getServices } from '@/actions/car_services';
 import { ServiceCard } from '@/components/dashboard/servicios/ServiceCard';
 
@@ -15,7 +15,8 @@ export default async function CatalogServicePage(props: {
   const searchParams = await props.searchParams;
   const page = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : 1;
   const currentTab = typeof searchParams.tab === 'string' ? searchParams.tab : 'lavadero';
-  const { data: services, pagination } = await getServices({ page, limit: 8, category: currentTab });
+  const query = typeof searchParams.q === 'string' ? searchParams.q : undefined;
+  const { data: services, pagination } = await getServices({ page, limit: 8, category: currentTab, query });
 
   return (
     <div className="fade-in flex flex-col min-h-[calc(100vh-140px)]">
@@ -71,6 +72,10 @@ export default async function CatalogServicePage(props: {
               <span className="absolute bottom-0 left-0 w-full h-[3px] bg-secondary rounded-t-sm" />
             )}
           </Link>
+        </div>
+
+        <div className="mb-6">
+          <SearchBar className="w-full sm:w-1/2 lg:w-1/3" placeholder="Buscar servicio..." />
         </div>
 
         {/* Listado de Servicios */}

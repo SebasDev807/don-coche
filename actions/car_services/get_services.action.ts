@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { verifySession } from '@/lib/dal';
 
-export async function getServices({ page = 1, limit = 8, category }: { page?: number; limit?: number; category?: string } = {}) {
+export async function getServices({ page = 1, limit = 8, category, query }: { page?: number; limit?: number; category?: string; query?: string } = {}) {
   try {
     await verifySession();
 
@@ -12,6 +12,9 @@ export async function getServices({ page = 1, limit = 8, category }: { page?: nu
     const whereClause: any = { isActive: true };
     if (category) {
       whereClause.category = category.toUpperCase() as any;
+    }
+    if (query) {
+      whereClause.name = { contains: query, mode: 'insensitive' };
     }
 
     const [services, total] = await Promise.all([

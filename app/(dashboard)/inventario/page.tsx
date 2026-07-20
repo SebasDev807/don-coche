@@ -70,6 +70,18 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     salePrice: Number(p.salePrice)
   }));
 
+  // Ordenar los productos para mostrar primero los de stock bajo (<= 10)
+  serializedProducts.sort((a, b) => {
+    const aLowStock = a.stock <= 10;
+    const bLowStock = b.stock <= 10;
+
+    if (aLowStock && !bLowStock) return -1;
+    if (!aLowStock && bLowStock) return 1;
+
+    // Si ambos son bajo stock o ambos normal, ordenar por código
+    return (a.code || '').localeCompare(b.code || '');
+  });
+
   return (
     <div className="fade-in">
       <main className="flex-grow p-margin-mobile md:p-margin-desktop max-w-[1440px] mx-auto w-full">

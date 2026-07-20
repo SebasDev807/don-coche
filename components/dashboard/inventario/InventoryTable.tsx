@@ -1,7 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import { deleteProduct } from '@/actions/inventory';
+import { EditProductModal } from './EditProductModal';
+
+const MySwal = withReactContent(Swal);
 
 export interface InventoryProduct {
   id: string;
@@ -9,6 +15,7 @@ export interface InventoryProduct {
   name: string;
   brand: string | null;
   category: string;
+  categoryId: string | null;
   stock: number;
   unitCost: number;
   salePrice: number;
@@ -28,7 +35,10 @@ interface InventoryTableProps {
  * @returns {React.JSX.Element} El componente InventoryTable.
  */
 export function InventoryTable({ products }: InventoryTableProps) {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<InventoryProduct | null>(null);
   const itemsPerPage = 5;
 
   const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
@@ -39,6 +49,48 @@ export function InventoryTable({ products }: InventoryTableProps) {
     currency: 'COP',
     minimumFractionDigits: 0
   }).format(val);
+
+  const handleDelete = async (id: string) => {
+    const result = await MySwal.fire({
+      title: '¿Estás seguro?',
+      text: "El producto será marcado como inactivo.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: 'var(--color-error)',
+      cancelButtonColor: 'var(--color-outline)',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        confirmButton: '!text-white',
+        cancelButton: '!text-black'
+      }
+    });
+
+    if (result.isConfirmed) {
+      const response = await deleteProduct(id);
+      if (response.success) {
+        MySwal.fire({
+          title: 'Eliminado',
+          text: response.message,
+          icon: 'success',
+          confirmButtonColor: 'rgba(221, 213, 51, 1)',
+          customClass: {
+            confirmButton: '!text-black'
+          },
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        router.refresh();
+      } else {
+        MySwal.fire('Error', response.message, 'error');
+      }
+    }
+  };
+
+  const handleEdit = (product: InventoryProduct) => {
+    setSelectedProduct(product);
+    setIsEditModalOpen(true);
+  };
 
   return (
     <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container-highest overflow-hidden">
@@ -85,10 +137,18 @@ export function InventoryTable({ products }: InventoryTableProps) {
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <button className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors" title="Editar">
+                      <button 
+                        onClick={() => handleEdit(product)}
+                        className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors" 
+                        title="Editar"
+                      >
                         <span className="material-symbols-outlined text-[20px]">edit</span>
                       </button>
-                      <button className="cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors" title="Eliminar">
+                      <button 
+                        onClick={() => handleDelete(product.id)}
+                        className="cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors" 
+                        title="Eliminar"
+                      >
                         <span className="material-symbols-outlined text-[20px]">delete</span>
                       </button>
                     </div>
@@ -137,6 +197,14 @@ export function InventoryTable({ products }: InventoryTableProps) {
           </div>
         </div>
       )}
+
+      {/* Edit Modal */}
+      <EditProductModal 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onProductUpdated={() => router.refresh()}
+        product={selectedProduct}
+      />
     </div>
   );
 }

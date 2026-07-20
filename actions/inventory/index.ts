@@ -5,6 +5,6 @@
  * con el inventario para facilitar su importación.
  */
 
-export { createProduct } from './createProduct.actions';
+export { createProduct, getCategories, createCategory } from './core.actions';
 export { updateProduct } from './updateProduct.actions';
 export { deleteProduct } from './deleteProduct.actions';

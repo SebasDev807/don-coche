@@ -64,6 +64,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     name: p.name,
     brand: p.brand,
     category: p.category_rel?.name || p.category || 'Sin Categoría',
+    categoryId: p.categoryId,
     stock: p.stock,
     unitCost: Number(p.unitCost),
     salePrice: Number(p.salePrice)

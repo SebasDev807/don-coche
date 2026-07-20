@@ -1,0 +1,159 @@
+<!DOCTYPE html><html lang="es" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Catálogo de Servicios</title>
+<!-- Font Setup -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Sora', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              yellow: '#FFEC00',
+            },
+            surface: {
+              DEFAULT: '#f9f9f9',
+              card: '#ffffff',
+            },
+            dark: '#111827',
+          }
+        }
+      }
+    }
+  </script>
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<style data-purpose="custom-styles">
+    body {
+      background-color: #f8fafc; /* Very light gray/off-white background */
+      color: #1f2937;
+    }
+    
+    /* Input styling for consistency */
+    .service-input {
+      @apply w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow focus:border-transparent transition-shadow;
+    }
+    
+    .service-input-group {
+      @apply relative;
+    }
+    
+    .service-input-prefix {
+      @apply absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm;
+    }
+    
+    .service-input-suffix {
+      @apply absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm;
+    }
+    
+    .service-input-with-prefix {
+      @apply pl-7;
+    }
+    
+    .service-input-with-suffix {
+      @apply pr-8;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-6 md:p-10 font-sans">
+<!-- BEGIN: MainContent -->
+<main class="max-w-7xl mx-auto" data-purpose="main-container">
+<!-- BEGIN: Header Section -->
+<header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4" data-purpose="page-header">
+<div>
+<h1 class="text-3xl font-bold text-gray-900 tracking-tight">Catálogo de Servicios</h1>
+<p class="text-gray-500 mt-1">Gestione los servicios, precios y márgenes de ganancia.</p>
+</div>
+<button class="bg-dark hover:bg-black text-white font-medium py-2.5 px-4 rounded-lg flex items-center gap-2 transition-colors shadow-sm" data-purpose="add-service-btn">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" aria-hidden="true" class="lucide lucide-plus w-4 h-4"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+        Agregar Nuevo Servicio
+      </button>
+</header>
+<!-- END: Header Section -->
+<!-- BEGIN: Tabs Section -->
+<div class="border-b border-gray-200 mb-8" data-purpose="tabs">
+<nav aria-label="Tabs" class="-mb-px flex space-x-8">
+<!-- Active Tab -->
+<a aria-current="page" class="border-brand-yellow text-gray-900 whitespace-nowrap py-4 px-1 border-b-4 font-semibold text-sm transition-colors" href="#">
+          Servicios Lavadero
+        </a>
+<!-- Inactive Tab -->
+<a class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-4 font-medium text-sm transition-colors" href="#">
+          Servicios Serviteca
+        </a>
+</nav>
+</div>
+<!-- END: Tabs Section -->
+<!-- BEGIN: Service Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" data-purpose="service-cards-grid">
+<!-- Card 1: Lavado General -->
+
+<!-- Card 2: Lavado Motor -->
+
+<!-- Card 3: Polichado -->
+<article class="bg-surface-card rounded-xl p-5 shadow-sm hover:shadow-md border border-gray-100 transition-shadow flex flex-col h-full" data-purpose="service-card">
+<div class="flex justify-between items-start mb-6">
+<div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sparkles" aria-hidden="true" class="lucide lucide-sparkles w-5 h-5"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg>
+</div>
+<div class="flex items-center gap-3">
+<span class="bg-gray-200 text-gray-700 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">Activo</span>
+<div class="flex gap-2">
+<button aria-label="Edit" class="text-gray-400 hover:text-gray-600 transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="pencil" aria-hidden="true" class="lucide lucide-pencil w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg>
+</button>
+<button aria-label="Delete" class="text-red-400 hover:text-red-600 transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash-2" aria-hidden="true" class="lucide lucide-trash-2 w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<div class="flex-grow space-y-4">
+<div>
+<label class="block text-sm font-semibold text-gray-800 mb-1.5">Nombre del Servicio</label>
+<input class="service-input" type="text" value="Polichado">
+</div>
+<div class="flex gap-4">
+<div class="flex-1">
+<label class="block text-sm font-semibold text-gray-800 mb-1.5">Precio (PVP)</label>
+<div class="service-input-group">
+<span class="service-input-prefix">$</span>
+<input class="service-input service-input-with-prefix" type="text" value="80.000">
+</div>
+</div>
+<div class="flex-1">
+<label class="block text-sm font-semibold text-gray-800 mb-1.5">Ganancia (%)</label>
+<div class="service-input-group">
+<input class="service-input service-input-with-suffix" type="text" value="50">
+<span class="service-input-suffix">%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+<button class="bg-dark hover:bg-black text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors shadow-sm">
+            Guardar Cambios
+          </button>
+</div>
+</article>
+<!-- Card 4: Encerado -->
+
+</div>
+<!-- END: Service Cards Grid -->
+</main>
+<!-- END: MainContent -->
+<!-- Initialize Lucide Icons -->
+<script>
+    lucide.createIcons();
+  </script>
+
+
+</body></html>

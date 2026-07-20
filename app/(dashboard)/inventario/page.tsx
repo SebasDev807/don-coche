@@ -84,7 +84,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
 
   return (
     <div className="fade-in">
-      <main className="flex-grow p-margin-mobile md:p-margin-desktop max-w-[1440px] mx-auto w-full">
+      <main className="flex-grow max-w-[1440px] mx-auto w-full">
         {/* Encabezado Principal */}
         <header className="mb-stack-lg">
           <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Inventario Maestro</h1>

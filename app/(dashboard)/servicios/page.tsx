@@ -1,14 +1,24 @@
 import { Metadata } from 'next';
+import { PrimaryButton } from '@/components/ui';
 
 export const metadata: Metadata = {
   title: 'Catálogo de Servicios | Don Coche',
   description: 'Gestione los servicios, precios y márgenes de ganancia.',
 };
 
+/**
+ * Página principal del catálogo de servicios (Server Component).
+ * 
+ * Renderiza la interfaz de usuario para gestionar los servicios ofrecidos,
+ * permitiendo configurar sus precios y márgenes de ganancia. 
+ * Actualmente muestra el encabezado y las acciones principales como la creación de nuevos servicios.
+ * 
+ * @returns {JSX.Element} La estructura principal de la página del catálogo de servicios.
+ */
 export default function CatalogServicePage() {
   return (
     <div className="fade-in">
-      <main className="flex-grow p-margin-mobile md:p-margin-desktop max-w-[1440px] mx-auto w-full">
+      <main className="flex-grow max-w-[1440px] mx-auto w-full">
         {/* Header Section */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-stack-lg gap-4">
           <div>
@@ -19,7 +29,7 @@ export default function CatalogServicePage() {
               Gestione los servicios, precios y márgenes de ganancia.
             </p>
           </div>
-          <button className="bg-primary-container hover:bg-primary-fixed text-on-surface font-cta text-cta py-2.5 px-4 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
+          <PrimaryButton>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -37,7 +47,7 @@ export default function CatalogServicePage() {
               <path d="M12 5v14"></path>
             </svg>
             Agregar Nuevo Servicio
-          </button>
+          </PrimaryButton>
         </header>
 
         {/* Tabs and Cards will go here later */}

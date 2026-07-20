@@ -25,7 +25,7 @@ export default async function PersonalPage(props: { searchParams: Promise<{ [key
 
   return (
     <div className='fade-in'>
-      <main className="flex-grow p-margin-mobile md:p-margin-desktop max-w-[1440px] mx-auto w-full">
+      <main className="flex-grow max-w-[1440px] mx-auto w-full">
         <header className="mb-stack-lg">
           <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Directorio de Personal</h1>
           <p className="font-body-lg text-body-lg text-secondary">Gestión de operarios, administradores y accesos al sistema</p>

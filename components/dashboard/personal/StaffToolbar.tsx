@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { ExportExcelButton } from '@/components/ui';
+import { ExportExcelButton, PrimaryButton } from '@/components/ui';
 
 /**
  * Componente que renderiza la barra de herramientas (Toolbar) de la sección personal.
@@ -84,10 +84,10 @@ export function StaffToolbar() {
             console.log('Exportar personal a Excel iniciado...');
           }}
         />
-        <Link href="/personal/nuevo" className="cursor-pointer h-touch-target-min px-6 bg-primary-container text-[#000000] font-cta text-cta rounded-lg hover:bg-primary-fixed-dim transition-colors flex items-center gap-2 shadow-sm flex-1 lg:flex-none justify-center active:scale-[0.98]">
+        <PrimaryButton href="/personal/nuevo" className="flex-1 lg:flex-none">
           <span className="material-symbols-outlined">add</span>
           Agregar Empleado
-        </Link>
+        </PrimaryButton>
       </div>
     </section>
   );

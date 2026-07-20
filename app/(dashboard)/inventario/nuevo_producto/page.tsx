@@ -12,7 +12,7 @@ export const metadata: Metadata = {
  */
 export default function NewProductPage() {
   return (
-    <div className="fade-in max-w-7xl mx-auto flex flex-col gap-8 p-margin-mobile md:p-margin-desktop">
+    <div className="fade-in max-w-7xl mx-auto flex flex-col gap-8">
       {/* ─── Page Header ─── */}
       <header className="mb-stack-lg max-w-4xl mx-auto w-full">
         <h2 className="font-headline-lg text-headline-lg font-bold text-on-surface mb-2">Agregar Nuevo Producto</h2>

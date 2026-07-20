@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { ExportExcelButton } from '@/components/ui';
+import { ExportExcelButton, PrimaryButton } from '@/components/ui';
 import { getCategories } from '@/actions/inventory';
 
 /**
@@ -94,10 +94,10 @@ export function InventoryToolbar() {
             console.log('Exportar inventario a Excel iniciado...');
           }}
         />
-        <Link href="/inventario/nuevo_producto" className="cursor-pointer h-touch-target-min px-6 bg-primary-container text-[#000000] font-cta text-cta rounded-lg hover:bg-primary-fixed-dim transition-colors flex items-center gap-2 shadow-sm flex-1 lg:flex-none justify-center active:scale-[0.98] whitespace-nowrap">
+        <PrimaryButton href="/inventario/nuevo_producto" className="flex-1 lg:flex-none">
           <span className="material-symbols-outlined">add</span>
           Agregar Producto
-        </Link>
+        </PrimaryButton>
       </div>
 
     </section>

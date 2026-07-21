@@ -97,15 +97,22 @@ export async function getWeeklyChartData() {
   try {
     await verifySession();
 
-    // Obtener los últimos 7 días (incluyendo hoy)
+    // Obtener la semana actual (de Lunes a Domingo)
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - diffToMonday);
+    monday.setHours(0, 0, 0, 0);
+
     const data = [];
     const daysMap = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
     
-    // Generar estructura de la semana actual
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      date.setHours(0, 0, 0, 0);
+    // Generar estructura de la semana actual (Lunes a Domingo)
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + i);
       data.push({
         date: date, // guardamos el objeto Date para comparar luego
         dia: daysMap[date.getDay()],

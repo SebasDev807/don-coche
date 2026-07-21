@@ -4,6 +4,11 @@ import { verifyRole } from '@/lib/dal';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'Don Coche | Caja',
+  description: 'Punto de pago',
+};
+
 export default async function CajaPage() {
   await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
 

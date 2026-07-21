@@ -34,11 +34,24 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
       {/* ── Estilos de impresión ── */}
       <style>{`
         @media print {
-          /* Ocultar todo excepto el recibo */
-          body > *:not(#receipt-print-root) { display: none !important; }
-          #receipt-modal-backdrop { background: #fff !important; }
-          #receipt-modal-panel { box-shadow: none !important; border: none !important; }
-          .receipt-no-print { display: none !important; }
+          /* Ocultar fondo y resto de la app, mostrar solo el recibo */
+          body * {
+            visibility: hidden;
+          }
+          #receipt-print-root, #receipt-print-root * {
+            visibility: visible;
+          }
+          #receipt-print-root {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+          }
+          .receipt-no-print {
+            display: none !important;
+          }
 
           @page {
             size: 80mm auto;
@@ -138,6 +151,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
             }}
           >
             <div
+              id="receipt-print-root"
               style={{
                 boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)',
                 borderRadius: '4px',

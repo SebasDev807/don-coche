@@ -8,6 +8,6 @@ export const BUSINESS_INFO = {
   nit: 'PENDIENTE',
   address: 'Dirección del establecimiento',
   phone: '000 000 0000',
-  city: 'Ciudad, Departamento',
+  city: 'Popayán, Cauca',
   tagline: '¡Gracias por su preferencia!',
 } as const;

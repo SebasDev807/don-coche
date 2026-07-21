@@ -12,6 +12,11 @@ import { logoutAction } from '@/app/auth/actions';
 import { Header } from '../../components/tecnico/Header';
 import { TecnicoWorkspace } from '../../components/tecnico/TecnicoWorkspace';
 import { getServices } from '@/actions/car_services';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Don Coche | Técnico',
+};
 
 export default async function TecnicoScreen() {
   // Verifica sesión y rol en el servidor; redirige a /auth si no autorizado

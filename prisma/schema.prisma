@@ -139,6 +139,7 @@ model Product {
   category_rel  Category?           @relation(fields: [categoryId], references: [id])
   orderProducts OrderProduct[]
   movements     InventoryMovement[]
+  services      ServiceProduct[]
 
   @@map("products")
 }
@@ -155,8 +156,23 @@ model ServiceCatalog {
 
   category_rel  Category?      @relation(fields: [categoryId], references: [id])
   orderServices OrderService[]
+  products      ServiceProduct[]
 
   @@map("service_catalog")
+}
+
+model ServiceProduct {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serviceId  String   @map("service_id") @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  quantity   Int      @default(1)
+  isRequired Boolean  @default(true) @map("is_required")
+
+  service    ServiceCatalog @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  product    Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, productId])
+  @@map("service_products")
 }
 
 // -----------------------------------------------------------------------

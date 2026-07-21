@@ -46,34 +46,32 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function WeeklyChart({ data }: WeeklyChartProps) {
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: '256px' }}>
-      <ResponsiveContainer>
-        <BarChart
-          data={data}
-          margin={{
-            top: 20,
-            right: 0,
-            left: 0,
-            bottom: 0,
-          }}
-          barGap={2}
-          barSize={24}
-        >
-          <XAxis 
-            dataKey="dia" 
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: 'var(--color-on-surface-variant)', fontSize: 12, fontWeight: 700 }}
-            dy={10}
-          />
-          <Tooltip 
-            content={<CustomTooltip />} 
-            cursor={{ fill: 'var(--color-surface-container-high)', opacity: 0.4 }}
-          />
-          <Bar dataKey="lavadero" name="Lavadero" fill="var(--color-primary-container)" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="serviteca" name="Serviteca" fill="var(--color-tertiary)" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height={256}>
+      <BarChart
+        data={data}
+        margin={{
+          top: 20,
+          right: 0,
+          left: 0,
+          bottom: 0,
+        }}
+        barGap={2}
+        barSize={24}
+      >
+        <XAxis 
+          dataKey="dia" 
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: 'var(--color-on-surface-variant)', fontSize: 12, fontWeight: 700 }}
+          dy={10}
+        />
+        <Tooltip 
+          content={<CustomTooltip />} 
+          cursor={{ fill: 'var(--color-surface-container-high)', opacity: 0.4 }}
+        />
+        <Bar dataKey="lavadero" name="Lavadero" fill="var(--color-primary-container)" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="serviteca" name="Serviteca" fill="var(--color-tertiary)" radius={[4, 4, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
   );
 }

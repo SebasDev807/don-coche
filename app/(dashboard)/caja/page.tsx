@@ -13,10 +13,10 @@ export default async function CajaPage() {
   ]);
 
   return (
-    <div className="h-full bg-gray-50/50 p-6">
-      <CajaDashboardClient 
-        pendingOrders={pendingRes.data || []} 
-        billedOrders={billedRes.data || []} 
+    <div className="h-full bg-gray-50/50 p-6 fade-in">
+      <CajaDashboardClient
+        pendingOrders={pendingRes.data || []}
+        billedOrders={billedRes.data || []}
       />
     </div>
   );

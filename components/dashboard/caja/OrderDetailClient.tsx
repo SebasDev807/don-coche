@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { billOrder, cancelOrder } from '@/actions/orders';
 import { PaymentMethod } from '@prisma/client';
+import { ReceiptModal } from './ReceiptModal';
 
 const MySwal = withReactContent(Swal);
 
@@ -16,6 +17,7 @@ interface OrderDetailClientProps {
 export function OrderDetailClient({ order }: OrderDetailClientProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [billedOrderData, setBilledOrderData] = useState<any>(null);
 
   const handleBill = async (method: PaymentMethod) => {
     const result = await MySwal.fire({
@@ -36,8 +38,8 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
       setIsSubmitting(false);
 
       if (res.success) {
-        await MySwal.fire('Facturada', 'La orden ha sido cobrada.', 'success');
-        router.push('/caja');
+        MySwal.close();
+        setBilledOrderData(res.data);
       } else {
         MySwal.fire('Error', res.message, 'error');
       }
@@ -79,7 +81,7 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
         <div className="flex items-center gap-3 mb-6">
           <button 
             onClick={() => router.push('/caja')}
-            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-gray-600">arrow_back</span>
           </button>
@@ -148,30 +150,30 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
       </div>
 
       {/* Panel de Facturación (Derecha) */}
-      <div className="w-full md:w-[350px] bg-gray-900 text-white p-8 flex flex-col">
-        <h2 className="text-xl font-bold mb-8">Facturación</h2>
+      <div className="w-full md:w-[350px] bg-on-surface text-surface p-8 flex flex-col">
+        <h2 className="font-headline-md text-headline-md mb-8">Facturación</h2>
         
-        <div className="space-y-4 mb-auto">
-          <div className="flex justify-between items-center text-gray-400">
+        <div className="space-y-4 mb-auto font-body-lg text-body-lg">
+          <div className="flex justify-between items-center text-surface-variant">
             <span>Total Servicios</span>
-            <span className="font-medium text-white">${order.totalServices.toLocaleString()}</span>
+            <span className="font-label-bold text-surface">${order.totalServices.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between items-center text-gray-400">
+          <div className="flex justify-between items-center text-surface-variant">
             <span>Total Repuestos</span>
-            <span className="font-medium text-white">${order.totalProducts.toLocaleString()}</span>
+            <span className="font-label-bold text-surface">${order.totalProducts.toLocaleString()}</span>
           </div>
-          <div className="pt-4 mt-4 border-t border-gray-700 flex justify-between items-end">
-            <span className="uppercase text-sm font-bold tracking-wider">Gran Total</span>
-            <span className="text-4xl font-black text-[#FFEC00]">${order.grandTotal.toLocaleString()}</span>
+          <div className="pt-4 mt-4 border-t border-outline flex justify-between items-end">
+            <span className="uppercase text-sm font-label-bold tracking-wider text-surface-variant">Gran Total</span>
+            <span className="text-4xl font-headline-lg text-[#FFEC00]">${order.grandTotal.toLocaleString()}</span>
           </div>
         </div>
 
         <div className="mt-12 space-y-3">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 text-center">Seleccionar Método de Pago</p>
+          <p className="text-xs font-label-bold text-surface-variant uppercase tracking-wider mb-2 text-center">Seleccionar Método de Pago</p>
           <button 
             onClick={() => handleBill('EFECTIVO')}
             disabled={isSubmitting}
-            className="w-full bg-white hover:bg-gray-100 text-gray-900 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+            className="w-full bg-surface-container-highest hover:bg-surface-container text-on-surface font-label-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined">payments</span>
             Efectivo
@@ -179,7 +181,7 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
           <button 
             onClick={() => handleBill('TARJETA')}
             disabled={isSubmitting}
-            className="w-full bg-white hover:bg-gray-100 text-gray-900 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+            className="w-full bg-surface-container-highest hover:bg-surface-container text-on-surface font-label-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined">credit_card</span>
             Tarjeta
@@ -187,7 +189,7 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
           <button 
             onClick={() => handleBill('TRANSFERENCIA')}
             disabled={isSubmitting}
-            className="w-full bg-white hover:bg-gray-100 text-gray-900 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+            className="w-full bg-surface-container-highest hover:bg-surface-container text-on-surface font-label-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined">account_balance</span>
             Transferencia
@@ -197,11 +199,19 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
         <button 
           onClick={handleCancel}
           disabled={isSubmitting}
-          className="mt-8 text-red-400 hover:text-red-300 text-sm font-bold transition-colors w-full text-center disabled:opacity-50"
+          className="mt-8 text-error hover:text-error-container text-sm font-label-bold transition-colors w-full text-center disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
         >
           Anular Orden
         </button>
       </div>
+
+      {/* Modal de recibo POS post-facturación */}
+      {billedOrderData && (
+        <ReceiptModal
+          order={billedOrderData}
+          onClose={() => router.push('/caja')}
+        />
+      )}
     </div>
   );
 }

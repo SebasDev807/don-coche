@@ -6,7 +6,7 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
   const totalEfectivo = orders.filter(o => o.paymentMethod === 'EFECTIVO').reduce((acc, o) => acc + o.grandTotal, 0);
   const totalTarjeta = orders.filter(o => o.paymentMethod === 'TARJETA').reduce((acc, o) => acc + o.grandTotal, 0);
   const totalTransferencia = orders.filter(o => o.paymentMethod === 'TRANSFERENCIA').reduce((acc, o) => acc + o.grandTotal, 0);
-  
+
   const totalGeneral = totalEfectivo + totalTarjeta + totalTransferencia;
 
   return (
@@ -54,24 +54,24 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
         )}
       </div>
 
-      <div className="p-5 bg-gray-900 text-white border-t border-gray-800">
-        <div className="grid grid-cols-3 gap-4 mb-4 text-sm border-b border-gray-700 pb-4">
+      <div className="p-5 bg-on-surface text-surface border-t border-outline">
+        <div className="grid grid-cols-3 gap-4 mb-4 text-sm border-b border-outline-variant pb-4">
           <div>
-            <p className="text-gray-400 mb-1">Efectivo</p>
-            <p className="font-bold">${totalEfectivo.toLocaleString()}</p>
+            <p className="text-surface-variant font-body-sm mb-1">Efectivo</p>
+            <p className="font-label-bold text-label-lg">${totalEfectivo.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-gray-400 mb-1">Tarjeta</p>
-            <p className="font-bold">${totalTarjeta.toLocaleString()}</p>
+            <p className="text-surface-variant font-body-sm mb-1">Tarjeta</p>
+            <p className="font-label-bold text-label-lg">${totalTarjeta.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-gray-400 mb-1">Transfer</p>
-            <p className="font-bold">${totalTransferencia.toLocaleString()}</p>
+            <p className="text-surface-variant font-body-sm mb-1">Transferencia</p>
+            <p className="font-label-bold text-label-lg">${totalTransferencia.toLocaleString()}</p>
           </div>
         </div>
-        <div className="flex justify-between items-end">
-          <p className="text-gray-400 uppercase text-xs font-bold tracking-wider">Gran Total del Día</p>
-          <p className="text-3xl font-black text-[#FFEC00]">${totalGeneral.toLocaleString()}</p>
+        <div className="flex justify-between items-end mt-4">
+          <p className="text-surface-variant uppercase text-xs font-label-bold tracking-wider">Total del Día</p>
+          <p className="text-3xl font-headline-lg text-[#FFEC00]">${totalGeneral.toLocaleString()}</p>
         </div>
       </div>
     </div>

@@ -26,9 +26,9 @@ export function CajaDashboardClient({ pendingOrders, billedOrders }: CajaDashboa
       
       {/* Columna Izquierda: Órdenes en Pista */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        <div className="mb-6">
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Órdenes en Pista</h1>
-          <p className="text-gray-500 mt-1">Vehículos que están siendo atendidos o esperando cobro.</p>
+        <div className="mb-stack-lg">
+          <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Órdenes en Pista</h1>
+          <p className="font-body-lg text-body-lg text-secondary">Vehículos que están siendo atendidos o esperando cobro.</p>
         </div>
 
         <div className="flex-1 overflow-y-auto pr-2 pb-6">

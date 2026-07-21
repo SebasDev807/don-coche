@@ -60,8 +60,25 @@ export async function getOrderDetail(orderId: string) {
         totalServices: Number(order.totalServices),
         totalProducts: Number(order.totalProducts),
         grandTotal: Number(order.grandTotal),
-        services: order.services.map(s => ({ ...s, chargedPrice: Number(s.chargedPrice) })),
-        products: order.products.map(p => ({ ...p, unitPrice: Number(p.unitPrice), unitCost: Number(p.unitCost) }))
+        services: order.services.map(s => ({ 
+          ...s, 
+          chargedPrice: Number(s.chargedPrice),
+          service: s.service ? {
+            ...s.service,
+            basePrice: Number(s.service.basePrice)
+          } : s.service
+        })),
+        products: order.products.map(p => ({ 
+          ...p, 
+          unitPrice: Number(p.unitPrice), 
+          unitCost: Number(p.unitCost),
+          product: p.product ? {
+            ...p.product,
+            unitCost: Number(p.product.unitCost),
+            salePrice: Number(p.product.salePrice),
+            profitPercentage: p.product.profitPercentage ? Number(p.product.profitPercentage) : null
+          } : p.product
+        }))
       }
     };
   } catch (error: any) {
@@ -109,7 +126,7 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
         });
       }
 
-      // Actualizar Orden
+      // Actualizar Orden y devolver con relaciones para el recibo
       return await tx.order.update({
         where: { id: orderId },
         data: {
@@ -117,13 +134,48 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
           paymentMethod,
           adminId: session.userId,
           billedAt: new Date()
+        },
+        include: {
+          vehicle: { include: { customer: true } },
+          technician: { select: { name: true } },
+          admin: { select: { name: true } },
+          services: { include: { service: true } },
+          products: { include: { product: true } },
         }
       });
     });
 
     revalidatePath('/caja');
     revalidatePath('/dashboard');
-    return { success: true, message: 'Orden facturada correctamente', data: updatedOrder };
+    return {
+      success: true,
+      message: 'Orden facturada correctamente',
+      data: {
+        ...updatedOrder,
+        totalServices: Number(updatedOrder.totalServices),
+        totalProducts: Number(updatedOrder.totalProducts),
+        grandTotal: Number(updatedOrder.grandTotal),
+        services: updatedOrder.services.map((s: any) => ({
+          ...s,
+          chargedPrice: Number(s.chargedPrice),
+          service: s.service ? {
+            ...s.service,
+            basePrice: Number(s.service.basePrice)
+          } : s.service
+        })),
+        products: updatedOrder.products.map((p: any) => ({
+          ...p,
+          unitPrice: Number(p.unitPrice),
+          unitCost: Number(p.unitCost),
+          product: p.product ? {
+            ...p.product,
+            unitCost: Number(p.product.unitCost),
+            salePrice: Number(p.product.salePrice),
+            profitPercentage: p.product.profitPercentage ? Number(p.product.profitPercentage) : null
+          } : p.product
+        })),
+      }
+    };
   } catch (error: any) {
     console.error(error);
     return { success: false, message: error.message || 'Error al facturar' };

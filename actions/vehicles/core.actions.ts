@@ -44,6 +44,17 @@ export async function deleteVehicle(id: string) {
   try {
     await verifySession();
 
+    const ordersCount = await prisma.order.count({
+      where: { vehicleId: id },
+    });
+
+    if (ordersCount > 0) {
+      return { 
+        success: false, 
+        message: 'No se puede eliminar el vehículo porque tiene órdenes de servicio asociadas.' 
+      };
+    }
+
     await prisma.vehicle.delete({
       where: { id },
     });

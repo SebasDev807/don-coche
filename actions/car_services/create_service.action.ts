@@ -26,6 +26,15 @@ export async function createService(formData: FormData) {
         basePrice: validatedData.basePrice,
         description: validatedData.description || null,
         isActive: true,
+        ...(validatedData.products && validatedData.products.length > 0 && {
+          products: {
+            create: validatedData.products.map(p => ({
+              productId: p.productId,
+              quantity: p.quantity,
+              isRequired: p.isRequired
+            }))
+          }
+        })
       },
     });
 

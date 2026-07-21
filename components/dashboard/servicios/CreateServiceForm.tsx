@@ -11,6 +11,7 @@ import { createServiceSchema, CreateServiceFormValues } from '@/validation';
 import { createService } from '@/actions/car_services';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { PriceInput } from '@/components/ui/PriceInput';
+import { ProductSelector, SelectedProduct } from './ProductSelector';
 
 
 const MySwal = withReactContent(Swal);
@@ -18,6 +19,7 @@ const MySwal = withReactContent(Swal);
 export function CreateServiceForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
 
   type FormInput = z.input<typeof createServiceSchema>;
 
@@ -48,6 +50,10 @@ export function CreateServiceForm() {
         formData.append(key, value.toString());
       }
     });
+
+    if (selectedProducts.length > 0) {
+      formData.append('products', JSON.stringify(selectedProducts));
+    }
 
     const result = await createService(formData);
 
@@ -126,6 +132,12 @@ export function CreateServiceForm() {
             errors={errors}
             placeholder="0"
           />
+
+          {/* Selector de Productos */}
+          <div className="col-span-1 md:col-span-2">
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Productos Asociados (Receta)</label>
+            <ProductSelector onProductsChange={setSelectedProducts} />
+          </div>
 
           {/* Descripción */}
           <div className="col-span-1 md:col-span-2">

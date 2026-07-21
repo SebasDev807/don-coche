@@ -101,14 +101,21 @@ export async function getWeeklyChartData() {
     const today = new Date();
     const dayOfWeek = today.getDay();
     const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    
+
     const monday = new Date(today);
     monday.setDate(today.getDate() - diffToMonday);
     monday.setHours(0, 0, 0, 0);
 
     const data = [];
-    const daysMap = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
-    
+    const daysMap = [
+      'Domingo',
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+    ];
     // Generar estructura de la semana actual (Lunes a Domingo)
     for (let i = 0; i < 7; i++) {
       const date = new Date(monday);
@@ -140,10 +147,10 @@ export async function getWeeklyChartData() {
 
     for (const order of ordersThisWeek) {
       if (!order.billedAt) continue;
-      
+
       const orderDateStr = order.billedAt.toDateString();
       const dayData = data.find(d => d.date.toDateString() === orderDateStr);
-      
+
       if (dayData) {
         for (const s of order.services) {
           const price = Number(s.chargedPrice);
@@ -186,7 +193,7 @@ export async function getRecentMovements() {
     const movements = orders.map((order) => {
       const isBilled = order.status === 'FACTURADA';
       const isCanceled = order.status === 'CANCELADA';
-      
+
       let estado = 'EN PROCESO';
       let montoColor = 'text-[#B06000]';
       if (isBilled) {
@@ -198,7 +205,7 @@ export async function getRecentMovements() {
       }
 
       // Tomamos el primer servicio como concepto
-      const concepto = order.services.length > 0 
+      const concepto = order.services.length > 0
         ? order.services[0].service.name + (order.services.length > 1 ? ` y ${order.services.length - 1} más` : '')
         : 'Sin servicios';
 

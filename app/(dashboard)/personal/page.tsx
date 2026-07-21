@@ -3,11 +3,13 @@ import { Suspense } from 'react';
 import { getStaffUsers } from '@/actions/personal';
 import { StaffKPIs, StaffToolbar, StaffTable } from '@/components/dashboard/personal';
 
+
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: 'Gestión de Personal | Don Coche',
   description: 'Gestión de operarios, administradores y accesos al sistema',
 };
-
 /**
  * Página principal del directorio de personal (Server Component).
  * 

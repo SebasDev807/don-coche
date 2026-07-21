@@ -9,8 +9,11 @@ import { ItemCategory } from '@prisma/client';
 /**
  * Metadata de la página de Inventario para SEO y título.
  */
+export const revalidate = 60;
+
+
 export const metadata = {
-  title: 'Inventario Maestro | Don Coche',
+  title: 'Inventario | Don Coche',
   description: 'Control detallado de existencias y valoración de activos.',
 };
 
@@ -32,7 +35,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     include: {
       category_rel: true
     },
-    where: { 
+    where: {
       isActive: true,
       ...(category && { categoryId: category }),
       ...(query && {
@@ -92,7 +95,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
         </header>
 
         {/* Tarjetas de Indicadores (KPIs) */}
-        <InventoryKpiCards 
+        <InventoryKpiCards
           totalValue={totalValue}
           totalProducts={totalProducts}
           lowStockAlerts={lowStockAlerts}

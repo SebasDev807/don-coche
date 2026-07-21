@@ -32,6 +32,7 @@ interface SeedUser {
   password: string;
   email?: string;
   celular?: string;
+  department?: ItemCategory;
 }
 
 /** Usuarios a insertar en la base de datos. */
@@ -41,24 +42,33 @@ const SEED_USERS: SeedUser[] = [
     name: 'Dev User',
     role: Role.SUPERUSUARIO,
     password: 'devmode12345!',
+    email: 'dev@doncoche.test',
+    celular: '3001112233',
   },
   {
     cc: '1000000001',
     name: 'Lized Vaneza Trujillo Mona',
     role: Role.GERENTE,
     password: 'ingreso12345',
+    email: 'gerencia@doncoche.test',
+    celular: '3002223344',
   },
   {
     cc: '2000000002',
     name: 'Carlos Administrador',
     role: Role.ADMINISTRADOR,
     password: 'ingreso12345',
+    email: 'admin@doncoche.test',
+    celular: '3003334455',
   },
   {
     cc: '3000000003',
     name: 'Pedro Técnico',
     role: Role.TECNICO,
     password: 'ingreso12345',
+    email: 'pedro@doncoche.test',
+    celular: '3004445566',
+    department: ItemCategory.LAVADERO,
   },
   // Nuevos empleados añadidos
   {
@@ -84,6 +94,7 @@ const SEED_USERS: SeedUser[] = [
     password: 'Tec2026#1',
     celular: '3125489631',
     role: Role.TECNICO,
+    department: ItemCategory.SERVITECA,
   },
   {
     name: 'Sebastián Herrera',
@@ -92,6 +103,7 @@ const SEED_USERS: SeedUser[] = [
     password: 'Tec2026#2',
     celular: '3137894521',
     role: Role.TECNICO,
+    department: ItemCategory.LAVADERO,
   },
   {
     name: 'Andrés Felipe Muñoz',
@@ -100,6 +112,7 @@ const SEED_USERS: SeedUser[] = [
     password: 'Tec2026#3',
     celular: '3149658742',
     role: Role.TECNICO,
+    department: ItemCategory.SERVITECA,
   },
   {
     name: 'Luis Eduardo Castillo',
@@ -108,6 +121,7 @@ const SEED_USERS: SeedUser[] = [
     password: 'Tec2026#4',
     celular: '3158741236',
     role: Role.TECNICO,
+    department: ItemCategory.LAVADERO,
   },
   {
     name: 'Natalia Rodríguez',
@@ -124,6 +138,7 @@ const SEED_USERS: SeedUser[] = [
     password: 'Tec2026#5',
     celular: '3173652148',
     role: Role.TECNICO,
+    department: ItemCategory.SERVITECA,
   },
   {
     name: 'Diana Carolina Pérez',
@@ -132,6 +147,7 @@ const SEED_USERS: SeedUser[] = [
     password: 'Tec2026#6',
     celular: '3187412365',
     role: Role.TECNICO,
+    department: ItemCategory.LAVADERO,
   },
   {
     name: 'Felipe Santiago Torres',
@@ -140,6 +156,7 @@ const SEED_USERS: SeedUser[] = [
     password: 'Tec2026#7',
     celular: '3206549871',
     role: Role.TECNICO,
+    department: ItemCategory.SERVITECA,
   },
 ];
 
@@ -160,6 +177,7 @@ async function main() {
         role: seedUser.role,
         email: seedUser.email || null,
         celular: seedUser.celular || null,
+        department: seedUser.department || null,
         passwordHash,
       },
       create: {
@@ -168,6 +186,7 @@ async function main() {
         role: seedUser.role,
         email: seedUser.email || null,
         celular: seedUser.celular || null,
+        department: seedUser.department || null,
         passwordHash,
         isActive: true,
       },

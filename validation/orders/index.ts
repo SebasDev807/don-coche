@@ -8,6 +8,9 @@ export const createOrderSchema = z.object({
   customerName: z.string().optional(),
   customerPhone: z.string().optional(),
   customerEmail: z.string().email({ message: 'Email inválido' }).optional().or(z.literal('')),
+  carBrand: z.string().optional(),
+  carModel: z.string().optional(),
+  carColor: z.string().optional(),
   services: z.array(z.string()).min(1, { message: 'Debe seleccionar al menos un servicio' }),
   // In the future, we can add products array here.
 });

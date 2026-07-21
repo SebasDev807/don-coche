@@ -1,4 +1,3 @@
-'use strict';
 'use server';
 
 import { prisma } from '@/lib/prisma';
@@ -28,7 +27,7 @@ export async function createOrder(data: CreateOrderInput) {
       return { success: false, message: 'Datos inválidos', errors: parsed.error.flatten().fieldErrors };
     }
 
-    const { plate, customerName, customerPhone, customerEmail, services } = parsed.data;
+    const { plate, customerName, customerPhone, customerEmail, carBrand, carModel, carColor, services } = parsed.data;
 
     const order = await prisma.$transaction(async (tx) => {
       // 1. Find existing vehicle
@@ -69,13 +68,21 @@ export async function createOrder(data: CreateOrderInput) {
           data: {
             plate,
             customerId,
+            brand: carBrand || null,
+            model: carModel || null,
+            color: carColor || null,
           },
           include: { customer: true }
         });
       } else if (!vehicle.customerId && customerId) {
         vehicle = await tx.vehicle.update({
           where: { id: vehicle.id },
-          data: { customerId },
+          data: { 
+            customerId: customerId || vehicle.customerId,
+            brand: carBrand || vehicle.brand,
+            model: carModel || vehicle.model,
+            color: carColor || vehicle.color,
+          },
           include: { customer: true }
         });
       }

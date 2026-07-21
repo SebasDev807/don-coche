@@ -1,3 +1,5 @@
+"use client";
+
 import { ServiceCard } from './ServiceCard';
 import { useState } from 'react';
 
@@ -56,7 +58,7 @@ export const ServicesPanel = ({
               key={service.id} 
               id={service.id} 
               name={service.name} 
-              iconPath={service.icon || 'minor_crash'} 
+              category={service.category} 
               price={Number(service.basePrice)}
               isSelected={selectedServices.includes(service.id)}
               onToggle={() => onToggleService(service.id)}

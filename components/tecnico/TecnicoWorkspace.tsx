@@ -22,6 +22,10 @@ export function TecnicoWorkspace({ catalogServices }: TecnicoWorkspaceProps) {
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   
+  const [carBrand, setCarBrand] = useState('');
+  const [carModel, setCarModel] = useState('');
+  const [carColor, setCarColor] = useState('');
+  
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,6 +40,10 @@ export function TecnicoWorkspace({ catalogServices }: TecnicoWorkspaceProps) {
           setCustomerName(cust.name || '');
           setCustomerPhone(cust.phone || '');
           setCustomerEmail(cust.email || '');
+          
+          setCarBrand(res.data.brand || '');
+          setCarModel(res.data.model || '');
+          setCarColor(res.data.color || '');
           
           MySwal.fire({
             toast: true,
@@ -78,6 +86,9 @@ export function TecnicoWorkspace({ catalogServices }: TecnicoWorkspaceProps) {
       customerName,
       customerPhone,
       customerEmail,
+      carBrand,
+      carModel,
+      carColor,
       services: selectedServices
     });
 
@@ -90,6 +101,9 @@ export function TecnicoWorkspace({ catalogServices }: TecnicoWorkspaceProps) {
       setCustomerName('');
       setCustomerPhone('');
       setCustomerEmail('');
+      setCarBrand('');
+      setCarModel('');
+      setCarColor('');
       setSelectedServices([]);
       router.refresh();
     } else {
@@ -104,6 +118,9 @@ export function TecnicoWorkspace({ catalogServices }: TecnicoWorkspaceProps) {
         customerName={customerName} setCustomerName={setCustomerName}
         customerPhone={customerPhone} setCustomerPhone={setCustomerPhone}
         customerEmail={customerEmail} setCustomerEmail={setCustomerEmail}
+        carBrand={carBrand} setCarBrand={setCarBrand}
+        carModel={carModel} setCarModel={setCarModel}
+        carColor={carColor} setCarColor={setCarColor}
       />
       <ServicesPanel 
         catalogServices={catalogServices}

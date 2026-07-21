@@ -88,7 +88,6 @@ export default async function CatalogServicePage(props: {
                   service={{
                     id: service.id,
                     name: service.name,
-                    icon: service.icon,
                     category: service.category,
                     basePrice: service.basePrice,
                     description: service.description,

@@ -13,12 +13,9 @@
 import type { Metadata } from 'next';
 import { DashboardHeader } from '../../components/dashboard/DashboardHeader';
 import { verifySession } from '@/lib/dal';
-import {
-  DASHBOARD_KPIS,
-  DASHBOARD_CHART_DATA,
-  DASHBOARD_MOVEMENTS,
-  MOVEMENT_STATUS_STYLES,
-} from '@/data/mocks';
+import { MOVEMENT_STATUS_STYLES } from '@/data/mocks';
+import { getDashboardKPIs, getWeeklyChartData, getRecentMovements } from '@/actions/dashboard/kpis.actions';
+import { WeeklyChart } from '@/components/dashboard/WeeklyChart';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Don Coche',
@@ -30,6 +27,21 @@ export const metadata: Metadata = {
  */
 export default async function DashboardPage() {
   const user = await verifySession();
+  
+  // Fetch real data in parallel
+  const [kpisRes, chartRes, movementsRes] = await Promise.all([
+    getDashboardKPIs(),
+    getWeeklyChartData(),
+    getRecentMovements()
+  ]);
+
+  const kpis = kpisRes.data || {
+    ventasTotales: { valor: '$0.00', porcentaje: '0%', progreso: 0 },
+    rentabilidad: { valor: '0%', meta: 'META: 30%', progreso: 0 },
+    inventarioGlobal: { valor: '$0.00', nota: '' }
+  };
+  const chartData = chartRes.data || [];
+  const movements = movementsRes.data || [];
 
   return (
     <div className="max-w-7xl mx-auto flex flex-col gap-8 fade-in">
@@ -51,16 +63,16 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-baseline gap-2 relative z-10">
               <p className="font-display-lg text-headline-lg font-black text-on-surface">
-                {DASHBOARD_KPIS.ventasTotales.valor}
+                {kpis.ventasTotales.valor}
               </p>
               <span className="text-[#137333] text-xs font-bold">
-                {DASHBOARD_KPIS.ventasTotales.porcentaje}
+                {kpis.ventasTotales.porcentaje}
               </span>
             </div>
             <div className="w-full bg-surface-variant h-1 rounded-full mt-2 overflow-hidden">
               <div
                 className="bg-[#137333] h-full rounded-full transition-all duration-700 ease-out"
-                style={{ width: `${DASHBOARD_KPIS.ventasTotales.progreso}%` }}
+                style={{ width: `${kpis.ventasTotales.progreso}%` }}
               />
             </div>
           </div>
@@ -77,16 +89,16 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-baseline gap-2 relative z-10">
               <p className="font-display-lg text-headline-lg font-black text-on-surface">
-                {DASHBOARD_KPIS.rentabilidad.valor}
+                {kpis.rentabilidad.valor}
               </p>
               <span className="text-on-surface-variant text-xs font-bold">
-                {DASHBOARD_KPIS.rentabilidad.meta}
+                {kpis.rentabilidad.meta}
               </span>
             </div>
             <div className="w-full bg-surface-variant h-1 rounded-full mt-2 overflow-hidden">
               <div
                 className="bg-on-surface h-full rounded-full transition-all duration-700 ease-out"
-                style={{ width: `${DASHBOARD_KPIS.rentabilidad.progreso}%` }}
+                style={{ width: `${kpis.rentabilidad.progreso}%` }}
               />
             </div>
           </div>
@@ -103,11 +115,11 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-baseline gap-2 relative z-10">
               <p className="font-display-lg text-headline-lg font-black text-on-surface">
-                {DASHBOARD_KPIS.inventarioGlobal.valor}
+                {kpis.inventarioGlobal.valor}
               </p>
             </div>
             <p className="text-on-surface-variant text-xs mt-2">
-              {DASHBOARD_KPIS.inventarioGlobal.nota}
+              {kpis.inventarioGlobal.nota}
             </p>
           </div>
         </div>
@@ -142,28 +154,9 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Barras */}
-          <div className="flex-1 flex items-end justify-between relative mt-8 h-64 border-b border-surface-variant pb-8 px-2 md:px-4">
-            {DASHBOARD_CHART_DATA.map((bar) => (
-              <div
-                key={bar.dia}
-                className="flex-1 flex flex-col items-center justify-end h-full relative group"
-              >
-                <div className="w-10 md:w-16 flex items-end justify-center gap-1 h-full">
-                  <div
-                    className="w-4 md:w-6 bg-primary-container transition-all duration-500 ease-out"
-                    style={{ height: `${bar.lavadero}%` }}
-                  />
-                  <div
-                    className="w-4 md:w-6 bg-tertiary transition-all duration-500 ease-out"
-                    style={{ height: `${bar.serviteca}%` }}
-                  />
-                </div>
-                <span className="absolute -bottom-8 font-label-bold text-xs text-on-surface-variant uppercase">
-                  {bar.dia}
-                </span>
-              </div>
-            ))}
+          {/* Barras Recharts */}
+          <div className="flex-1 mt-8 h-64">
+            <WeeklyChart data={chartData} />
           </div>
         </div>
 
@@ -190,7 +183,7 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-variant bg-surface-container-lowest">
-                {DASHBOARD_MOVEMENTS.map((movement) => {
+                {movements.map((movement: any) => {
                   const statusStyle = MOVEMENT_STATUS_STYLES[movement.estado] ?? {
                     bg: 'bg-surface-variant',
                     text: 'text-on-surface-variant',

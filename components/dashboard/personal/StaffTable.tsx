@@ -99,9 +99,16 @@ export function StaffTable({ users }: StaffTableProps) {
                   </div>
                 </td>
                 <td className="py-4 px-6">
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${getRoleStyles(user.role)}`}>
-                    {formatRole(user.role)}
-                  </span>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${getRoleStyles(user.role)}`}>
+                      {formatRole(user.role)}
+                    </span>
+                    {(user as any).department && (
+                      <span className="text-[11px] text-secondary font-medium tracking-wide bg-surface-container px-2 py-0.5 rounded">
+                        {((user as any).department as string).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="py-4 px-6">
                   {user.isActive ? (

@@ -8,6 +8,7 @@ export const createUserSchema = z.object({
   role: z.enum(['GERENTE', 'ADMINISTRADOR', 'TECNICO'], {
     message: 'Debes seleccionar un rol válido',
   }),
+  department: z.enum(['LAVADERO', 'SERVITECA', '']).nullable().optional(),
   password: z
     .string()
     .min(8, 'La contraseña debe tener al menos 8 caracteres')

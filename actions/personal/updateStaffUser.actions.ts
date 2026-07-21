@@ -19,7 +19,7 @@ export async function updateStaffUser(id: string, formData: FormData) {
       return { success: false, message: 'Revisa los campos del formulario.' };
     }
 
-    const { cc, name, email, celular, role } = parsedData.data;
+    const { cc, name, email, celular, role, department } = parsedData.data;
 
     // Check if another user has the same CC
     const existingUserByCC = await prisma.user.findUnique({
@@ -49,6 +49,7 @@ export async function updateStaffUser(id: string, formData: FormData) {
         email: email || null,
         celular: celular || null,
         role,
+        department: role === 'TECNICO' ? (department === '' ? null : (department as any)) : null,
       },
     });
 

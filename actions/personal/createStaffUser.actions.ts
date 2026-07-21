@@ -20,7 +20,7 @@ export async function createStaffUser(formData: FormData) {
       return { success: false, message: 'Revisa los campos del formulario.' };
     }
 
-    const { cc, name, email, celular, role, password } = parsedData.data;
+    const { cc, name, email, celular, role, department, password } = parsedData.data;
 
     // Check if user already exists
     const existingUserByCC = await prisma.user.findUnique({
@@ -51,6 +51,7 @@ export async function createStaffUser(formData: FormData) {
         email: email || null,
         celular: celular || null,
         role,
+        department: role === 'TECNICO' ? (department === '' ? null : (department as any)) : null,
         passwordHash,
       },
     });

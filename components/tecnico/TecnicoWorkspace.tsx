@@ -12,9 +12,10 @@ const MySwal = withReactContent(Swal);
 
 interface TecnicoWorkspaceProps {
   catalogServices: any[];
+  userDepartment?: string | null;
 }
 
-export function TecnicoWorkspace({ catalogServices }: TecnicoWorkspaceProps) {
+export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWorkspaceProps) {
   const router = useRouter();
 
   const [plate, setPlate] = useState('');
@@ -123,7 +124,7 @@ export function TecnicoWorkspace({ catalogServices }: TecnicoWorkspaceProps) {
         carColor={carColor} setCarColor={setCarColor}
       />
       <ServicesPanel 
-        catalogServices={catalogServices}
+        catalogServices={userDepartment ? catalogServices.filter(s => s.category === userDepartment) : catalogServices}
         selectedServices={selectedServices}
         onToggleService={handleToggleService}
         onSubmit={handleCreateOrder}

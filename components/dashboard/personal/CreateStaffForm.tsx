@@ -20,6 +20,7 @@ export function CreateStaffForm() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<CreateUserFormValues>({
     resolver: zodResolver(createUserSchema),
@@ -29,9 +30,12 @@ export function CreateStaffForm() {
       email: '',
       celular: '',
       role: 'TECNICO', // or empty, but zod might complain if not matched
+      department: '',
       password: '',
     },
   });
+
+  const selectedRole = watch('role');
 
   const onSubmit = async (data: CreateUserFormValues) => {
     setIsSubmitting(true);
@@ -154,6 +158,27 @@ export function CreateStaffForm() {
             </div>
             <ErrorMessage message={errors.role?.message} />
           </div>
+
+          {/* Departamento Dropdown (Only for Técnicos) */}
+          {selectedRole === 'TECNICO' && (
+            <div className="col-span-1">
+              <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Departamento (Opcional)</label>
+              <div className="relative">
+                <select 
+                  {...register('department')}
+                  className={`h-[56px] form-select w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 pr-10 text-on-surface appearance-none cursor-pointer ${errors.department ? 'border-error focus:border-error focus:ring-error' : ''}`}
+                >
+                  <option value="">Ambos (Lavadero y Serviteca)</option>
+                  <option value="LAVADERO">Lavadero</option>
+                  <option value="SERVITECA">Serviteca</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-secondary">
+                  <span className="material-symbols-outlined text-[20px]">expand_more</span>
+                </div>
+              </div>
+              <ErrorMessage message={errors.department?.message} />
+            </div>
+          )}
 
           {/* Contraseña */}
           <div className="col-span-1">

@@ -51,21 +51,22 @@ enum MovementType {
 // -----------------------------------------------------------------------
 
 model User {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  cc           String   @unique /// Cédula de Ciudadanía - Usuario de acceso
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cc           String        @unique /// Cédula de Ciudadanía - Usuario de acceso
   name         String
-  email        String?  @unique
+  email        String?       @unique
   celular      String?
-  passwordHash String   @map("password_hash")
-  role         Role     @default(TECNICO)
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  passwordHash String        @map("password_hash")
+  role         Role          @default(TECNICO)
+  department   ItemCategory?
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
 
   // Relaciones
-  ordersAsTech  Order[]              @relation("TechnicianOrders")
-  ordersAsAdmin Order[]              @relation("AdminOrders")
-  stockMoves    InventoryMovement[]  @relation("AdminMovements")
+  ordersAsTech  Order[]             @relation("TechnicianOrders")
+  ordersAsAdmin Order[]             @relation("AdminOrders")
+  stockMoves    InventoryMovement[] @relation("AdminMovements")
 
   @@index([cc]) // Índice para login rápido
   @@map("users")
@@ -78,11 +79,11 @@ model User {
 model Customer {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String?
-  phone     String?  /// WhatsApp para recordatorios
+  phone     String? /// WhatsApp para recordatorios
   email     String?
   createdAt DateTime @default(now()) @map("created_at")
 
-  vehicles  Vehicle[]
+  vehicles Vehicle[]
 
   @@map("customers")
 }
@@ -96,8 +97,8 @@ model Vehicle {
   customerId String?  @map("customer_id") @db.Uuid
   createdAt  DateTime @default(now()) @map("created_at")
 
-  customer   Customer? @relation(fields: [customerId], references: [id])
-  orders     Order[]
+  customer Customer? @relation(fields: [customerId], references: [id])
+  orders   Order[]
 
   @@index([plate]) // Índice para búsqueda rápida en la pista
   @@map("vehicles")
@@ -108,49 +109,49 @@ model Vehicle {
 // -----------------------------------------------------------------------
 
 model Category {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String    @unique
-  slug      String    @unique
-  createdAt DateTime  @default(now()) @map("created_at")
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
 
-  products  Product[]
-  services  ServiceCatalog[]
+  products Product[]
+  services ServiceCatalog[]
 
   @@map("categories")
 }
 
 model Product {
-  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code             String?      @unique
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code             String?       @unique
   name             String
-  slug             String       @unique
-  brand            String?                                                         /// Marca del producto
+  slug             String        @unique
+  brand            String? /// Marca del producto
   category         ItemCategory?
-  categoryId       String?      @map("category_id") @db.Uuid
-  stock            Int          @default(0)
-  unitCost         Decimal      @map("unit_cost") @db.Decimal(10, 2)              /// Costo de compra
-  salePrice        Decimal      @map("sale_price") @db.Decimal(10, 2)             /// Precio de venta
-  profitPercentage Decimal?     @map("profit_percentage") @db.Decimal(5, 2)      /// % Ganancia (Exclusivo Gerencia)
-  isActive         Boolean      @default(true) @map("is_active")                 /// Soft delete
-  createdAt        DateTime     @default(now()) @map("created_at")
-  updatedAt        DateTime     @updatedAt @map("updated_at")
+  categoryId       String?       @map("category_id") @db.Uuid
+  stock            Int           @default(0)
+  unitCost         Decimal       @map("unit_cost") @db.Decimal(10, 2) /// Costo de compra
+  salePrice        Decimal       @map("sale_price") @db.Decimal(10, 2) /// Precio de venta
+  profitPercentage Decimal?      @map("profit_percentage") @db.Decimal(5, 2) /// % Ganancia (Exclusivo Gerencia)
+  isActive         Boolean       @default(true) @map("is_active") /// Soft delete
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
 
-  category_rel     Category?    @relation(fields: [categoryId], references: [id])
-  orderProducts    OrderProduct[]
-  movements        InventoryMovement[]
+  category_rel  Category?           @relation(fields: [categoryId], references: [id])
+  orderProducts OrderProduct[]
+  movements     InventoryMovement[]
 
   @@map("products")
 }
 
 model ServiceCatalog {
-  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String
   category    ItemCategory?
-  categoryId  String?      @map("category_id") @db.Uuid
-  basePrice   Decimal      @map("base_price") @db.Decimal(10, 2)
+  categoryId  String?       @map("category_id") @db.Uuid
+  basePrice   Decimal       @map("base_price") @db.Decimal(10, 2)
   description String?
-  isActive    Boolean      @default(true) @map("is_active")
-  createdAt   DateTime     @default(now()) @map("created_at")
+  isActive    Boolean       @default(true) @map("is_active")
+  createdAt   DateTime      @default(now()) @map("created_at")
 
   category_rel  Category?      @relation(fields: [categoryId], references: [id])
   orderServices OrderService[]
@@ -167,14 +168,14 @@ model InventoryMovement {
   productId     String       @map("product_id") @db.Uuid
   adminId       String       @map("admin_id") @db.Uuid /// Quién hizo el movimiento
   type          MovementType
-  quantity      Int          /// Cantidad agregada o descontada
+  quantity      Int /// Cantidad agregada o descontada
   previousStock Int          @map("previous_stock")
   newStock      Int          @map("new_stock")
-  reason        String?      /// Ej: "Ingreso de nueva mercancía" o "Venta Orden #12"
+  reason        String? /// Ej: "Ingreso de nueva mercancía" o "Venta Orden #12"
   createdAt     DateTime     @default(now()) @map("created_at")
 
-  product       Product      @relation(fields: [productId], references: [id])
-  admin         User         @relation("AdminMovements", fields: [adminId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  admin   User    @relation("AdminMovements", fields: [adminId], references: [id])
 
   @@map("inventory_movements")
 }
@@ -184,42 +185,42 @@ model InventoryMovement {
 // -----------------------------------------------------------------------
 
 model Order {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderNumber   Int            @default(autoincrement()) @map("order_number") @unique
-  technicianId  String         @map("technician_id") @db.Uuid
-  adminId       String?        @map("admin_id") @db.Uuid
-  vehicleId     String         @map("vehicle_id") @db.Uuid
-  
+  id           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderNumber  Int     @unique @default(autoincrement()) @map("order_number")
+  technicianId String  @map("technician_id") @db.Uuid
+  adminId      String? @map("admin_id") @db.Uuid
+  vehicleId    String  @map("vehicle_id") @db.Uuid
+
   status        OrderStatus    @default(EN_PISTA)
   paymentMethod PaymentMethod? @map("payment_method")
-  
-  totalServices Decimal        @default(0) @map("total_services") @db.Decimal(10, 2)
-  totalProducts Decimal        @default(0) @map("total_products") @db.Decimal(10, 2)
-  grandTotal    Decimal        @default(0) @map("grand_total") @db.Decimal(10, 2)
-  
-  createdAt     DateTime       @default(now()) @map("created_at")
-  billedAt      DateTime?      @map("billed_at") /// Fundamental para el cuadre de caja exacto
 
-  technician    User           @relation("TechnicianOrders", fields: [technicianId], references: [id])
-  admin         User?          @relation("AdminOrders", fields: [adminId], references: [id])
-  vehicle       Vehicle        @relation(fields: [vehicleId], references: [id])
-  
-  services      OrderService[]
-  products      OrderProduct[]
+  totalServices Decimal @default(0) @map("total_services") @db.Decimal(10, 2)
+  totalProducts Decimal @default(0) @map("total_products") @db.Decimal(10, 2)
+  grandTotal    Decimal @default(0) @map("grand_total") @db.Decimal(10, 2)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  billedAt  DateTime? @map("billed_at") /// Fundamental para el cuadre de caja exacto
+
+  technician User    @relation("TechnicianOrders", fields: [technicianId], references: [id])
+  admin      User?   @relation("AdminOrders", fields: [adminId], references: [id])
+  vehicle    Vehicle @relation(fields: [vehicleId], references: [id])
+
+  services OrderService[]
+  products OrderProduct[]
 
   @@index([createdAt]) // Índice para acelerar la carga de cuadres de caja diarios
-  @@index([status])    // Índice para filtrar rápido las órdenes "EN_PISTA"
+  @@index([status]) // Índice para filtrar rápido las órdenes "EN_PISTA"
   @@map("orders")
 }
 
 model OrderService {
-  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId      String         @map("order_id") @db.Uuid
-  serviceId    String         @map("service_id") @db.Uuid
-  chargedPrice Decimal        @map("charged_price") @db.Decimal(10, 2) /// Precio inmutable al momento de facturar
+  id           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId      String  @map("order_id") @db.Uuid
+  serviceId    String  @map("service_id") @db.Uuid
+  chargedPrice Decimal @map("charged_price") @db.Decimal(10, 2) /// Precio inmutable al momento de facturar
 
-  order        Order          @relation(fields: [orderId], references: [id])
-  service      ServiceCatalog @relation(fields: [serviceId], references: [id])
+  order   Order          @relation(fields: [orderId], references: [id])
+  service ServiceCatalog @relation(fields: [serviceId], references: [id])
 
   @@map("order_services")
 }
@@ -230,10 +231,10 @@ model OrderProduct {
   productId String  @map("product_id") @db.Uuid
   quantity  Int     @default(1)
   unitPrice Decimal @map("unit_price") @db.Decimal(10, 2) /// Precio de venta inmutable
-  unitCost  Decimal @map("unit_cost") @db.Decimal(10, 2)  /// Costo inmutable para calcular ganancias reales
+  unitCost  Decimal @map("unit_cost") @db.Decimal(10, 2) /// Costo inmutable para calcular ganancias reales
 
-  order     Order   @relation(fields: [orderId], references: [id])
-  product   Product @relation(fields: [productId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 
   @@map("order_products")
 }

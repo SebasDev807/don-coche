@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { verifySession } from '@/lib/dal';
 import { revalidatePath } from 'next/cache';
 
-export async function updateService(id: string, data: { name: string; basePrice: number; category?: string; icon?: string }) {
+export async function updateService(id: string, data: { name: string; basePrice: number; category?: string }) {
   try {
     await verifySession();
 
@@ -14,7 +14,6 @@ export async function updateService(id: string, data: { name: string; basePrice:
         name: data.name,
         basePrice: data.basePrice,
         category: data.category as any, // Cast to ItemCategory enum
-        icon: data.icon,
       },
     });
 

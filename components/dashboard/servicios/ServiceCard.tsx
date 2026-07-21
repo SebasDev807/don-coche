@@ -14,13 +14,18 @@ interface ServiceCardProps {
   service: {
     id: string;
     name: string;
-    icon?: string | null;
     category?: string | null;
     basePrice: any;
     description?: string | null;
     isActive?: boolean;
   };
 }
+
+const getIconForCategory = (category: string | null | undefined) => {
+  if (category === 'SERVITECA') return 'settings';
+  if (category === 'LAVADERO') return 'local_car_wash';
+  return 'car_repair';
+};
 
 export function ServiceCard({ service }: ServiceCardProps) {
   const router = useRouter();
@@ -77,8 +82,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
     const res = await updateService(service.id, {
       name,
       basePrice,
-      category,
-      icon: service.icon || undefined
+      category
     });
 
     setIsSubmitting(false);
@@ -103,7 +107,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
       <div className="flex justify-between items-start mb-6">
         <div className="w-12 h-12 bg-surface-container-high text-on-surface-variant rounded-lg flex items-center justify-center border border-outline-variant/50">
           <span className="material-symbols-outlined text-[24px]">
-            {service.icon || 'car_repair'}
+            {getIconForCategory(service.category)}
           </span>
         </div>
 

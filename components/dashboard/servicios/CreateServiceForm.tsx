@@ -11,7 +11,7 @@ import { createServiceSchema, CreateServiceFormValues } from '@/validation';
 import { createService } from '@/actions/car_services';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { PriceInput } from '@/components/ui/PriceInput';
-import { IconPicker } from '@/components/ui/IconPicker';
+
 
 const MySwal = withReactContent(Swal);
 
@@ -31,7 +31,7 @@ export function CreateServiceForm() {
     resolver: zodResolver(createServiceSchema),
     defaultValues: {
       name: '',
-      icon: '',
+
       category: undefined,
       basePrice: '',
       description: '',
@@ -96,14 +96,7 @@ export function CreateServiceForm() {
             <ErrorMessage message={errors.name?.message} />
           </div>
 
-          {/* Icon Picker */}
-          <IconPicker
-            name="icon"
-            label="Ícono del Servicio"
-            setValue={setValue}
-            watch={watch}
-            errors={errors}
-          />
+
 
           {/* Categoría Dropdown */}
           <div className="col-span-1">

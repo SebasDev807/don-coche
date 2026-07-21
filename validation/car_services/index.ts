@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 export const createServiceSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  icon: z.string().optional(),
   categoryId: z.string().uuid('Categoría no válida').optional().or(z.literal('')),
   category: z.enum(['LAVADERO', 'SERVITECA']).optional(),
   basePrice: z.preprocess((val) => {

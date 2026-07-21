@@ -21,7 +21,6 @@ export async function createService(formData: FormData) {
     await prisma.serviceCatalog.create({
       data: {
         name: validatedData.name,
-        icon: validatedData.icon || null,
         categoryId: validatedData.categoryId || null,
         category: validatedData.category || null,
         basePrice: validatedData.basePrice,

@@ -103,7 +103,11 @@ export function InventoryTable({ products }: InventoryTableProps) {
           <tbody className="divide-y divide-outline-variant font-body-md text-on-surface">
             {paginatedProducts.map((product) => {
               return (
-                <tr key={product.id} className="hover:bg-surface-container-lowest/50 transition-colors">
+                <tr 
+                  key={product.id} 
+                  onClick={() => router.push(`/inventario/${product.id}`)}
+                  className="hover:bg-surface-container-lowest/80 cursor-pointer transition-colors"
+                >
                   <td className="py-4 px-6 text-secondary font-mono text-sm">{product.code}</td>
                   <td className="py-4 px-6">
                     <div className="font-medium truncate max-w-[250px]" title={product.name}>{product.name}</div>
@@ -130,14 +134,14 @@ export function InventoryTable({ products }: InventoryTableProps) {
                   <td className="py-4 px-6 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button 
-                        onClick={() => router.push(`/inventario/editar/${product.id}`)}
+                        onClick={(e) => { e.stopPropagation(); router.push(`/inventario/editar/${product.id}`); }}
                         className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors" 
                         title="Editar"
                       >
                         <span className="material-symbols-outlined text-[20px]">edit</span>
                       </button>
                       <button 
-                        onClick={() => handleDelete(product.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }}
                         className="cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors" 
                         title="Eliminar"
                       >

@@ -187,7 +187,7 @@ export function CreateProductForm() {
 
           {/* Porcentaje de Ganancia */}
           <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">% de Ganancia</label>
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Porcentaje de Ganancia [%]</label>
             <input
               {...register('profitPercentage')}
               type="number"
@@ -202,14 +202,14 @@ export function CreateProductForm() {
 
           {/* Precio de Venta al Público */}
           <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Precio de Venta (PVP)</label>
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Precio de Venta al publico)</label>
             <input
               type="text"
               value={formattedSellingPrice}
               readOnly
               className="h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface-container-highest px-4 text-on-surface-variant cursor-not-allowed"
             />
-            <p className="text-secondary text-sm mt-1">Calculado automáticamente</p>
+            <p className="text-secondary text-sm mt-1">Calculado automáticamente: Costo + (Costo * % Ganancia)</p>
           </div>
 
         </div>

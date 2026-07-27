@@ -144,14 +144,15 @@ model Product {
 }
 
 model ServiceCatalog {
-  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String
-  category    ItemCategory?
-  categoryId  String?       @map("category_id") @db.Uuid
-  basePrice   Decimal       @map("base_price") @db.Decimal(10, 2)
-  description String?
-  isActive    Boolean       @default(true) @map("is_active")
-  createdAt   DateTime      @default(now()) @map("created_at")
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String
+  category         ItemCategory?
+  categoryId       String?       @map("category_id") @db.Uuid
+  basePrice        Decimal       @map("base_price") @db.Decimal(10, 2)
+  profitPercentage Float?        @map("profit_percentage")
+  description      String?
+  isActive         Boolean       @default(true) @map("is_active")
+  createdAt        DateTime      @default(now()) @map("created_at")
 
   category_rel  Category?      @relation(fields: [categoryId], references: [id])
   orderServices OrderService[]

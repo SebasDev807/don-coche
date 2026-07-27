@@ -12,8 +12,9 @@ En esta fase nos enfocaremos en los cambios a nivel de estructura de datos y el 
 ## 📦 Fase 2: Gestión de Inventario y Códigos de Barras
 Esta fase mejorará la experiencia de registro y actualización del stock para hacerla más ágil.
 
-*   **Registro de producto manual y por código de barras:** Al crear un nuevo producto, se permitirá ingresar los datos manualmente o escanear un código de barras para agilizar el proceso y vincular el código al producto.
-*   **Aumentar stock en base a código de barras:** Se implementará una vista o modal donde el usuario pueda simplemente escanear el código de barras de un producto existente y sumar unidades al inventario de forma rápida, sin tener que buscar el producto manualmente.
+*   **Registro de producto manual y por código de barras:** Al crear un nuevo producto, se permitirá ingresar los datos manualmente o escanear un código de barras utilizando una pistola láser para agilizar el proceso y vincular el código al producto.
+*   **Aumentar stock en base a código de barras:** Se implementará una vista o modal donde el usuario pueda simplemente escanear el código de barras (con la pistola láser) de un producto existente y sumar unidades al inventario de forma rápida, sin tener que buscar el producto manualmente. 
+    *   *Nota Técnica:* Las pistolas láser funcionan emulando un teclado que escribe los números rápidamente seguidos de un "Enter". La interfaz estará preparada para escuchar esta entrada veloz y ejecutar la acción automáticamente.
 
 ## 🛡️ Fase 3: Roles, Permisos y Seguridad
 La última fase asegurará la integridad de los datos y restringirá acciones críticas según la jerarquía de roles.

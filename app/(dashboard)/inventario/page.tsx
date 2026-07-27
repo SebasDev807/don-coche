@@ -1,10 +1,10 @@
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
 import { InventoryKpiCards } from '@/components/dashboard/inventario/InventoryKpiCards';
 import { InventoryTable } from '@/components/dashboard/inventario/InventoryTable';
 import { InventoryToolbar } from '@/components/dashboard/inventario/InventoryToolbar';
 import { getSeedProducts } from '@/lib/data/seed-inventory';
 import { prisma } from '@/lib/prisma';
-import { ItemCategory } from '@prisma/client';
+
 
 /**
  * Metadata de la página de Inventario para SEO y título.

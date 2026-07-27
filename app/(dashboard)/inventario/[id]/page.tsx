@@ -29,8 +29,8 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
   const salePrice = Number(product.salePrice);
   const profitPercentage = product.profitPercentage ? Number(product.profitPercentage) : 0;
   
-  const formattedUnitCost = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(unitCost);
-  const formattedSalePrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(salePrice);
+  const formattedUnitCost = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(unitCost);
+  const formattedSalePrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(salePrice);
 
   const getIconForCategory = (categoryName: string) => {
     const cat = categoryName.toLowerCase();
@@ -159,7 +159,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                  <span className="material-symbols-outlined text-primary mt-0.5">info</span>
                  <p className="text-body-sm text-on-surface-variant">
                    El inventario se valora basándose en el costo unitario de compra actual ({formattedUnitCost}). 
-                   El valor total en stock para este producto es de <strong className="text-on-surface">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(unitCost * product.stock)}</strong>.
+                   El valor total en stock para este producto es de <strong className="text-on-surface">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(unitCost * product.stock)}</strong>.
                  </p>
                </div>
             </div>

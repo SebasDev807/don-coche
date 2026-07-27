@@ -30,7 +30,11 @@ export default async function EditProductPage(props: EditProductPageProps) {
 
   // Convert Decimals to Number for the client component
   const serializedProduct = {
-    ...product,
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    categoryId: product.categoryId,
+    stock: product.stock,
     unitCost: Number(product.unitCost),
     salePrice: Number(product.salePrice),
     profitPercentage: product.profitPercentage ? Number(product.profitPercentage) : null,

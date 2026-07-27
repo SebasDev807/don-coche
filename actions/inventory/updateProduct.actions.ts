@@ -13,6 +13,7 @@ export interface UpdateProductInput {
   name?: string;
   description?: string;
   categoryId?: string;
+  barCode?: string;
   stock?: number;
   unitCost?: number;
   salePrice?: number;
@@ -42,7 +43,7 @@ export interface UpdateProductResponse {
  */
 export async function updateProduct(data: UpdateProductInput): Promise<UpdateProductResponse> {
   try {
-    const { id, name, description, categoryId, stock, unitCost, salePrice, profitPercentage, isActive } = data;
+    const { id, name, description, categoryId, barCode, stock, unitCost, salePrice, profitPercentage, isActive } = data;
 
     if (!id) {
       return {
@@ -70,6 +71,10 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
 
     if (description !== undefined) {
       updateData.description = description;
+    }
+
+    if (barCode !== undefined) {
+      updateData.barCode = barCode;
     }
 
     if (categoryId !== undefined) {

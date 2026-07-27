@@ -20,6 +20,7 @@ interface EditProductFormProps {
     id: string;
     name: string;
     description?: string | null;
+    barCode: string | null;
     categoryId: string | null;
     stock: number;
     unitCost: number;
@@ -42,6 +43,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
   } = useForm<z.input<typeof createProductSchema>, any, CreateProductFormValues>({
     resolver: zodResolver(createProductSchema),
     defaultValues: {
+      barCode: product.barCode || '',
       name: product.name,
       description: product.description || '',
       category: product.categoryId || '',
@@ -76,6 +78,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
     const result = await updateProduct({
       id: product.id,
       name: data.name,
+      barCode: data.barCode || undefined,
       description: data.description,
       categoryId: data.category,
       stock: data.stock,
@@ -115,6 +118,25 @@ export function EditProductForm({ product }: EditProductFormProps) {
     <div className="max-w-4xl mx-auto bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant p-6 md:p-8">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-gutter gap-y-6">
+          {/* Código de Barras */}
+          <div className="col-span-1 md:col-span-2">
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Código de Barras (Opcional)</label>
+            <div className="relative">
+              <input
+                {...register('barCode')}
+                className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow pl-12 pr-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.barCode ? 'border-error focus:border-error focus:ring-error' : ''}`}
+                placeholder="Escanea o escribe el código (EAN-13)"
+                type="text"
+                autoFocus
+              />
+              <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-secondary">
+                <span className="material-symbols-outlined text-[24px]">barcode</span>
+              </div>
+            </div>
+            <p className="text-secondary text-sm mt-1">Puedes escanear un nuevo código para actualizar el existente.</p>
+            <ErrorMessage message={errors.barCode?.message} />
+          </div>
+
           <div className="col-span-1 md:col-span-2">
             <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Nombre del Producto</label>
             <input

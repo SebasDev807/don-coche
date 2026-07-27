@@ -91,7 +91,7 @@ export async function createProduct(formData: FormData) {
     const categoryRecord = await prisma.category.findUnique({
       where: { id: validatedData.category }
     });
-    const barCode = generateEAN13();
+    const barCode = validatedData.barCode || generateEAN13();
     const slug = generateSlug(validatedData.name);
 
     // Calculate salePrice based on unitCost and profitPercentage

@@ -32,6 +32,7 @@ export default async function EditProductPage(props: EditProductPageProps) {
   const serializedProduct = {
     id: product.id,
     name: product.name,
+    barCode: product.barCode,
     description: product.description,
     categoryId: product.categoryId,
     stock: product.stock,

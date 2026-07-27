@@ -135,7 +135,7 @@ export function CreateServiceForm() {
 
           {/* Porcentaje de Ganancia */}
           <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">% de Ganancia</label>
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Porcentaje de Ganancia</label>
             <input
               {...register('profitPercentage')}
               type="number"

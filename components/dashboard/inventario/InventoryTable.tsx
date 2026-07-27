@@ -97,7 +97,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">DESCRIPCIÓN</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CATEGORÍA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">COSTO UNIT.</th>
-              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">% GANANCIA</th>
+              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">PORCENTAJE DE GANANCIA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">PRECIO VENTA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">STOCK</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider text-right">ACCIONES</th>
@@ -106,8 +106,8 @@ export function InventoryTable({ products }: InventoryTableProps) {
           <tbody className="divide-y divide-outline-variant font-body-md text-on-surface">
             {paginatedProducts.map((product) => {
               return (
-                <tr 
-                  key={product.id} 
+                <tr
+                  key={product.id}
                   onClick={() => router.push(`/inventario/${product.id}`)}
                   className="hover:bg-surface-container-lowest/80 cursor-pointer transition-colors"
                 >
@@ -136,16 +136,16 @@ export function InventoryTable({ products }: InventoryTableProps) {
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); router.push(`/inventario/editar/${product.id}`); }}
-                        className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors" 
+                        className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors"
                         title="Editar"
                       >
                         <span className="material-symbols-outlined text-[20px]">edit</span>
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }}
-                        className="cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors" 
+                        className="cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors"
                         title="Eliminar"
                       >
                         <span className="material-symbols-outlined text-[20px]">delete</span>

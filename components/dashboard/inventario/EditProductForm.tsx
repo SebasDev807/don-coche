@@ -53,10 +53,10 @@ export function EditProductForm({ product }: EditProductFormProps) {
 
   const unitCostValue = watch('unitCost');
   const profitPercentageValue = watch('profitPercentage');
-  
+
   // Clean unit cost for calculation if it is formatted
-  const numericUnitCost = typeof unitCostValue === 'string' 
-    ? parseInt(unitCostValue.replace(/\D/g, ''), 10) || 0 
+  const numericUnitCost = typeof unitCostValue === 'string'
+    ? parseInt(unitCostValue.replace(/\D/g, ''), 10) || 0
     : unitCostValue;
 
   const { formattedSellingPrice } = useSellingPrice(numericUnitCost as number, profitPercentageValue as number);
@@ -168,7 +168,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
 
           {/* Porcentaje de Ganancia */}
           <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">% de Ganancia</label>
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Porcentaje de Ganancia</label>
             <input
               {...register('profitPercentage')}
               type="number"
@@ -190,7 +190,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
               readOnly
               className="h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface-container-highest px-4 text-on-surface-variant cursor-not-allowed"
             />
-            <p className="text-secondary text-sm mt-1">Calculado automáticamente</p>
+            <p className="text-secondary text-sm mt-1">Calculado automáticamente: Costo + (Costo * % Ganancia)</p>
           </div>
 
           {/* Descripción del Producto */}

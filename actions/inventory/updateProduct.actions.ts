@@ -88,12 +88,18 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
       updateData.unitCost = new Prisma.Decimal(unitCost);
     }
 
-    if (salePrice !== undefined) {
-      updateData.salePrice = new Prisma.Decimal(salePrice);
-    }
-
     if (profitPercentage !== undefined) {
       updateData.profitPercentage = new Prisma.Decimal(profitPercentage);
+    }
+
+    // Compute salePrice if unitCost or profitPercentage changed
+    if (unitCost !== undefined || profitPercentage !== undefined) {
+      const finalUnitCost = unitCost !== undefined ? unitCost : Number(existing.unitCost);
+      const finalProfitPercentage = profitPercentage !== undefined ? profitPercentage : (existing.profitPercentage ? Number(existing.profitPercentage) : 0);
+      const computedSalePrice = finalUnitCost + (finalUnitCost * finalProfitPercentage / 100);
+      updateData.salePrice = new Prisma.Decimal(computedSalePrice);
+    } else if (salePrice !== undefined) {
+      updateData.salePrice = new Prisma.Decimal(salePrice);
     }
 
     if (isActive !== undefined) {

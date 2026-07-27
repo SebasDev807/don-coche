@@ -12,6 +12,7 @@ import { createProduct, getCategories } from '@/actions/inventory';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { CreateCategoryModal } from './CreateCategoryModal';
 import { PriceInput } from '@/components/ui/PriceInput';
+import { useSellingPrice } from '@/hooks';
 const MySwal = withReactContent(Swal);
 
 /**
@@ -31,6 +32,7 @@ export function CreateProductForm() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormInput, any, CreateProductFormValues>({
     resolver: zodResolver(createProductSchema),
@@ -40,9 +42,13 @@ export function CreateProductForm() {
       category: undefined,
       stock: 0,
       unitCost: '',
-      salePrice: '',
+      profitPercentage: '' as unknown as number,
     },
   });
+
+  const unitCostValue = watch('unitCost');
+  const profitPercentageValue = watch('profitPercentage');
+  const { formattedSellingPrice } = useSellingPrice(unitCostValue as number, profitPercentageValue as number);
 
 
 
@@ -179,15 +185,32 @@ export function CreateProductForm() {
             placeholder="0"
           />
 
-          {/* Precio de Venta */}
-          <PriceInput
-            name="salePrice"
-            label="Precio de Venta ($)"
-            register={register}
-            setValue={setValue}
-            errors={errors}
-            placeholder="0"
-          />
+          {/* Porcentaje de Ganancia */}
+          <div className="col-span-1">
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">% de Ganancia</label>
+            <input
+              {...register('profitPercentage')}
+              type="number"
+              min="0"
+              max="100"
+              step="5"
+              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.profitPercentage ? 'border-error focus:border-error focus:ring-error' : ''}`}
+              placeholder="Ej. 15"
+            />
+            <ErrorMessage message={errors.profitPercentage?.message} />
+          </div>
+
+          {/* Precio de Venta al Público */}
+          <div className="col-span-1">
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Precio de Venta (PVP)</label>
+            <input
+              type="text"
+              value={formattedSellingPrice}
+              readOnly
+              className="h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface-container-highest px-4 text-on-surface-variant cursor-not-allowed"
+            />
+            <p className="text-secondary text-sm mt-1">Calculado automáticamente</p>
+          </div>
 
         </div>
 

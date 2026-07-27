@@ -95,6 +95,11 @@ export async function createProduct(formData: FormData) {
     const sku = generateSKU(categoryName);
     const slug = generateSlug(`${validatedData.name} ${validatedData.brand || ''}`);
 
+    // Calculate salePrice based on unitCost and profitPercentage
+    const unitCost = validatedData.unitCost;
+    const profitPercentage = validatedData.profitPercentage || 0;
+    const computedSalePrice = unitCost + (unitCost * profitPercentage / 100);
+
     // Insertar en la base de datos
     await prisma.product.create({
       data: {
@@ -102,8 +107,9 @@ export async function createProduct(formData: FormData) {
         brand: validatedData.brand,
         categoryId: validatedData.category,
         stock: validatedData.stock,
-        unitCost: validatedData.unitCost,
-        salePrice: validatedData.salePrice,
+        unitCost: unitCost,
+        salePrice: computedSalePrice,
+        profitPercentage: profitPercentage,
         code: sku,
         slug: slug,
         isActive: true,

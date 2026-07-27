@@ -33,6 +33,7 @@ export default async function EditProductPage(props: EditProductPageProps) {
     ...product,
     unitCost: Number(product.unitCost),
     salePrice: Number(product.salePrice),
+    profitPercentage: product.profitPercentage ? Number(product.profitPercentage) : null,
   };
 
   return (

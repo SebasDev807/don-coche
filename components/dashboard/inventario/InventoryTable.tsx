@@ -12,12 +12,13 @@ export interface InventoryProduct {
   id: string;
   code: string | null;
   name: string;
-  brand: string | null;
+  description?: string | null;
   category: string;
   categoryId: string | null;
   stock: number;
   unitCost: number;
   salePrice: number;
+  profitPercentage: number;
 }
 
 /**
@@ -95,6 +96,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">DESCRIPCIÓN</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CATEGORÍA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">COSTO UNIT.</th>
+              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">% GANANCIA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">PRECIO VENTA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">STOCK</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider text-right">ACCIONES</th>
@@ -111,7 +113,6 @@ export function InventoryTable({ products }: InventoryTableProps) {
                   <td className="py-4 px-6 text-secondary font-mono text-sm">{product.code}</td>
                   <td className="py-4 px-6">
                     <div className="font-medium truncate max-w-[250px]" title={product.name}>{product.name}</div>
-                    {product.brand && <div className="text-xs text-secondary mt-0.5">Marca: {product.brand}</div>}
                   </td>
                   <td className="py-4 px-6">
                     <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
@@ -119,6 +120,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
                     </span>
                   </td>
                   <td className="py-4 px-6 text-secondary">{formatCurrency(product.unitCost)}</td>
+                  <td className="py-4 px-6 text-tertiary font-medium">{product.profitPercentage}%</td>
                   <td className="py-4 px-6 font-semibold">{formatCurrency(product.salePrice)}</td>
                   <td className="py-4 px-6 text-center">
                     <div className={`font-bold ${product.stock <= 10 ? 'text-red-600' : 'text-on-surface'}`}>{product.stock}</div>
@@ -155,7 +157,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
 
             {products.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-secondary">
+                <td colSpan={8} className="py-8 text-center text-secondary">
                   No hay productos que coincidan con la búsqueda.
                 </td>
               </tr>

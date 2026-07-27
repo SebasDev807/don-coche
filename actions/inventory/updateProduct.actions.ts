@@ -11,7 +11,7 @@ import { Prisma } from '@prisma/client';
 export interface UpdateProductInput {
   id: string;
   name?: string;
-  brand?: string;
+  description?: string;
   categoryId?: string;
   stock?: number;
   unitCost?: number;
@@ -42,7 +42,7 @@ export interface UpdateProductResponse {
  */
 export async function updateProduct(data: UpdateProductInput): Promise<UpdateProductResponse> {
   try {
-    const { id, name, brand, categoryId, stock, unitCost, salePrice, profitPercentage, isActive } = data;
+    const { id, name, description, categoryId, stock, unitCost, salePrice, profitPercentage, isActive } = data;
 
     if (!id) {
       return {
@@ -65,15 +65,11 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
 
     if (name !== undefined) {
       updateData.name = name;
-      updateData.slug = generateSlug(`${name} ${brand ?? existing.brand ?? ''}`);
+      updateData.slug = generateSlug(name);
     }
 
-    if (brand !== undefined) {
-      updateData.brand = brand;
-      // Recalcular slug si no se actualizó el nombre pero sí la marca
-      if (name === undefined) {
-        updateData.slug = generateSlug(`${existing.name} ${brand}`);
-      }
+    if (description !== undefined) {
+      updateData.description = description;
     }
 
     if (categoryId !== undefined) {

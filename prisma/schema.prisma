@@ -126,7 +126,7 @@ model Product {
   name             String
   slug             String        @unique
   imageUrl         String?       @map("image_url") /// URL de imagen del producto (opcional)
-  brand            String? /// Marca del producto
+  description      String?       /// Descripción del producto (opcional)
   category         ItemCategory?
   categoryId       String?       @map("category_id") @db.Uuid
   stock            Int           @default(0)

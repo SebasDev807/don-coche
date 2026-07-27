@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const createProductSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  brand: z.string().min(1, 'La marca es obligatoria'),
+  description: z.string().optional(),
   category: z.string().min(2, 'La categoría debe tener al menos 2 caracteres'),
   stock: z.coerce.number({ message: 'Debes ingresar un valor numérico' }).min(1, 'El stock debe ser al menos 1'),
   unitCost: z.preprocess((val) => {

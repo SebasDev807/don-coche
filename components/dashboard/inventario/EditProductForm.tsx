@@ -19,7 +19,7 @@ interface EditProductFormProps {
   product: {
     id: string;
     name: string;
-    brand: string | null;
+    description?: string | null;
     categoryId: string | null;
     stock: number;
     unitCost: number;
@@ -43,7 +43,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
     resolver: zodResolver(createProductSchema),
     defaultValues: {
       name: product.name,
-      brand: product.brand || '',
+      description: product.description || '',
       category: product.categoryId || '',
       stock: product.stock,
       unitCost: new Intl.NumberFormat('es-CO').format(product.unitCost) as any,
@@ -76,7 +76,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
     const result = await updateProduct({
       id: product.id,
       name: data.name,
-      brand: data.brand,
+      description: data.description,
       categoryId: data.category,
       stock: data.stock,
       unitCost: Number(data.unitCost),
@@ -124,17 +124,6 @@ export function EditProductForm({ product }: EditProductFormProps) {
               type="text"
             />
             <ErrorMessage message={errors.name?.message} />
-          </div>
-
-          <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Marca</label>
-            <input
-              {...register('brand')}
-              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.brand ? 'border-error focus:border-error focus:ring-error' : ''}`}
-              placeholder="Ej. Mobil"
-              type="text"
-            />
-            <ErrorMessage message={errors.brand?.message} />
           </div>
 
           <div className="col-span-1">
@@ -202,6 +191,16 @@ export function EditProductForm({ product }: EditProductFormProps) {
               className="h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface-container-highest px-4 text-on-surface-variant cursor-not-allowed"
             />
             <p className="text-secondary text-sm mt-1">Calculado automáticamente</p>
+          </div>
+
+          {/* Descripción del Producto */}
+          <div className="col-span-1 md:col-span-2">
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Descripción (Opcional)</label>
+            <textarea
+              {...register('description')}
+              className="h-24 form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow p-4 text-on-surface placeholder:text-secondary-fixed-dim resize-none"
+              placeholder="Añade detalles sobre el producto..."
+            />
           </div>
         </div>
 

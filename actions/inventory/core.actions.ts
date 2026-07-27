@@ -93,7 +93,7 @@ export async function createProduct(formData: FormData) {
     });
     const categoryName = categoryRecord?.name || 'GEN';
     const sku = generateSKU(categoryName);
-    const slug = generateSlug(`${validatedData.name} ${validatedData.brand || ''}`);
+    const slug = generateSlug(validatedData.name);
 
     // Calculate salePrice based on unitCost and profitPercentage
     const unitCost = validatedData.unitCost;
@@ -104,7 +104,7 @@ export async function createProduct(formData: FormData) {
     await prisma.product.create({
       data: {
         name: validatedData.name,
-        brand: validatedData.brand,
+        description: validatedData.description,
         categoryId: validatedData.category,
         stock: validatedData.stock,
         unitCost: unitCost,

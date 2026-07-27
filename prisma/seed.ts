@@ -220,7 +220,6 @@ async function main() {
       update: {
         name: seedProduct.name,
         slug: seedProduct.slug,
-        brand: seedProduct.brand,
         category: seedProduct.category,
         category_rel: {
           connect: { slug: categorySlug }
@@ -235,7 +234,6 @@ async function main() {
         code: seedProduct.code,
         name: seedProduct.name,
         slug: seedProduct.slug,
-        brand: seedProduct.brand,
         category: seedProduct.category,
         category_rel: {
           connect: { slug: categorySlug }

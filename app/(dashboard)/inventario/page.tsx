@@ -42,7 +42,6 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
           { code: { contains: query, mode: 'insensitive' } },
-          { brand: { contains: query, mode: 'insensitive' } },
         ]
       })
     },
@@ -65,12 +64,13 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     id: p.id,
     code: p.code,
     name: p.name,
-    brand: p.brand,
+    description: p.description,
     category: p.category_rel?.name || p.category || 'Sin Categoría',
     categoryId: p.categoryId,
     stock: p.stock,
     unitCost: Number(p.unitCost),
-    salePrice: Number(p.salePrice)
+    salePrice: Number(p.salePrice),
+    profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0
   }));
 
   // Ordenar los productos para mostrar primero los de stock bajo (<= 10)

@@ -85,12 +85,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                 <h1 className="font-headline-lg text-on-surface leading-tight mb-2">
                   {product.name}
                 </h1>
-                {product.brand && (
-                  <p className="text-body-lg text-secondary flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[18px]">verified</span>
-                    Marca: <span className="font-medium text-on-surface-variant">{product.brand}</span>
-                  </p>
-                )}
               </div>
               <Link
                 href={`/inventario/editar/${product.id}`}
@@ -146,7 +140,21 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
               </div>
             </div>
 
-            <div className="flex-grow mt-auto">
+            <div className="flex-grow mt-6">
+               <h4 className="font-title-md text-on-surface mb-3 flex items-center gap-2">
+                 <span className="material-symbols-outlined text-[20px]">description</span>
+                 Descripción del Producto
+               </h4>
+               <div className="bg-surface-container-low p-4 rounded-xl text-body-md text-on-surface-variant min-h-[100px] border border-outline-variant/40">
+                 {product.description ? (
+                   <p>{product.description}</p>
+                 ) : (
+                   <p className="italic opacity-60">No hay descripción disponible para este producto.</p>
+                 )}
+               </div>
+            </div>
+
+            <div className="mt-8">
                <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
                  <span className="material-symbols-outlined text-primary mt-0.5">info</span>
                  <p className="text-body-sm text-on-surface-variant">

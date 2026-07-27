@@ -38,7 +38,7 @@ export function CreateProductForm() {
     resolver: zodResolver(createProductSchema),
     defaultValues: {
       name: '',
-      brand: '',
+      description: '',
       category: undefined,
       stock: 0,
       unitCost: '',
@@ -122,18 +122,6 @@ export function CreateProductForm() {
             <ErrorMessage message={errors.name?.message} />
           </div>
 
-          {/* Marca */}
-          <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Marca</label>
-            <input
-              {...register('brand')}
-              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.brand ? 'border-error focus:border-error focus:ring-error' : ''}`}
-              placeholder="Ej. Mobil"
-              type="text"
-            />
-            <ErrorMessage message={errors.brand?.message} />
-          </div>
-
           {/* Categoría Dropdown (traídas del servidor) */}
           <div className="col-span-1">
             <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Categoría</label>
@@ -210,6 +198,16 @@ export function CreateProductForm() {
               className="h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface-container-highest px-4 text-on-surface-variant cursor-not-allowed"
             />
             <p className="text-secondary text-sm mt-1">Calculado automáticamente: Costo + (Costo * % Ganancia)</p>
+          </div>
+
+          {/* Descripción del Producto */}
+          <div className="col-span-1 md:col-span-2">
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Descripción (Opcional)</label>
+            <textarea
+              {...register('description')}
+              className="h-24 form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow p-4 text-on-surface placeholder:text-secondary-fixed-dim resize-none"
+              placeholder="Añade detalles sobre el producto..."
+            />
           </div>
 
         </div>

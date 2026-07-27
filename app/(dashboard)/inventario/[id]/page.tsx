@@ -80,7 +80,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
             <div className="flex justify-between items-start mb-6">
               <div>
                 <span className="inline-block bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-md font-bold mb-3 border border-secondary/20 font-mono">
-                  SKU: {product.code || 'N/A'}
+                  CÓDIGO DE BARRAS: {product.barCode || 'N/A'}
                 </span>
                 <h1 className="font-headline-lg text-on-surface leading-tight mb-2">
                   {product.name}

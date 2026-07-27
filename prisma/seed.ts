@@ -231,8 +231,8 @@ async function main() {
         isActive: true,
       },
       create: {
-        code: seedProduct.code,
         name: seedProduct.name,
+        barCode: seedProduct.barCode,
         slug: seedProduct.slug,
         category: seedProduct.category,
         category_rel: {
@@ -245,8 +245,7 @@ async function main() {
         isActive: true,
       },
     });
-
-    console.log(`  ✓ PRODUCTO       | ${product.code?.padEnd(14)} | ${product.name}`);
+    console.log(`  ✓ PRODUCTO       | ${product.barCode?.padEnd(14)} | ${product.name}`);
   }
 
   console.log('\nSeed exitoso.');

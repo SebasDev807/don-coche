@@ -28,7 +28,7 @@ export interface UpdateProductResponse {
   message: string;
   product?: {
     id: string;
-    code: string | null;
+    barCode: string | null;
     name: string;
   };
 }
@@ -112,7 +112,7 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
       message: 'Producto actualizado exitosamente.',
       product: {
         id: updatedProduct.id,
-        code: updatedProduct.code,
+        barCode: updatedProduct.barCode,
         name: updatedProduct.name,
       },
     };

@@ -10,7 +10,7 @@ const MySwal = withReactContent(Swal);
 
 export interface InventoryProduct {
   id: string;
-  code: string | null;
+  barCode: string | null;
   name: string;
   description?: string | null;
   category: string;
@@ -93,7 +93,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
         <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
             <tr className="bg-surface-container border-b border-outline-variant">
-              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">SKU / CÓDIGO</th>
+              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CÓDIGO DE BARRAS</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">DESCRIPCIÓN</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CATEGORÍA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">COSTO UNIT.</th>
@@ -111,7 +111,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
                   onClick={() => router.push(`/inventario/${product.id}`)}
                   className="hover:bg-surface-container-lowest/80 cursor-pointer transition-colors"
                 >
-                  <td className="py-4 px-6 text-secondary font-mono text-sm">{product.code}</td>
+                  <td className="py-4 px-6 text-secondary font-mono text-sm">{product.barCode}</td>
                   <td className="py-4 px-6">
                     <div className="font-medium truncate max-w-[250px]" title={product.name}>{product.name}</div>
                   </td>

@@ -41,11 +41,11 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
       ...(query && {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
-          { code: { contains: query, mode: 'insensitive' } },
+          { barCode: { contains: query, mode: 'insensitive' } },
         ]
       })
     },
-    orderBy: { code: 'asc' },
+    orderBy: { barCode: 'asc' },
   });
 
   // Si no hay productos en la base de datos (y no hay filtros), usamos los de seed como fallback
@@ -62,7 +62,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
   // Serializar objetos Decimal y Date para enviarlos al Client Component
   const serializedProducts = products.map((p) => ({
     id: p.id,
-    code: p.code,
+    barCode: p.barCode,
     name: p.name,
     description: p.description,
     category: p.category_rel?.name || p.category || 'Sin Categoría',
@@ -82,7 +82,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     if (!aLowStock && bLowStock) return 1;
 
     // Si ambos son bajo stock o ambos normal, ordenar por código
-    return (a.code || '').localeCompare(b.code || '');
+    return (a.barCode || '').localeCompare(b.barCode || '');
   });
 
   return (

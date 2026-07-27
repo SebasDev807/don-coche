@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { createProductSchema, createCategorySchema } from '@/validation';
-import { generateSKU } from '@/lib/utils/sku';
+import { generateEAN13 } from '@/lib/utils/barcode';
 import { generateSlug } from '@/lib/utils/slug';
 import { verifySession } from '@/lib/dal';
 import { ItemCategory } from '@prisma/client';
@@ -87,12 +87,11 @@ export async function createProduct(formData: FormData) {
     // Validar usando Zod (incluye coerción para los números)
     const validatedData = createProductSchema.parse(rawData);
 
-    // Generar SKU y Slug
+    // Generar Barcode y Slug
     const categoryRecord = await prisma.category.findUnique({
       where: { id: validatedData.category }
     });
-    const categoryName = categoryRecord?.name || 'GEN';
-    const sku = generateSKU(categoryName);
+    const barCode = generateEAN13();
     const slug = generateSlug(validatedData.name);
 
     // Calculate salePrice based on unitCost and profitPercentage
@@ -110,7 +109,7 @@ export async function createProduct(formData: FormData) {
         unitCost: unitCost,
         salePrice: computedSalePrice,
         profitPercentage: profitPercentage,
-        code: sku,
+        barCode: barCode,
         slug: slug,
         isActive: true,
       },

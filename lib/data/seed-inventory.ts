@@ -1,5 +1,5 @@
 import { Product, ItemCategory, Prisma } from '@prisma/client';
-import { generateSKU } from '../utils/sku';
+import { generateEAN13 } from '../utils/barcode';
 import { generateSlug } from '../utils/slug';
 
 export function getSeedCategories() {
@@ -23,7 +23,7 @@ export function getSeedProducts(): Product[] {
   return [
     {
       id: '1',
-      code: generateSKU(ItemCategory.LUBRICANTES),
+      barCode: generateEAN13(),
       name: 'Aceite 10W-30 Premium',
       slug: generateSlug('Aceite 10W-30 Premium Mobil'),
       category: ItemCategory.LUBRICANTES,
@@ -40,7 +40,7 @@ export function getSeedProducts(): Product[] {
     },
     {
       id: '2',
-      code: generateSKU(ItemCategory.ACCESORIOS),
+      barCode: generateEAN13(),
       name: 'Filtro de Aceite Sintético Universal',
       slug: generateSlug('Filtro de Aceite Sintetico Universal Bosch'),
       category: ItemCategory.ACCESORIOS,
@@ -57,7 +57,7 @@ export function getSeedProducts(): Product[] {
     },
     {
       id: '3',
-      code: generateSKU(ItemCategory.SERVITECA),
+      barCode: generateEAN13(),
       name: 'Pastillas de Freno Cerámicas Delantero',
       slug: generateSlug('Pastillas de Freno Ceramicas Delantero Akebono'),
       category: ItemCategory.SERVITECA,
@@ -74,7 +74,7 @@ export function getSeedProducts(): Product[] {
     },
     {
       id: '4',
-      code: generateSKU(ItemCategory.LUBRICANTES),
+      barCode: generateEAN13(),
       name: 'Aceite Mineral 20W-50',
       slug: generateSlug('Aceite Mineral 20W-50 Castrol'),
       category: ItemCategory.LUBRICANTES,
@@ -91,7 +91,7 @@ export function getSeedProducts(): Product[] {
     },
     {
       id: '5',
-      code: generateSKU(ItemCategory.LAVADERO),
+      barCode: generateEAN13(),
       name: 'Shampoo con Cera',
       slug: generateSlug('Shampoo con Cera Meguiars'),
       category: ItemCategory.LAVADERO,
@@ -108,7 +108,7 @@ export function getSeedProducts(): Product[] {
     },
     {
       id: '6',
-      code: generateSKU(ItemCategory.ACCESORIOS),
+      barCode: generateEAN13(),
       name: 'Aromatizante Pino',
       slug: generateSlug('Aromatizante Pino Little Trees'),
       category: ItemCategory.ACCESORIOS,
@@ -125,7 +125,7 @@ export function getSeedProducts(): Product[] {
     },
     {
       id: '7',
-      code: generateSKU(ItemCategory.SERVITECA),
+      barCode: generateEAN13(),
       name: 'Pesas para Balanceo 5g Caja 100',
       slug: generateSlug('Pesas para Balanceo 5g Caja 100 TR413'),
       category: ItemCategory.SERVITECA,
@@ -142,7 +142,7 @@ export function getSeedProducts(): Product[] {
     },
     {
       id: '8',
-      code: generateSKU(ItemCategory.LUBRICANTES),
+      barCode: generateEAN13(),
       name: 'Grasa Litio Multipropósito',
       slug: generateSlug('Grasa Litio Multiproposito Texaco'),
       category: ItemCategory.LUBRICANTES,
@@ -159,7 +159,7 @@ export function getSeedProducts(): Product[] {
     },
     {
       id: '9',
-      code: generateSKU(ItemCategory.LAVADERO),
+      barCode: generateEAN13(),
       name: 'Desengrasante Motor 5 Galones',
       slug: generateSlug('Desengrasante Motor 5 Galones Simoniz'),
       category: ItemCategory.LAVADERO,
@@ -176,7 +176,7 @@ export function getSeedProducts(): Product[] {
     },
     {
       id: '10',
-      code: generateSKU(ItemCategory.ACCESORIOS),
+      barCode: generateEAN13(),
       name: 'Líquido Limpiaparabrisas',
       slug: generateSlug('Liquido Limpiaparabrisas Qualitor'),
       category: ItemCategory.ACCESORIOS,

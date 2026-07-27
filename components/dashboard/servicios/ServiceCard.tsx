@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { useRouter } from 'next/navigation';
 import { PrimaryButton } from '@/components/ui';
+import { useSellingPrice } from '@/hooks';
 
 const MySwal = withReactContent(Swal);
 
@@ -43,7 +44,7 @@ export function ServiceCard({ service }: { service: any }) {
     }
   };
 
-  const formatPrice = (price: any) => new Intl.NumberFormat('es-CO').format(Number(price));
+  const { formattedSellingPrice } = useSellingPrice(service.basePrice, service.profitPercentage);
 
   return (
     <div className="bg-surface border border-outline-variant rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col h-full relative">
@@ -54,7 +55,7 @@ export function ServiceCard({ service }: { service: any }) {
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href={`/servicios/editar_servicio/${service.slug}`}
+            href={`/servicios/editar_servicio/${service.id}`}
             className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-primary bg-primary-container text-on-primary-container"
             title="Editar"
           >
@@ -82,7 +83,7 @@ export function ServiceCard({ service }: { service: any }) {
           <div>
             <label className="block font-label-bold text-label-bold text-on-surface-variant mb-1.5">Precio (PVP)</label>
             <div className="h-11 w-full rounded-lg border border-outline-variant/60 bg-surface px-3 flex items-center text-on-surface shadow-sm">
-              $ {formatPrice(service.basePrice)}
+              {formattedSellingPrice}
             </div>
           </div>
           <div>

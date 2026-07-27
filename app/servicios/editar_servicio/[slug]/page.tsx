@@ -8,9 +8,10 @@ export const metadata: Metadata = {
   description: 'Modifica los datos de un servicio existente.',
 };
 
-export default async function EditServicePage({ params }: { params: { slug: string } }) {
+export default async function EditServicePage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
   const service = await prisma.serviceCatalog.findUnique({
-    where: { id: params.slug },
+    where: { id: resolvedParams.slug },
   });
 
   if (!service) {

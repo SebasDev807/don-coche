@@ -38,8 +38,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             {...props}
             ref={ref}
             type={showPassword ? 'text' : 'password'}
-            className={`w-full h-touch-target-min pl-12 pr-12 bg-white border border-outline-variant rounded text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary-fixed-dim focus:border-primary-fixed-dim transition-colors ${className}`}
-            style={{ backgroundColor: 'white' }}
+            className={`w-full h-touch-target-min pl-12 pr-12 bg-surface border border-outline-variant rounded text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary-fixed-dim focus:border-primary-fixed-dim transition-colors ${className}`}
           />
           <button
             type="button"

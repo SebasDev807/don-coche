@@ -28,7 +28,7 @@ export default async function AttendanceDashboardPage(props: {
   // Estilos de los botones de filtro
   const getFilterStyle = (currentFilter: string) => {
     return filter === currentFilter
-      ? 'bg-primary-container text-on-surface shadow-sm font-bold'
+      ? 'bg-primary-container text-black shadow-sm font-bold'
       : 'bg-surface text-on-surface-variant hover:bg-surface-container-high border border-outline-variant';
   };
 
@@ -37,8 +37,8 @@ export default async function AttendanceDashboardPage(props: {
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Control de Asistencia</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl font-bold text-primary">Control de Asistencia</h1>
+          <p className="text-sm text-on-surface-variant mt-1">
             Auditoría de tiempos, entradas y salidas del personal.
           </p>
         </div>
@@ -77,7 +77,7 @@ export default async function AttendanceDashboardPage(props: {
 
       {/* Tabla Detallada */}
       <div className="flex flex-col space-y-4">
-        <h2 className="text-lg font-semibold text-slate-800">Registro Detallado</h2>
+        <h2 className="text-lg font-semibold text-on-surface">Registro Detallado</h2>
         <AttendanceTable records={records} />
       </div>
     </div>

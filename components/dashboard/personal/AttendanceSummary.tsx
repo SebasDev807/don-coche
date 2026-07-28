@@ -16,9 +16,9 @@ export function AttendanceSummary({ metrics }: AttendanceSummaryProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       {/* Tarjeta: Horas Trabajadas */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-center transition-all hover:shadow-md">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant p-6 flex flex-col justify-center transition-all hover:shadow-md">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wider">
+          <h3 className="text-sm font-medium text-on-surface-variant uppercase tracking-wider">
             Total Horas
           </h3>
           <span className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
@@ -27,13 +27,13 @@ export function AttendanceSummary({ metrics }: AttendanceSummaryProps) {
             </svg>
           </span>
         </div>
-        <p className="text-3xl font-bold text-slate-800">{metrics.totalHours} <span className="text-lg font-normal text-slate-400">h</span></p>
+        <p className="text-3xl font-bold text-on-surface">{metrics.totalHours} <span className="text-lg font-normal text-on-surface-variant">h</span></p>
       </div>
 
       {/* Tarjeta: Empleados Activos (En Turno) */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-center transition-all hover:shadow-md">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant p-6 flex flex-col justify-center transition-all hover:shadow-md">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wider">
+          <h3 className="text-sm font-medium text-on-surface-variant uppercase tracking-wider">
             En Turno Ahora
           </h3>
           <span className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
@@ -42,13 +42,13 @@ export function AttendanceSummary({ metrics }: AttendanceSummaryProps) {
             </svg>
           </span>
         </div>
-        <p className="text-3xl font-bold text-slate-800">{metrics.activeUsers}</p>
+        <p className="text-3xl font-bold text-on-surface">{metrics.activeUsers}</p>
       </div>
 
       {/* Tarjeta: Total de Registros */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-center transition-all hover:shadow-md">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant p-6 flex flex-col justify-center transition-all hover:shadow-md">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wider">
+          <h3 className="text-sm font-medium text-on-surface-variant uppercase tracking-wider">
             Total Registros
           </h3>
           <span className="p-2 bg-blue-50 rounded-lg text-blue-600">
@@ -57,7 +57,7 @@ export function AttendanceSummary({ metrics }: AttendanceSummaryProps) {
             </svg>
           </span>
         </div>
-        <p className="text-3xl font-bold text-slate-800">{metrics.totalRecords}</p>
+        <p className="text-3xl font-bold text-on-surface">{metrics.totalRecords}</p>
       </div>
     </div>
   );

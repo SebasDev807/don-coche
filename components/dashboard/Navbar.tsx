@@ -121,7 +121,7 @@ export function Navbar({ user }: NavbarProps) {
 
           {/* Avatar circular con inicial */}
           <button
-            className="hidden md:flex items-center justify-center w-9 h-9 rounded-full bg-primary-container text-on-surface font-label-bold text-sm hover:bg-primary-fixed-dim transition-colors active:scale-95 cursor-pointer"
+            className="hidden md:flex items-center justify-center w-9 h-9 rounded-full bg-primary-container text-black font-label-bold text-sm hover:bg-primary-fixed-dim transition-colors active:scale-95 cursor-pointer"
             aria-label="Perfil de usuario"
           >
             {initial}

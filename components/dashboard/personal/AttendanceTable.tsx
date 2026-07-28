@@ -38,11 +38,11 @@ export function AttendanceTable({ records }: AttendanceTableProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 text-sm">
+            <tr className="bg-surface-container border-b border-outline-variant text-on-surface-variant text-sm">
               <th className="py-4 px-6 font-medium">Empleado</th>
               <th className="py-4 px-6 font-medium">Rol</th>
               <th className="py-4 px-6 font-medium">Fecha</th>
@@ -51,26 +51,26 @@ export function AttendanceTable({ records }: AttendanceTableProps) {
               <th className="py-4 px-6 font-medium">Tiempo Total</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-sm">
+          <tbody className="divide-y divide-outline-variant text-sm">
             {records.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-slate-400">
+                <td colSpan={6} className="py-8 text-center text-on-surface-variant">
                   No hay registros de asistencia para el período seleccionado.
                 </td>
               </tr>
             ) : (
               records.map((record) => (
-                <tr key={record.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-4 px-6 font-medium text-slate-800">{record.userName}</td>
+                <tr key={record.id} className="hover:bg-surface-container transition-colors">
+                  <td className="py-4 px-6 font-medium text-on-surface">{record.userName}</td>
                   <td className="py-4 px-6">
-                    <span className="px-2 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600">
+                    <span className="px-2 py-1 rounded-md text-xs font-medium bg-surface-container-high text-on-surface-variant">
                       {record.userRole}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-slate-600">{formatDate(record.date)}</td>
-                  <td className="py-4 px-6 text-slate-600 font-mono">{formatTime(record.clockIn)}</td>
-                  <td className="py-4 px-6 text-slate-600 font-mono">{formatTime(record.clockOut)}</td>
-                  <td className="py-4 px-6 font-medium text-slate-700">
+                  <td className="py-4 px-6 text-on-surface-variant">{formatDate(record.date)}</td>
+                  <td className="py-4 px-6 text-on-surface-variant font-mono">{formatTime(record.clockIn)}</td>
+                  <td className="py-4 px-6 text-on-surface-variant font-mono">{formatTime(record.clockOut)}</td>
+                  <td className="py-4 px-6 font-medium text-on-surface">
                     {formatDuration(record.durationMinutes)}
                   </td>
                 </tr>

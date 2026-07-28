@@ -12,6 +12,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { PasswordInput, ErrorMessage } from '@/components/ui';
 import { useRouter } from 'next/navigation';
@@ -116,31 +117,34 @@ export function LoginClient() {
   };
 
   return (
-    <div className="antialiased relative min-h-screen bg-white flex flex-col fade-in">
+    <div className="antialiased relative min-h-screen bg-background text-on-background flex flex-col fade-in">
       {/* Header */}
       <header className="w-full flex justify-between items-center p-4 border-b border-outline-variant/30">
         <div className="flex items-center">
           <Image
-            src="/images/logo_2.png"
+            src="/images/logo_1.png"
             alt="Logo Secundario"
             width={120}
             height={40}
             className="object-contain"
           />
         </div>
-        <button
-          className="text-on-surface hover:bg-surface-variant p-2 rounded-full transition-colors flex items-center justify-center cursor-pointer"
-          aria-label="Ayuda"
-        >
-          <span className="material-symbols-outlined text-2xl">help</span>
-        </button>
+        <div className="flex gap-2">
+          <ThemeToggle />
+          <button
+            className="text-on-surface hover:bg-surface-variant p-2 rounded-full transition-colors flex items-center justify-center cursor-pointer"
+            aria-label="Ayuda"
+          >
+            <span className="material-symbols-outlined text-2xl">help</span>
+          </button>
+        </div>
       </header>
 
       {/* Main Content Container */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop bg-surface">
 
         {/* Login Card */}
-        <div className="w-full max-w-[440px] bg-white rounded-lg shadow-sm border border-outline-variant/30 flex flex-col p-stack-lg items-center">
+        <div className="w-full max-w-[440px] bg-surface-container-lowest rounded-lg shadow-sm border border-outline-variant/30 flex flex-col p-stack-lg items-center">
 
           <Image
             src="/images/logo_1.png"
@@ -183,8 +187,7 @@ export function LoginClient() {
                   placeholder="Ingrese su cédula"
                   autoComplete="username"
                   disabled={isSubmitting}
-                  className="w-full h-touch-target-min pl-12 pr-4 bg-white border border-outline-variant rounded text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary-fixed-dim focus:border-primary-fixed-dim transition-colors disabled:opacity-50"
-                  style={{ backgroundColor: 'white' }}
+                  className="w-full h-touch-target-min pl-12 pr-4 bg-surface border border-outline-variant rounded text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary-fixed-dim focus:border-primary-fixed-dim transition-colors disabled:opacity-50"
                 />
               </div>
               <ErrorMessage message={errors.documento?.message} />
@@ -207,7 +210,7 @@ export function LoginClient() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-touch-target-min mt-base bg-primary-container text-on-surface font-cta text-label-bold rounded shadow-sm hover:bg-primary-fixed-dim transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full h-touch-target-min mt-base bg-primary-container text-black font-cta text-label-bold rounded shadow-sm hover:bg-primary-fixed-dim transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
@@ -233,7 +236,7 @@ export function LoginClient() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full bg-white border-t border-outline-variant/30 p-margin-mobile md:px-margin-desktop flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="w-full bg-surface-container-lowest border-t border-outline-variant/30 p-margin-mobile md:px-margin-desktop flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <span className="font-label-bold text-on-surface">DON COCHE</span>
           <span className="text-body-md text-on-secondary-container">© 2026 Don Coche. Lavado y servicio de autos</span>

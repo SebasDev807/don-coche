@@ -32,7 +32,7 @@ export default async function TecnicoScreen() {
   const { data: services } = await getServices({ limit: 100 });
 
   return (
-    <div className="fade-in bg-gray-50 h-screen flex flex-col font-[family-name:var(--font-sora)] overflow-hidden">
+    <div className="fade-in bg-background text-on-background h-screen flex flex-col font-[family-name:var(--font-sora)] overflow-hidden">
       <Header
         technicianName={user.name}
         logoutAction={logoutAction}

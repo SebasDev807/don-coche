@@ -33,9 +33,9 @@ export function CajaDashboardClient({ pendingOrders, billedOrders }: CajaDashboa
 
         <div className="flex-1 overflow-y-auto pr-2 pb-6">
           {pendingOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 bg-white border border-dashed border-gray-300 rounded-xl">
-              <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">done_all</span>
-              <p className="text-gray-500 font-medium">No hay vehículos en pista.</p>
+            <div className="flex flex-col items-center justify-center h-64 bg-surface-container-lowest border border-dashed border-outline-variant rounded-xl">
+              <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-2">done_all</span>
+              <p className="text-on-surface-variant font-medium">No hay vehículos en pista.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

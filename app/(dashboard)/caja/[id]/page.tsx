@@ -24,7 +24,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
   // Si la orden ya no está en pista, podríamos mostrarla pero desactivar facturación,
   // por ahora la enviaremos al cliente igual.
   return (
-    <div className="h-full bg-gray-50/50 p-6 overflow-y-auto">
+    <div className="h-full p-6 overflow-y-auto">
       <OrderDetailClient order={res.data} />
     </div>
   );

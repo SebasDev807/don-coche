@@ -17,20 +17,20 @@ export const ServiceCard = ({ id, name, category, price, isSelected, onToggle }:
   return (
     <button
       onClick={onToggle}
-      className={`relative bg-white border-2 rounded-xl p-4 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer h-full
+      className={`relative bg-surface-container-lowest border-2 rounded-xl p-4 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer h-full
         ${isSelected
           ? 'border-primary bg-primary-container/20 shadow-md transform scale-[1.02]'
-          : 'border-gray-200 hover:border-blue-300 hover:shadow-sm'
+          : 'border-surface-variant hover:border-primary hover:shadow-sm'
         }`}
     >
-      <div className={`flex gap-1 ${isSelected ? 'text-primary' : 'text-gray-500'}`}>
+      <div className={`flex gap-1 ${isSelected ? 'text-primary' : 'text-on-surface-variant'}`}>
         <span className="material-symbols-outlined text-4xl">
           {getIconForCategory(category)}
         </span>
       </div>
       <div className="flex flex-col items-center">
-        <span className="text-sm font-medium text-gray-800 text-center leading-tight mb-1">{name}</span>
-        <span className={`text-xs font-bold ${isSelected ? 'text-primary' : 'text-gray-500'}`}>
+        <span className="text-sm font-medium text-on-surface text-center leading-tight mb-1">{name}</span>
+        <span className={`text-xs font-bold ${isSelected ? 'text-primary' : 'text-on-surface-variant'}`}>
           ${price.toLocaleString()}
         </span>
       </div>

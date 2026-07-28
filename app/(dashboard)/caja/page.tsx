@@ -18,7 +18,7 @@ export default async function CajaPage() {
   ]);
 
   return (
-    <div className="h-full bg-gray-50/50 p-6 fade-in">
+    <div className="h-full p-6 fade-in">
       <CajaDashboardClient
         pendingOrders={pendingRes.data || []}
         billedOrders={billedRes.data || []}

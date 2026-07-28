@@ -20,6 +20,7 @@ export interface AttendanceRecordDTO {
   userId: string;
   userName: string;
   userRole: string;
+  date: Date;
   clockIn: Date;
   clockOut: Date | null;
   durationMinutes: number | null;
@@ -95,7 +96,7 @@ export async function getAttendanceRecordsAction(
   const records = await prisma.attendanceRecord.findMany({
     where: {
       userId: finalUserId,
-      clockIn: dateRange ? { gte: dateRange.gte, lte: dateRange.lte } : undefined,
+      date: dateRange ? { gte: dateRange.gte, lte: dateRange.lte } : undefined,
     },
     include: {
       user: {
@@ -105,9 +106,10 @@ export async function getAttendanceRecordsAction(
         },
       },
     },
-    orderBy: {
-      clockIn: 'desc',
-    },
+    orderBy: [
+      { date: 'desc' },
+      { clockIn: 'desc' },
+    ],
   });
 
   return records.map((record) => ({
@@ -115,6 +117,7 @@ export async function getAttendanceRecordsAction(
     userId: record.userId,
     userName: record.user.name,
     userRole: record.user.role,
+    date: record.date,
     clockIn: record.clockIn,
     clockOut: record.clockOut,
     durationMinutes: calculateDuration(record.clockIn, record.clockOut),

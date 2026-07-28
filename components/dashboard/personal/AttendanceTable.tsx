@@ -67,7 +67,7 @@ export function AttendanceTable({ records }: AttendanceTableProps) {
                       {record.userRole}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-slate-600">{formatDate(record.clockIn)}</td>
+                  <td className="py-4 px-6 text-slate-600">{formatDate(record.date)}</td>
                   <td className="py-4 px-6 text-slate-600 font-mono">{formatTime(record.clockIn)}</td>
                   <td className="py-4 px-6 text-slate-600 font-mono">{formatTime(record.clockOut)}</td>
                   <td className="py-4 px-6 font-medium text-slate-700">

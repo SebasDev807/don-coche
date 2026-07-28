@@ -76,6 +76,7 @@ model User {
 model AttendanceRecord {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String    @map("user_id") @db.Uuid
+  date      DateTime  @default(dbgenerated("CURRENT_DATE")) @db.Date
   clockIn   DateTime  @default(now()) @map("clock_in")
   clockOut  DateTime? @map("clock_out")
 

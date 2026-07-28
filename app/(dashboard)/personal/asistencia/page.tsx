@@ -28,8 +28,8 @@ export default async function AttendanceDashboardPage(props: {
   // Estilos de los botones de filtro
   const getFilterStyle = (currentFilter: string) => {
     return filter === currentFilter
-      ? 'bg-blue-600 text-white shadow-sm'
-      : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200';
+      ? 'bg-primary-container text-on-surface shadow-sm font-bold'
+      : 'bg-surface text-on-surface-variant hover:bg-surface-container-high border border-outline-variant';
   };
 
   return (
@@ -44,7 +44,7 @@ export default async function AttendanceDashboardPage(props: {
         </div>
 
         {/* Date Filters */}
-        <div className="flex items-center space-x-2 bg-slate-100 p-1 rounded-lg">
+        <div className="flex items-center space-x-2 bg-surface-container p-1 rounded-lg">
           <Link
             href="/personal/asistencia?filter=day"
             className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${getFilterStyle('day')}`}

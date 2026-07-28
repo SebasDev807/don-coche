@@ -85,17 +85,36 @@ export async function loginAction(cc: string, password: string): Promise<LoginRe
 
     // Registrar asistencia para roles que no sean gerencia/superusuario
     if (user.role !== 'GERENTE' && user.role !== 'SUPERUSUARIO') {
-      // Lazy close: Si por alguna razón el usuario no cerró sesión antes,
-      // cerramos cualquier registro pendiente con la hora actual.
-      await prisma.attendanceRecord.updateMany({
-        where: { userId: user.id, clockOut: null },
-        data: { clockOut: new Date() },
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      // Buscar si ya existe un registro de hoy
+      const existingToday = await prisma.attendanceRecord.findFirst({
+        where: {
+          userId: user.id,
+          date: { gte: todayStart },
+        },
       });
 
-      // Crear nuevo registro de entrada
-      await prisma.attendanceRecord.create({
-        data: { userId: user.id },
-      });
+      if (existingToday) {
+        // Si ya ingresó hoy y vuelve a hacer login, reabrimos el turno
+        // borrando el clockOut anterior (mantiene su hora original de entrada).
+        await prisma.attendanceRecord.update({
+          where: { id: existingToday.id },
+          data: { clockOut: null },
+        });
+      } else {
+        // Si no hay registro hoy, primero cerramos sesiones de días anteriores
+        await prisma.attendanceRecord.updateMany({
+          where: { userId: user.id, clockOut: null },
+          data: { clockOut: new Date() },
+        });
+
+        // Y creamos un registro completamente nuevo
+        await prisma.attendanceRecord.create({
+          data: { userId: user.id },
+        });
+      }
     }
 
     // Retornar datos mínimos para el feedback de bienvenida en el cliente

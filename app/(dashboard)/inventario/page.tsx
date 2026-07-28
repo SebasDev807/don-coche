@@ -4,6 +4,7 @@ import { InventoryTable } from '@/components/dashboard/inventario/InventoryTable
 import { InventoryToolbar } from '@/components/dashboard/inventario/InventoryToolbar';
 import { getSeedProducts } from '@/lib/data/seed-inventory';
 import { prisma } from '@/lib/prisma';
+import { PrimaryButton } from '@/components/ui';
 
 
 /**
@@ -89,9 +90,15 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     <div className="fade-in">
       <main className="flex-grow max-w-[1440px] mx-auto w-full">
         {/* Encabezado Principal */}
-        <header className="mb-stack-lg">
-          <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Inventario Maestro</h1>
-          <p className="font-body-lg text-body-lg text-secondary">Control detallado de existencias y valoración de activos.</p>
+        <header className="mb-stack-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Inventario Maestro</h1>
+            <p className="font-body-lg text-body-lg text-secondary">Control detallado de existencias y valoración de activos.</p>
+          </div>
+          <PrimaryButton href="/inventario/stock" className="bg-tertiary-container text-on-tertiary-container hover:bg-tertiary-container/80 !text-tertiary">
+            <span className="material-symbols-outlined">barcode_scanner</span>
+            Actualización Rápida
+          </PrimaryButton>
         </header>
 
         {/* Tarjetas de Indicadores (KPIs) */}

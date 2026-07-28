@@ -8,3 +8,4 @@
 export { createProduct, getCategories, createCategory } from './core.actions';
 export { updateProduct } from './updateProduct.actions';
 export { deleteProduct } from './deleteProduct.actions';
+export { batchUpdateStock } from './stock.actions';

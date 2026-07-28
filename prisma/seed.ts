@@ -214,7 +214,7 @@ async function main() {
   console.log('\n--- Sembrando Productos ---');
   for (const seedProduct of SEED_PRODUCTS) {
     const categorySlug = generateSlug(seedProduct.category || 'GEN');
-    
+
     const product = await prisma.product.upsert({
       where: { slug: seedProduct.slug },
       update: {

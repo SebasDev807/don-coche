@@ -15,7 +15,7 @@ export function NotificationsMenu() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Fetch notifications on mount
+  // Fetch notifications periodically
   useEffect(() => {
     let mounted = true;
     async function load() {
@@ -30,9 +30,16 @@ export function NotificationsMenu() {
         if (mounted) setLoading(false);
       }
     }
+    
+    // Carga inicial
     load();
+    
+    // Polling cada 10 segundos
+    const interval = setInterval(load, 10000);
+    
     return () => {
       mounted = false;
+      clearInterval(interval);
     };
   }, []);
 
@@ -73,7 +80,7 @@ export function NotificationsMenu() {
 
       {/* Dropdown menu */}
       <div
-        className={`absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-variant overflow-hidden z-50 transition-all duration-200 origin-top-right ${
+        className={`absolute right-0 mt-2 w-96 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-variant overflow-hidden z-50 transition-all duration-200 origin-top-right ${
           isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
         }`}
       >
@@ -105,10 +112,14 @@ export function NotificationsMenu() {
                   }}
                 >
                   <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                    notification.type === 'stock' ? 'bg-error-container text-on-error-container' : 'bg-primary-container text-on-primary-container'
+                    notification.type === 'stock_out' ? 'bg-error-container text-on-error-container' : 
+                    notification.type === 'stock_low' ? 'bg-yellow-100 text-yellow-800' : 
+                    'bg-primary-container text-on-primary-container'
                   }`}>
                     <span className="material-symbols-outlined text-xl">
-                      {notification.type === 'stock' ? 'inventory_2' : 'notifications'}
+                      {notification.type === 'stock_out' ? 'block' : 
+                       notification.type === 'stock_low' ? 'warning' : 
+                       'notifications'}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">

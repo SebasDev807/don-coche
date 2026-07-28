@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { verifyRole } from '@/lib/dal';
 
-export type AppNotificationType = 'stock' | 'user' | 'car' | 'system';
+export type AppNotificationType = 'stock_low' | 'stock_out' | 'user' | 'car' | 'system';
 
 export interface AppNotification {
   id: string;
@@ -44,11 +44,14 @@ export async function getNotificationsAction(): Promise<AppNotification[]> {
   });
 
   for (const product of lowStockProducts) {
+    const isOutOfStock = product.stock === 0;
     notifications.push({
       id: `stock-${product.id}`,
-      type: 'stock',
-      title: 'Stock Bajo',
-      message: `El producto ${product.name} tiene solo ${product.stock} unidades disponibles.`,
+      type: isOutOfStock ? 'stock_out' : 'stock_low',
+      title: isOutOfStock ? 'Producto Agotado' : 'Stock Bajo',
+      message: isOutOfStock
+        ? `El producto ${product.name} está agotado (0 unidades).`
+        : `El producto ${product.name} tiene solo ${product.stock} unidades disponibles.`,
       createdAt: new Date(), // Simulado por ahora, en BD vendría el real si existiera tabla de notificaciones
       isRead: false,
       link: `/inventario/${product.id}`,

@@ -124,14 +124,22 @@ export function InventoryTable({ products }: InventoryTableProps) {
                   <td className="py-4 px-6 text-tertiary font-medium">{product.profitPercentage}%</td>
                   <td className="py-4 px-6 font-semibold">{formatCurrency(product.salePrice)}</td>
                   <td className="py-4 px-6 text-center">
-                    <div className={`font-bold ${product.stock <= 10 ? 'text-red-600' : 'text-on-surface'}`}>{product.stock}</div>
-                    {product.stock <= 10 ? (
-                      <div className="text-[10px] uppercase font-bold text-red-600 flex items-center justify-center gap-1 mt-1">
+                    <div className={`font-bold ${product.stock === 0 ? 'text-error' : product.stock <= 10 ? 'text-yellow-600' : 'text-on-surface'}`}>{product.stock}</div>
+                    {product.stock === 0 ? (
+                      <div className="text-[10px] uppercase font-bold text-error flex items-center justify-center gap-1 mt-1">
+                        <span className="material-symbols-outlined text-[12px]">block</span>
+                        Agotado
+                      </div>
+                    ) : product.stock <= 10 ? (
+                      <div className="text-[10px] uppercase font-bold text-yellow-600 flex items-center justify-center gap-1 mt-1">
                         <span className="material-symbols-outlined text-[12px]">warning</span>
                         Stock Bajo
                       </div>
                     ) : (
-                      <div className="text-[10px] uppercase font-bold text-green-700 mt-1">Suficiente</div>
+                      <div className="text-[10px] uppercase font-bold text-green-700 flex items-center justify-center gap-1 mt-1">
+                        <span className="material-symbols-outlined text-[12px]">check_circle</span>
+                        Suficiente
+                      </div>
                     )}
                   </td>
                   <td className="py-4 px-6 text-right">

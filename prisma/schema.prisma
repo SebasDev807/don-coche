@@ -67,10 +67,25 @@ model User {
   ordersAsTech  Order[]             @relation("TechnicianOrders")
   ordersAsAdmin Order[]             @relation("AdminOrders")
   stockMoves    InventoryMovement[] @relation("AdminMovements")
+  attendance    AttendanceRecord[]
 
   @@index([cc]) // Índice para login rápido
   @@map("users")
 }
+
+model AttendanceRecord {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  clockIn   DateTime  @default(now()) @map("clock_in")
+  clockOut  DateTime? @map("clock_out")
+
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([clockIn])
+  @@map("attendance_records")
+}
+
 
 // -----------------------------------------------------------------------
 // MODELOS DE CLIENTES Y VEHÍCULOS

@@ -30,8 +30,30 @@ export function VehicleGarage({ vehicles, customerId }: VehicleGarageProps) {
 
     if (result.isConfirmed) {
       const res = await deleteVehicle(vehicleId);
+      
       if (res.success) {
         MySwal.fire('Eliminado', res.message, 'success');
+      } else if (res.requiresConfirmation) {
+        // Mostrar confirmación extra para eliminar órdenes en cascada
+        const forceResult = await MySwal.fire({
+          title: 'Atención',
+          text: res.message,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#6b7280',
+          confirmButtonText: 'Sí, eliminar de todos modos',
+          cancelButtonText: 'Cancelar'
+        });
+
+        if (forceResult.isConfirmed) {
+          const forceRes = await deleteVehicle(vehicleId, true);
+          if (forceRes.success) {
+            MySwal.fire('Eliminado', forceRes.message, 'success');
+          } else {
+            MySwal.fire('Error', forceRes.message, 'error');
+          }
+        }
       } else {
         MySwal.fire('Error', res.message, 'error');
       }
@@ -54,7 +76,7 @@ export function VehicleGarage({ vehicles, customerId }: VehicleGarageProps) {
           {/* Delete Button (visible on hover or always on touch) */}
           <button
             onClick={() => handleDelete(vehicle.id)}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-container hover:bg-error hover:text-white text-secondary flex items-center justify-center transition-colors shadow-sm opacity-100 sm:opacity-0 group-hover:opacity-100"
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-container hover:bg-error hover:text-white text-secondary flex items-center justify-center transition-colors shadow-sm opacity-100 sm:opacity-0 group-hover:opacity-100 cursor-pointer"
             title="Eliminar vehículo"
           >
             <span className="material-symbols-outlined text-[18px]">delete</span>

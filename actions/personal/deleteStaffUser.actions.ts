@@ -12,9 +12,22 @@ import { verifyRole } from '@/lib/dal';
  */
 export async function deleteStaffUser(userId: string): Promise<{ success: boolean; message: string }> {
   // Verificar sesión y rol en el servidor antes de cualquier operación
-  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+  const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+
+  if (session.userId === userId) {
+    return { success: false, message: 'No puedes eliminar tu propia cuenta.' };
+  }
 
   try {
+    const userToDelete = await prisma.user.findUnique({ where: { id: userId } });
+    if (!userToDelete) {
+      return { success: false, message: 'Usuario no encontrado.' };
+    }
+    
+    if (userToDelete.role === 'GERENTE') {
+      return { success: false, message: 'No tienes permisos para eliminar a un Gerente.' };
+    }
+
     await prisma.user.update({
       where: { id: userId },
       data: { isActive: false },

@@ -18,6 +18,10 @@ export interface DeleteProductResponse {
  * @returns {Promise<DeleteProductResponse>} El resultado de la operación.
  */
 export async function deleteProduct(id: string): Promise<DeleteProductResponse> {
+  // Solo SuperUsuario y Gerente pueden eliminar (soft delete) productos
+  const { verifyRole } = await import('@/lib/dal');
+  await verifyRole(['SUPERUSUARIO', 'GERENTE']);
+
   try {
     if (!id) {
       return {

@@ -21,6 +21,15 @@ export async function updateStaffUser(id: string, formData: FormData) {
 
     const { cc, name, email, celular, role, department } = parsedData.data;
 
+    const userToUpdate = await prisma.user.findUnique({ where: { id } });
+    if (!userToUpdate) {
+      return { success: false, message: 'Usuario no encontrado.' };
+    }
+
+    if (userToUpdate.role === 'GERENTE' && role !== 'GERENTE') {
+      return { success: false, message: 'No tienes permisos para modificar o degradar el rol de un Gerente.' };
+    }
+
     // Check if another user has the same CC
     const existingUserByCC = await prisma.user.findUnique({
       where: { cc },

@@ -36,7 +36,7 @@ export function CustomerList({ customers }: CustomerListProps) {
               <li key={customer.id}>
                 <button
                   onClick={() => handleSelect(customer.id)}
-                  className={`w-full text-left flex items-center p-4 transition-colors hover:bg-surface-container-high focus:outline-none focus:bg-surface-container-highest ${
+                  className={`w-full text-left flex items-center p-4 transition-colors hover:bg-surface-container-high focus:outline-none focus:bg-surface-container-highest cursor-pointer ${
                     selectedId === customer.id ? 'bg-surface-container-high border-l-4 border-primary' : 'border-l-4 border-transparent'
                   }`}
                 >

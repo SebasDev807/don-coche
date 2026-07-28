@@ -26,6 +26,7 @@ export interface InventoryProduct {
  */
 interface InventoryTableProps {
   products: InventoryProduct[];
+  userRole?: string;
 }
 
 /**
@@ -34,7 +35,7 @@ interface InventoryTableProps {
  * @param {InventoryTableProps} props - Propiedades que incluyen la lista de productos a mostrar.
  * @returns {React.JSX.Element} El componente InventoryTable.
  */
-export function InventoryTable({ products }: InventoryTableProps) {
+export function InventoryTable({ products, userRole }: InventoryTableProps) {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -151,13 +152,15 @@ export function InventoryTable({ products }: InventoryTableProps) {
                       >
                         <span className="material-symbols-outlined text-[20px]">edit</span>
                       </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }}
-                        className="cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors"
-                        title="Eliminar"
-                      >
-                        <span className="material-symbols-outlined text-[20px]">delete</span>
-                      </button>
+                      {userRole !== 'ADMINISTRADOR' && userRole !== 'TECNICO' && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }}
+                          className="cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors"
+                          title="Eliminar"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">delete</span>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Public_Sans, Sora } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 const publicSans = Public_Sans({
   subsets: ["latin"],
@@ -36,7 +37,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

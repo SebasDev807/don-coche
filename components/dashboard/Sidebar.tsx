@@ -119,7 +119,7 @@ export function Sidebar({ logoutAction }: SidebarProps) {
                 className={`
                   flex items-center gap-4 px-6 py-4 cursor-pointer group transition-all
                   ${isActive
-                    ? 'bg-primary-container text-on-surface font-bold'
+                    ? 'bg-primary-container text-black font-bold'
                     : 'text-on-surface-variant hover:bg-surface-container-low'
                   }
                 `}
@@ -139,7 +139,7 @@ export function Sidebar({ logoutAction }: SidebarProps) {
 
         {/* Footer: acciones secundarias */}
         <div className="mt-auto px-6 border-t border-surface-variant pt-6 flex flex-col gap-4">
-          <button className="w-full bg-primary-container text-on-surface font-cta text-cta py-3 rounded-md tracking-wide hover:bg-primary-fixed-dim transition-colors active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+          <button className="w-full bg-primary-container text-black font-cta text-cta py-3 rounded-md tracking-wide hover:bg-primary-fixed-dim transition-colors active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
             <span className="material-symbols-outlined font-bold text-sm">add</span>
             Nueva Orden
           </button>

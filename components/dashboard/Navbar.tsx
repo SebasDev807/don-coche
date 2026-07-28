@@ -12,6 +12,7 @@
 
 import type { VerifiedSession } from '@/lib/dal';
 import { NotificationsMenu } from './NotificationsMenu';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 import { useSidebarStore } from './useSidebarStore';
 
@@ -111,6 +112,9 @@ export function Navbar({ user }: NavbarProps) {
               {formattedDate}
             </p>
           </div>
+
+          {/* Botón de Modo Oscuro */}
+          <ThemeToggle />
 
           {/* Notificaciones */}
           <NotificationsMenu />

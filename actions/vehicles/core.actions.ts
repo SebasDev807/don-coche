@@ -40,23 +40,38 @@ export async function createVehicle(customerId: string, data: VehicleFormValues)
   }
 }
 
-export async function deleteVehicle(id: string) {
+export async function deleteVehicle(id: string, force: boolean = false) {
   try {
     await verifySession();
 
-    const ordersCount = await prisma.order.count({
-      where: { vehicleId: id },
-    });
+    if (!force) {
+      const ordersCount = await prisma.order.count({
+        where: { vehicleId: id },
+      });
 
-    if (ordersCount > 0) {
-      return { 
-        success: false, 
-        message: 'No se puede eliminar el vehículo porque tiene órdenes de servicio asociadas.' 
-      };
+      if (ordersCount > 0) {
+        return { 
+          success: false,
+          requiresConfirmation: true,
+          message: 'Este vehículo tiene órdenes pendientes, ¿seguro que quieres eliminarlo?' 
+        };
+      }
     }
 
-    await prisma.vehicle.delete({
-      where: { id },
+    // Eliminación en cascada usando transacción para limpiar órdenes y sus detalles
+    await prisma.$transaction(async (tx) => {
+      const orders = await tx.order.findMany({ where: { vehicleId: id } });
+      const orderIds = orders.map(o => o.id);
+
+      if (orderIds.length > 0) {
+        await tx.orderService.deleteMany({ where: { orderId: { in: orderIds } } });
+        await tx.orderProduct.deleteMany({ where: { orderId: { in: orderIds } } });
+        await tx.order.deleteMany({ where: { vehicleId: id } });
+      }
+
+      await tx.vehicle.delete({
+        where: { id },
+      });
     });
 
     revalidatePath('/clientes');

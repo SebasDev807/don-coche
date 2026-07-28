@@ -5,6 +5,7 @@ import { InventoryToolbar } from '@/components/dashboard/inventario/InventoryToo
 import { getSeedProducts } from '@/lib/data/seed-inventory';
 import { prisma } from '@/lib/prisma';
 import { PrimaryButton } from '@/components/ui';
+import { verifySession } from '@/lib/dal';
 
 
 /**
@@ -30,6 +31,9 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
   const searchParams = await props.searchParams;
   const query = typeof searchParams.q === 'string' ? searchParams.q : undefined;
   const category = typeof searchParams.category === 'string' ? searchParams.category : undefined;
+
+  const session = await verifySession();
+  const userRole = session.role;
 
   // Intentamos obtener los productos desde la base de datos
   let products = await prisma.product.findMany({
@@ -115,7 +119,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
         </Suspense>
 
         {/* Contenedor Principal de la Tabla */}
-        <InventoryTable products={serializedProducts} />
+        <InventoryTable products={serializedProducts} userRole={userRole} />
       </main>
     </div>
   );

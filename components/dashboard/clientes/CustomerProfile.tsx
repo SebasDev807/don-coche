@@ -57,7 +57,7 @@ export function CustomerProfile({ customer, onEditCustomer, onAddVehicle }: Cust
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             onClick={onEditCustomer}
-            className="h-10 px-4 rounded-full border border-outline-variant text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors flex items-center justify-center gap-2 font-label-lg"
+            className="h-10 px-4 rounded-full border border-outline-variant text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors flex items-center justify-center gap-2 font-label-lg cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">edit</span>
             Editar
@@ -72,7 +72,7 @@ export function CustomerProfile({ customer, onEditCustomer, onAddVehicle }: Cust
             <span className="material-symbols-outlined text-primary">garage</span>
             Garaje Virtual ({customer.vehicles?.length || 0})
           </h3>
-          <PrimaryButton onClick={onAddVehicle} className="h-10 px-4 text-sm">
+          <PrimaryButton onClick={onAddVehicle} className="h-10 px-4 text-sm cursor-pointer">
             <span className="material-symbols-outlined text-[18px]">add</span>
             Añadir Vehículo
           </PrimaryButton>

@@ -11,6 +11,7 @@
 'use client';
 
 import type { VerifiedSession } from '@/lib/dal';
+import { NotificationsMenu } from './NotificationsMenu';
 
 /**
  * Props del componente Navbar.
@@ -102,13 +103,7 @@ export function Navbar({ user }: NavbarProps) {
           </div>
 
           {/* Notificaciones */}
-          <button
-            className="relative p-2 text-on-surface hover:bg-surface-variant rounded-full transition-colors active:scale-95 cursor-pointer"
-            aria-label="Notificaciones"
-          >
-            <span className="material-symbols-outlined">notifications</span>
-            <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest" />
-          </button>
+          <NotificationsMenu />
 
           {/* Avatar circular con inicial */}
           <button

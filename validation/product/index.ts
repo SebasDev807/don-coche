@@ -5,7 +5,7 @@ export const createProductSchema = z.object({
   barCode: z.string().optional(),
   description: z.string().optional(),
   category: z.string().min(2, 'La categoría debe tener al menos 2 caracteres'),
-  stock: z.coerce.number({ message: 'Debes ingresar un valor numérico' }).min(1, 'El stock debe ser al menos 1'),
+  stock: z.coerce.number({ message: 'Debes ingresar un valor numérico' }).min(0, 'El stock no puede ser negativo'),
   unitCost: z.preprocess((val) => {
     if (typeof val === 'string') return parseInt(val.replace(/\D/g, ''), 10) || 0;
     return val;

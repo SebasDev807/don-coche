@@ -14,6 +14,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { useSidebarStore } from './useSidebarStore';
+import { useEffect } from 'react';
 
 /**
  * Definición de un ítem de navegación del sidebar.
@@ -50,85 +52,121 @@ interface SidebarProps {
  *
  * Usa `usePathname()` para detectar la ruta activa y resaltar
  * el ítem correspondiente con fondo `primary-container`.
+ * En pantallas pequeñas, se comporta como un panel lateral desplegable.
  *
  * @param props - {@link SidebarProps}
  */
 export function Sidebar({ logoutAction }: SidebarProps) {
   const pathname = usePathname();
+  const { isOpen, setIsOpen } = useSidebarStore();
+
+  // Cerrar el sidebar al cambiar de ruta en móviles
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname, setIsOpen]);
 
   return (
-    <aside className="hidden lg:flex flex-col h-screen py-8 bg-surface-container-lowest w-72 left-0 top-0 border-r border-surface-variant shrink-0 relative z-20">
-      {/* Logo / Branding */}
-      <div className="mb-stack-lg flex justify-center px-6">
-        <Image
-          src="/images/logo_2.png"
-          alt="Don Coche Logo"
-          width={180}
-          height={60}
-          priority
-          className="object-contain w-auto h-auto"
+    <>
+      {/* Overlay (solo visible en mobile cuando está abierto) */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
         />
-      </div>
+      )}
 
-      {/* Navegación principal */}
-      <nav className="flex-1 flex flex-col">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`
-                flex items-center gap-4 px-6 py-4 cursor-pointer group transition-all
-                ${isActive
-                  ? 'bg-primary-container text-on-surface font-bold'
-                  : 'text-on-surface-variant hover:bg-surface-container-low'
-                }
-              `}
-            >
-              <span
-                className={`material-symbols-outlined group-hover:scale-110 transition-transform ${isActive ? 'fill-icon' : ''
-                  }`}
-                style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
-              >
-                {item.icon}
-              </span>
-              <span className="font-label-bold text-label-bold">{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Footer: acciones secundarias */}
-      <div className="mt-auto px-6 border-t border-surface-variant pt-6 flex flex-col gap-4">
-        <button className="w-full bg-primary-container text-on-surface font-cta text-cta py-3 rounded-md tracking-wide hover:bg-primary-fixed-dim transition-colors active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
-          <span className="material-symbols-outlined font-bold text-sm">add</span>
-          Nueva Orden
-        </button>
-
-        <a
-          href="#"
-          className="flex items-center gap-4 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer group"
-        >
-          <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform">
-            support_agent
-          </span>
-          <span className="font-body-md text-sm">Soporte</span>
-        </a>
-
-        <form action={logoutAction}>
+      {/* Sidebar contenedor */}
+      <aside
+        className={`
+          fixed lg:relative z-50 lg:z-20 top-0 left-0 h-screen w-72 bg-surface-container-lowest 
+          border-r border-surface-variant flex flex-col py-8 shrink-0
+          transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        <div className="flex items-center justify-between px-6 mb-stack-lg lg:mb-stack-lg lg:justify-center">
+          {/* Logo / Branding */}
+          <div className="flex justify-center flex-1">
+            <Image
+              src="/images/logo_2.png"
+              alt="Don Coche Logo"
+              width={180}
+              height={60}
+              priority
+              className="object-contain w-auto h-auto"
+            />
+          </div>
+          {/* Botón cerrar (solo mobile) */}
           <button
-            type="submit"
-            className="flex items-center gap-4 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer group w-full"
+            onClick={() => setIsOpen(false)}
+            className="lg:hidden material-symbols-outlined text-on-surface hover:bg-surface-container-low p-2 rounded-full transition-colors"
+            aria-label="Cerrar menú lateral"
+          >
+            close
+          </button>
+        </div>
+
+        {/* Navegación principal */}
+        <nav className="flex-1 flex flex-col overflow-y-auto">
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`
+                  flex items-center gap-4 px-6 py-4 cursor-pointer group transition-all
+                  ${isActive
+                    ? 'bg-primary-container text-on-surface font-bold'
+                    : 'text-on-surface-variant hover:bg-surface-container-low'
+                  }
+                `}
+              >
+                <span
+                  className={`material-symbols-outlined group-hover:scale-110 transition-transform ${isActive ? 'fill-icon' : ''
+                    }`}
+                  style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                >
+                  {item.icon}
+                </span>
+                <span className="font-label-bold text-label-bold">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Footer: acciones secundarias */}
+        <div className="mt-auto px-6 border-t border-surface-variant pt-6 flex flex-col gap-4">
+          <button className="w-full bg-primary-container text-on-surface font-cta text-cta py-3 rounded-md tracking-wide hover:bg-primary-fixed-dim transition-colors active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+            <span className="material-symbols-outlined font-bold text-sm">add</span>
+            Nueva Orden
+          </button>
+
+          <a
+            href="#"
+            className="flex items-center gap-4 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer group"
           >
             <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform">
-              logout
+              support_agent
             </span>
-            <span className="font-body-md text-sm">Cerrar Sesión</span>
-          </button>
-        </form>
-      </div>
-    </aside>
+            <span className="font-body-md text-sm">Soporte</span>
+          </a>
+
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className="flex items-center gap-4 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer group w-full"
+            >
+              <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform">
+                logout
+              </span>
+              <span className="font-body-md text-sm">Cerrar Sesión</span>
+            </button>
+          </form>
+        </div>
+      </aside>
+    </>
   );
 }

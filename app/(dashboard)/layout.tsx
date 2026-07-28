@@ -11,7 +11,7 @@
 
 import { verifyRole } from '@/lib/dal';
 import { logoutAction } from '@/app/auth/actions';
-import { Sidebar, Navbar, MobileBottomNav } from '@/components/dashboard';
+import { Sidebar, Navbar } from '@/components/dashboard';
 
 /** Roles que tienen acceso al área de gestión. */
 const ALLOWED_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
@@ -20,8 +20,8 @@ const ALLOWED_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
  * Layout principal del dashboard.
  *
  * Estructura flex con sidebar fijo a la izquierda (desktop),
- * área principal con navbar superior y contenido scrollable,
- * y bottom nav en mobile.
+ * sidebar desplegable en mobile,
+ * área principal con navbar superior y contenido scrollable.
  *
  * @param props - Children renderizados por Next.js (la página activa).
  */
@@ -35,7 +35,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="fade-in bg-background text-on-background font-body-md antialiased overflow-hidden flex h-screen">
-      {/* Sidebar (solo desktop) */}
+      {/* Sidebar (desktop fijo, mobile drawer) */}
       <Sidebar logoutAction={logoutAction} />
 
       {/* Área de contenido principal */}
@@ -44,13 +44,10 @@ export default async function DashboardLayout({
         <Navbar user={user} />
 
         {/* Contenido scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth pb-24 lg:pb-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth pb-8">
           {children}
         </div>
       </main>
-
-      {/* Bottom nav (solo mobile) */}
-      <MobileBottomNav />
     </div>
   );
 }

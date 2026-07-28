@@ -13,6 +13,8 @@
 import type { VerifiedSession } from '@/lib/dal';
 import { NotificationsMenu } from './NotificationsMenu';
 
+import { useSidebarStore } from './useSidebarStore';
+
 /**
  * Props del componente Navbar.
  */
@@ -73,12 +75,20 @@ export function Navbar({ user }: NavbarProps) {
   const formattedDate = getFormattedDate();
   const initial = getUserInitial(user.name);
   const roleLabel = getRoleLabel(user.role);
+  const toggleSidebar = useSidebarStore((state) => state.toggle);
 
   return (
-    <header className="bg-surface-container-lowest border-b border-surface-variant flex justify-between items-center w-full px-6 h-touch-target-min min-h-[72px] shrink-0 relative z-10">
-      {/* Mobile: Título */}
-      <div className="flex items-center lg:hidden">
-        <span className="font-display-lg text-headline-lg-mobile font-black tracking-tighter text-on-surface">
+    <header className="bg-surface-container-lowest border-b border-surface-variant flex justify-between items-center w-full px-4 lg:px-6 h-touch-target-min min-h-[72px] shrink-0 relative z-10">
+      {/* Mobile: Menú + Título */}
+      <div className="flex items-center gap-2 lg:hidden">
+        <button
+          onClick={toggleSidebar}
+          className="material-symbols-outlined p-2 text-on-surface hover:bg-surface-container-low rounded-full transition-colors cursor-pointer"
+          aria-label="Abrir menú lateral"
+        >
+          menu
+        </button>
+        <span className="font-display-lg text-headline-lg-mobile font-black tracking-tighter text-on-surface ml-1">
           DON COCHE
         </span>
       </div>

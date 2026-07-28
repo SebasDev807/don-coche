@@ -6,3 +6,4 @@ export * from './tecnico/ServiceCard';
 export * from './tecnico/ServicesPanel';
 export * from './ui';
 export * from './dashboard/inventario/EditProductForm';
+export * from './dashboard/inventario/BatchStockUpdate';

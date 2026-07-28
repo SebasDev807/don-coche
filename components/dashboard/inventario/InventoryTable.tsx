@@ -10,14 +10,15 @@ const MySwal = withReactContent(Swal);
 
 export interface InventoryProduct {
   id: string;
-  code: string | null;
+  barCode: string | null;
   name: string;
-  brand: string | null;
+  description?: string | null;
   category: string;
   categoryId: string | null;
   stock: number;
   unitCost: number;
   salePrice: number;
+  profitPercentage: number;
 }
 
 /**
@@ -44,7 +45,8 @@ export function InventoryTable({ products }: InventoryTableProps) {
   const formatCurrency = (val: number) => new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(val);
 
   const handleDelete = async (id: string) => {
@@ -91,10 +93,11 @@ export function InventoryTable({ products }: InventoryTableProps) {
         <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
             <tr className="bg-surface-container border-b border-outline-variant">
-              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">SKU / CÓDIGO</th>
+              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CÓDIGO</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">DESCRIPCIÓN</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CATEGORÍA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">COSTO UNIT.</th>
+              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">PORCENTAJE DE GANANCIA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">PRECIO VENTA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">STOCK</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider text-right">ACCIONES</th>
@@ -103,11 +106,14 @@ export function InventoryTable({ products }: InventoryTableProps) {
           <tbody className="divide-y divide-outline-variant font-body-md text-on-surface">
             {paginatedProducts.map((product) => {
               return (
-                <tr key={product.id} className="hover:bg-surface-container-lowest/50 transition-colors">
-                  <td className="py-4 px-6 text-secondary font-mono text-sm">{product.code}</td>
+                <tr
+                  key={product.id}
+                  onClick={() => router.push(`/inventario/${product.id}`)}
+                  className="hover:bg-surface-container-lowest/80 cursor-pointer transition-colors"
+                >
+                  <td className="py-4 px-6 text-secondary font-mono text-sm">{product.barCode}</td>
                   <td className="py-4 px-6">
                     <div className="font-medium truncate max-w-[250px]" title={product.name}>{product.name}</div>
-                    {product.brand && <div className="text-xs text-secondary mt-0.5">Marca: {product.brand}</div>}
                   </td>
                   <td className="py-4 px-6">
                     <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
@@ -115,30 +121,39 @@ export function InventoryTable({ products }: InventoryTableProps) {
                     </span>
                   </td>
                   <td className="py-4 px-6 text-secondary">{formatCurrency(product.unitCost)}</td>
+                  <td className="py-4 px-6 text-tertiary font-medium">{product.profitPercentage}%</td>
                   <td className="py-4 px-6 font-semibold">{formatCurrency(product.salePrice)}</td>
                   <td className="py-4 px-6 text-center">
-                    <div className={`font-bold ${product.stock <= 10 ? 'text-red-600' : 'text-on-surface'}`}>{product.stock}</div>
-                    {product.stock <= 10 ? (
-                      <div className="text-[10px] uppercase font-bold text-red-600 flex items-center justify-center gap-1 mt-1">
+                    <div className={`font-bold ${product.stock === 0 ? 'text-error' : product.stock <= 10 ? 'text-yellow-600' : 'text-on-surface'}`}>{product.stock}</div>
+                    {product.stock === 0 ? (
+                      <div className="text-[10px] uppercase font-bold text-error flex items-center justify-center gap-1 mt-1">
+                        <span className="material-symbols-outlined text-[12px]">block</span>
+                        Agotado
+                      </div>
+                    ) : product.stock <= 10 ? (
+                      <div className="text-[10px] uppercase font-bold text-yellow-600 flex items-center justify-center gap-1 mt-1">
                         <span className="material-symbols-outlined text-[12px]">warning</span>
                         Stock Bajo
                       </div>
                     ) : (
-                      <div className="text-[10px] uppercase font-bold text-green-700 mt-1">Suficiente</div>
+                      <div className="text-[10px] uppercase font-bold text-green-700 flex items-center justify-center gap-1 mt-1">
+                        <span className="material-symbols-outlined text-[12px]">check_circle</span>
+                        Suficiente
+                      </div>
                     )}
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <button 
-                        onClick={() => router.push(`/inventario/editar/${product.id}`)}
-                        className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors" 
+                      <button
+                        onClick={(e) => { e.stopPropagation(); router.push(`/inventario/editar/${product.id}`); }}
+                        className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors"
                         title="Editar"
                       >
                         <span className="material-symbols-outlined text-[20px]">edit</span>
                       </button>
-                      <button 
-                        onClick={() => handleDelete(product.id)}
-                        className="cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors" 
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }}
+                        className="cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors"
                         title="Eliminar"
                       >
                         <span className="material-symbols-outlined text-[20px]">delete</span>
@@ -151,7 +166,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
 
             {products.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-secondary">
+                <td colSpan={8} className="py-8 text-center text-secondary">
                   No hay productos que coincidan con la búsqueda.
                 </td>
               </tr>

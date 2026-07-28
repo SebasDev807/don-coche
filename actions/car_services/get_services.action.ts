@@ -52,3 +52,31 @@ export async function getServices({ page = 1, limit = 8, category, query }: { pa
     };
   }
 }
+
+export async function getServiceById(id: string) {
+  try {
+    await verifySession();
+
+    const service = await prisma.serviceCatalog.findUnique({
+      where: { id },
+      include: {
+        category_rel: true
+      }
+    });
+
+    if (!service) {
+      return { success: false, message: 'Servicio no encontrado', data: null };
+    }
+
+    return {
+      success: true,
+      data: {
+        ...service,
+        basePrice: Number(service.basePrice),
+      },
+    };
+  } catch (error: any) {
+    console.error('Error fetching service by ID:', error);
+    return { success: false, message: error.message || 'Error al obtener el servicio', data: null };
+  }
+}

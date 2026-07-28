@@ -81,7 +81,7 @@ export default async function CatalogServicePage(props: {
         {/* Listado de Servicios */}
         {services && services.length > 0 ? (
           <div className="flex flex-col flex-grow">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 content-start flex-grow">
+            <div className="flex flex-col gap-4 content-start flex-grow">
               {services.map((service: any) => (
                 <ServiceCard 
                   key={service.id} 
@@ -90,6 +90,7 @@ export default async function CatalogServicePage(props: {
                     name: service.name,
                     category: service.category,
                     basePrice: service.basePrice,
+                    profitPercentage: service.profitPercentage,
                     description: service.description,
                     isActive: service.isActive
                   }} 

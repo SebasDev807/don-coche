@@ -2,10 +2,10 @@
 
 import { prisma } from '@/lib/prisma';
 import { createProductSchema, createCategorySchema } from '@/validation';
-import { generateSKU } from '@/lib/utils/sku';
+import { generateEAN13 } from '@/lib/utils/barcode';
 import { generateSlug } from '@/lib/utils/slug';
 import { verifySession } from '@/lib/dal';
-import { ItemCategory } from '@prisma/client';
+import { ItemCategory, Prisma } from '@prisma/client';
 
 /**
  * Server action para obtener las categorías existentes.
@@ -87,24 +87,29 @@ export async function createProduct(formData: FormData) {
     // Validar usando Zod (incluye coerción para los números)
     const validatedData = createProductSchema.parse(rawData);
 
-    // Generar SKU y Slug
+    // Generar Barcode y Slug
     const categoryRecord = await prisma.category.findUnique({
       where: { id: validatedData.category }
     });
-    const categoryName = categoryRecord?.name || 'GEN';
-    const sku = generateSKU(categoryName);
-    const slug = generateSlug(`${validatedData.name} ${validatedData.brand || ''}`);
+    const barCode = validatedData.barCode || generateEAN13();
+    const slug = generateSlug(validatedData.name);
+
+    // Calculate salePrice based on unitCost and profitPercentage
+    const unitCost = validatedData.unitCost;
+    const profitPercentage = validatedData.profitPercentage || 0;
+    const computedSalePrice = unitCost + (unitCost * profitPercentage / 100);
 
     // Insertar en la base de datos
     await prisma.product.create({
       data: {
         name: validatedData.name,
-        brand: validatedData.brand,
+        description: validatedData.description,
         categoryId: validatedData.category,
         stock: validatedData.stock,
-        unitCost: validatedData.unitCost,
-        salePrice: validatedData.salePrice,
-        code: sku,
+        unitCost: unitCost,
+        salePrice: computedSalePrice,
+        profitPercentage: profitPercentage,
+        barCode: barCode,
         slug: slug,
         isActive: true,
       },
@@ -113,6 +118,16 @@ export async function createProduct(formData: FormData) {
     return { success: true, message: 'Producto creado exitosamente' };
   } catch (error: any) {
     console.error('Error creating product:', error);
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return {
+          success: false,
+          message: 'Ya existe otro producto con este código de barras. Usa uno distinto.',
+        };
+      }
+    }
+
     return { success: false, message: error.message || 'Error al crear el producto' };
   }
 }

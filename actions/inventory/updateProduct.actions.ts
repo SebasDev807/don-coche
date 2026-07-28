@@ -11,8 +11,9 @@ import { Prisma } from '@prisma/client';
 export interface UpdateProductInput {
   id: string;
   name?: string;
-  brand?: string;
+  description?: string;
   categoryId?: string;
+  barCode?: string;
   stock?: number;
   unitCost?: number;
   salePrice?: number;
@@ -28,7 +29,7 @@ export interface UpdateProductResponse {
   message: string;
   product?: {
     id: string;
-    code: string | null;
+    barCode: string | null;
     name: string;
   };
 }
@@ -42,7 +43,7 @@ export interface UpdateProductResponse {
  */
 export async function updateProduct(data: UpdateProductInput): Promise<UpdateProductResponse> {
   try {
-    const { id, name, brand, categoryId, stock, unitCost, salePrice, profitPercentage, isActive } = data;
+    const { id, name, description, categoryId, barCode, stock, unitCost, salePrice, profitPercentage, isActive } = data;
 
     if (!id) {
       return {
@@ -65,15 +66,15 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
 
     if (name !== undefined) {
       updateData.name = name;
-      updateData.slug = generateSlug(`${name} ${brand ?? existing.brand ?? ''}`);
+      updateData.slug = generateSlug(name);
     }
 
-    if (brand !== undefined) {
-      updateData.brand = brand;
-      // Recalcular slug si no se actualizó el nombre pero sí la marca
-      if (name === undefined) {
-        updateData.slug = generateSlug(`${existing.name} ${brand}`);
-      }
+    if (description !== undefined) {
+      updateData.description = description;
+    }
+
+    if (barCode !== undefined) {
+      updateData.barCode = barCode;
     }
 
     if (categoryId !== undefined) {
@@ -88,12 +89,18 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
       updateData.unitCost = new Prisma.Decimal(unitCost);
     }
 
-    if (salePrice !== undefined) {
-      updateData.salePrice = new Prisma.Decimal(salePrice);
-    }
-
     if (profitPercentage !== undefined) {
       updateData.profitPercentage = new Prisma.Decimal(profitPercentage);
+    }
+
+    // Compute salePrice if unitCost or profitPercentage changed
+    if (unitCost !== undefined || profitPercentage !== undefined) {
+      const finalUnitCost = unitCost !== undefined ? unitCost : Number(existing.unitCost);
+      const finalProfitPercentage = profitPercentage !== undefined ? profitPercentage : (existing.profitPercentage ? Number(existing.profitPercentage) : 0);
+      const computedSalePrice = finalUnitCost + (finalUnitCost * finalProfitPercentage / 100);
+      updateData.salePrice = new Prisma.Decimal(computedSalePrice);
+    } else if (salePrice !== undefined) {
+      updateData.salePrice = new Prisma.Decimal(salePrice);
     }
 
     if (isActive !== undefined) {
@@ -110,12 +117,22 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
       message: 'Producto actualizado exitosamente.',
       product: {
         id: updatedProduct.id,
-        code: updatedProduct.code,
+        barCode: updatedProduct.barCode,
         name: updatedProduct.name,
       },
     };
   } catch (error) {
     console.error('[updateProduct] Error:', error);
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return {
+          success: false,
+          message: 'Ya existe otro producto con este código de barras. Usa uno distinto.',
+        };
+      }
+    }
+
     return {
       success: false,
       message: 'Ocurrió un error al intentar actualizar el producto.',

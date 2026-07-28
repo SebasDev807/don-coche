@@ -1,10 +1,11 @@
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
 import { InventoryKpiCards } from '@/components/dashboard/inventario/InventoryKpiCards';
 import { InventoryTable } from '@/components/dashboard/inventario/InventoryTable';
 import { InventoryToolbar } from '@/components/dashboard/inventario/InventoryToolbar';
 import { getSeedProducts } from '@/lib/data/seed-inventory';
 import { prisma } from '@/lib/prisma';
-import { ItemCategory } from '@prisma/client';
+import { PrimaryButton } from '@/components/ui';
+
 
 /**
  * Metadata de la página de Inventario para SEO y título.
@@ -41,12 +42,11 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
       ...(query && {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
-          { code: { contains: query, mode: 'insensitive' } },
-          { brand: { contains: query, mode: 'insensitive' } },
+          { barCode: { contains: query, mode: 'insensitive' } },
         ]
       })
     },
-    orderBy: { code: 'asc' },
+    orderBy: { barCode: 'asc' },
   });
 
   // Si no hay productos en la base de datos (y no hay filtros), usamos los de seed como fallback
@@ -63,14 +63,15 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
   // Serializar objetos Decimal y Date para enviarlos al Client Component
   const serializedProducts = products.map((p) => ({
     id: p.id,
-    code: p.code,
+    barCode: p.barCode,
     name: p.name,
-    brand: p.brand,
+    description: p.description,
     category: p.category_rel?.name || p.category || 'Sin Categoría',
     categoryId: p.categoryId,
     stock: p.stock,
     unitCost: Number(p.unitCost),
-    salePrice: Number(p.salePrice)
+    salePrice: Number(p.salePrice),
+    profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0
   }));
 
   // Ordenar los productos para mostrar primero los de stock bajo (<= 10)
@@ -82,16 +83,22 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     if (!aLowStock && bLowStock) return 1;
 
     // Si ambos son bajo stock o ambos normal, ordenar por código
-    return (a.code || '').localeCompare(b.code || '');
+    return (a.barCode || '').localeCompare(b.barCode || '');
   });
 
   return (
     <div className="fade-in">
       <main className="flex-grow max-w-[1440px] mx-auto w-full">
         {/* Encabezado Principal */}
-        <header className="mb-stack-lg">
-          <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Inventario Maestro</h1>
-          <p className="font-body-lg text-body-lg text-secondary">Control detallado de existencias y valoración de activos.</p>
+        <header className="mb-stack-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Inventario Maestro</h1>
+            <p className="font-body-lg text-body-lg text-secondary">Control detallado de existencias y valoración de activos.</p>
+          </div>
+          <PrimaryButton href="/inventario/stock" className="bg-tertiary-container text-on-tertiary-container hover:bg-tertiary-container/80 !text-tertiary">
+            <span className="material-symbols-outlined">barcode_scanner</span>
+            Actualización Rápida
+          </PrimaryButton>
         </header>
 
         {/* Tarjetas de Indicadores (KPIs) */}

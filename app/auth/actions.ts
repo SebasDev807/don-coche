@@ -11,7 +11,7 @@
 
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { createSession, deleteSession } from '@/lib/session';
+import { createSession, deleteSession, getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────────
@@ -83,6 +83,21 @@ export async function loginAction(cc: string, password: string): Promise<LoginRe
       role: user.role,
     });
 
+    // Registrar asistencia para roles que no sean gerencia/superusuario
+    if (user.role !== 'GERENTE' && user.role !== 'SUPERUSUARIO') {
+      // Lazy close: Si por alguna razón el usuario no cerró sesión antes,
+      // cerramos cualquier registro pendiente con la hora actual.
+      await prisma.attendanceRecord.updateMany({
+        where: { userId: user.id, clockOut: null },
+        data: { clockOut: new Date() },
+      });
+
+      // Crear nuevo registro de entrada
+      await prisma.attendanceRecord.create({
+        data: { userId: user.id },
+      });
+    }
+
     // Retornar datos mínimos para el feedback de bienvenida en el cliente
     return {
       success: true,
@@ -106,6 +121,19 @@ export async function loginAction(cc: string, password: string): Promise<LoginRe
  * Debe llamarse desde un Server Component o Server Action.
  */
 export async function logoutAction(): Promise<never> {
+  try {
+    const session = await getSession();
+    if (session && session.role !== 'GERENTE' && session.role !== 'SUPERUSUARIO') {
+      // Marcar la hora de salida
+      await prisma.attendanceRecord.updateMany({
+        where: { userId: session.userId, clockOut: null },
+        data: { clockOut: new Date() },
+      });
+    }
+  } catch (error) {
+    console.error('[logoutAction] Error registrando salida:', error);
+  }
+
   await deleteSession();
   redirect('/auth');
 }

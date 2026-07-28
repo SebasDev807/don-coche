@@ -214,13 +214,12 @@ async function main() {
   console.log('\n--- Sembrando Productos ---');
   for (const seedProduct of SEED_PRODUCTS) {
     const categorySlug = generateSlug(seedProduct.category || 'GEN');
-    
+
     const product = await prisma.product.upsert({
       where: { slug: seedProduct.slug },
       update: {
         name: seedProduct.name,
         slug: seedProduct.slug,
-        brand: seedProduct.brand,
         category: seedProduct.category,
         category_rel: {
           connect: { slug: categorySlug }
@@ -232,10 +231,9 @@ async function main() {
         isActive: true,
       },
       create: {
-        code: seedProduct.code,
         name: seedProduct.name,
+        barCode: seedProduct.barCode,
         slug: seedProduct.slug,
-        brand: seedProduct.brand,
         category: seedProduct.category,
         category_rel: {
           connect: { slug: categorySlug }
@@ -247,8 +245,7 @@ async function main() {
         isActive: true,
       },
     });
-
-    console.log(`  ✓ PRODUCTO       | ${product.code?.padEnd(14)} | ${product.name}`);
+    console.log(`  ✓ PRODUCTO       | ${product.barCode?.padEnd(14)} | ${product.name}`);
   }
 
   console.log('\nSeed exitoso.');

@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { Suspense } from 'react';
 import { getStaffUsers } from '@/actions/personal';
 import { StaffKPIs, StaffToolbar, StaffTable } from '@/components/dashboard/personal';
+import { PrimaryButton } from '@/components/ui';
 
 
 export const revalidate = 60;
@@ -28,9 +29,15 @@ export default async function PersonalPage(props: { searchParams: Promise<{ [key
   return (
     <div className='fade-in'>
       <main className="flex-grow max-w-[1440px] mx-auto w-full">
-        <header className="mb-stack-lg">
-          <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Directorio de Personal</h1>
-          <p className="font-body-lg text-body-lg text-secondary">Gestión de operarios, administradores y accesos al sistema</p>
+        <header className="mb-stack-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Directorio de Personal</h1>
+            <p className="font-body-lg text-body-lg text-secondary">Gestión de operarios, administradores y accesos al sistema</p>
+          </div>
+          <PrimaryButton href="/personal/asistencia">
+            <span className="material-symbols-outlined">analytics</span>
+            Dashboard de Asistencia
+          </PrimaryButton>
         </header>
 
         {/* KPI Cards */}

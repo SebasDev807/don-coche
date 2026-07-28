@@ -5,6 +5,7 @@ import { ItemCategory } from '@prisma/client';
  */
 
 /**
+ * @deprecated Utilice generateEAN13 en lib/utils/barcode.ts en su lugar.
  * Genera un SKU (Stock Keeping Unit) automático para un producto nuevo.
  * El formato utilizado es: [PREFIJO]-[SECUENCIA_ALEATORIA]
  *

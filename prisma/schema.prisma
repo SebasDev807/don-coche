@@ -67,10 +67,25 @@ model User {
   ordersAsTech  Order[]             @relation("TechnicianOrders")
   ordersAsAdmin Order[]             @relation("AdminOrders")
   stockMoves    InventoryMovement[] @relation("AdminMovements")
+  attendance    AttendanceRecord[]
 
   @@index([cc]) // Índice para login rápido
   @@map("users")
 }
+
+model AttendanceRecord {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  clockIn   DateTime  @default(now()) @map("clock_in")
+  clockOut  DateTime? @map("clock_out")
+
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([clockIn])
+  @@map("attendance_records")
+}
+
 
 // -----------------------------------------------------------------------
 // MODELOS DE CLIENTES Y VEHÍCULOS
@@ -122,10 +137,11 @@ model Category {
 
 model Product {
   id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code             String?       @unique
+  barCode          String?       @unique @map("bar_code")
   name             String
   slug             String        @unique
-  brand            String? /// Marca del producto
+  imageUrl         String?       @map("image_url") /// URL de imagen del producto (opcional)
+  description      String? /// Descripción del producto (opcional)
   category         ItemCategory?
   categoryId       String?       @map("category_id") @db.Uuid
   stock            Int           @default(0)
@@ -144,14 +160,15 @@ model Product {
 }
 
 model ServiceCatalog {
-  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String
-  category    ItemCategory?
-  categoryId  String?       @map("category_id") @db.Uuid
-  basePrice   Decimal       @map("base_price") @db.Decimal(10, 2)
-  description String?
-  isActive    Boolean       @default(true) @map("is_active")
-  createdAt   DateTime      @default(now()) @map("created_at")
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String
+  category         ItemCategory?
+  categoryId       String?       @map("category_id") @db.Uuid
+  basePrice        Decimal       @map("base_price") @db.Decimal(10, 2)
+  profitPercentage Float?        @map("profit_percentage")
+  description      String?
+  isActive         Boolean       @default(true) @map("is_active")
+  createdAt        DateTime      @default(now()) @map("created_at")
 
   category_rel  Category?      @relation(fields: [categoryId], references: [id])
   orderServices OrderService[]

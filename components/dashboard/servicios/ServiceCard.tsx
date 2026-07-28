@@ -1,25 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import Link from 'next/link';
 import { ACTION_ICONS } from '@/constants/icons';
-import { updateService, deleteService } from '@/actions/car_services';
+import { deleteService } from '@/actions/car_services';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { useRouter } from 'next/navigation';
 import { PrimaryButton } from '@/components/ui';
+import { useSellingPrice } from '@/hooks';
 
 const MySwal = withReactContent(Swal);
-
-interface ServiceCardProps {
-  service: {
-    id: string;
-    name: string;
-    category?: string | null;
-    basePrice: any;
-    description?: string | null;
-    isActive?: boolean;
-  };
-}
 
 const getIconForCategory = (category: string | null | undefined) => {
   if (category === 'SERVITECA') return 'settings';
@@ -27,29 +17,8 @@ const getIconForCategory = (category: string | null | undefined) => {
   return 'car_repair';
 };
 
-export function ServiceCard({ service }: ServiceCardProps) {
+export function ServiceCard({ service }: { service: any }) {
   const router = useRouter();
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Form state
-  const [name, setName] = useState(service.name);
-  const [basePrice, setBasePrice] = useState(Number(service.basePrice));
-  const [category, setCategory] = useState(service.category || '');
-
-  const formatPrice = (price: any) => {
-    return new Intl.NumberFormat('es-CO').format(Number(price));
-  };
-
-  const handleEdit = () => {
-    setIsEditing(!isEditing);
-    // Reset fields if canceling
-    if (isEditing) {
-      setName(service.name);
-      setBasePrice(Number(service.basePrice));
-      setCategory(service.category || '');
-    }
-  };
 
   const handleDelete = async () => {
     const result = await MySwal.fire({
@@ -61,9 +30,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
       cancelButtonColor: '#6b7280',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      customClass: {
-        confirmButton: '!text-black'
-      }
+      customClass: { confirmButton: '!text-black' },
     });
 
     if (result.isConfirmed) {
@@ -77,125 +44,80 @@ export function ServiceCard({ service }: ServiceCardProps) {
     }
   };
 
-  const handleSave = async () => {
-    setIsSubmitting(true);
-    const res = await updateService(service.id, {
-      name,
-      basePrice,
-      category
-    });
-
-    setIsSubmitting(false);
-    if (res.success) {
-      MySwal.fire({
-        title: '¡Guardado!',
-        text: res.message,
-        icon: 'success',
-        confirmButtonColor: 'rgba(221, 213, 51, 1)',
-        customClass: { confirmButton: '!text-black' }
-      });
-      setIsEditing(false);
-      router.refresh();
-    } else {
-      MySwal.fire('Error', res.message, 'error');
-    }
-  };
+  const { formattedSellingPrice } = useSellingPrice(service.basePrice, service.profitPercentage);
 
   return (
-    <div className="bg-surface border border-outline-variant rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col h-full relative">
-      {/* Top Section */}
-      <div className="flex justify-between items-start mb-6">
-        <div className="w-12 h-12 bg-surface-container-high text-on-surface-variant rounded-lg flex items-center justify-center border border-outline-variant/50">
-          <span className="material-symbols-outlined text-[24px]">
-            {getIconForCategory(service.category)}
+    <div 
+      onClick={() => router.push(`/servicios/${service.id}`)}
+      className="bg-surface border border-outline-variant rounded-xl p-4 shadow-sm hover:shadow-md hover:border-primary/50 hover:bg-surface-container-low transition-all cursor-pointer flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full group relative overflow-hidden"
+    >
+      {/* Decorative gradient bar on the left */}
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-tertiary opacity-0 group-hover:opacity-100 transition-opacity" />
+
+      {/* Left: Icon and Name */}
+      <div className="flex items-center gap-4 flex-grow min-w-0 pl-2">
+        <div className="w-12 h-12 flex-shrink-0 bg-surface-container-highest text-on-surface rounded-xl flex items-center justify-center border border-outline-variant shadow-inner group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+          <span className="material-symbols-outlined text-[24px]">{getIconForCategory(service.category)}</span>
+        </div>
+        <div className="flex flex-col min-w-0">
+          <h3 className="font-headline-sm text-on-surface truncate group-hover:text-primary transition-colors" title={service.name}>
+            {service.name}
+          </h3>
+          <span className="text-body-sm text-secondary bg-surface-container-high px-2.5 py-0.5 rounded-md inline-flex w-fit mt-1 border border-outline-variant/40 font-medium">
+            {service.category === 'SERVITECA' ? 'Serviteca' : service.category === 'LAVADERO' ? 'Lavadero' : service.category || 'Sin Categoría'}
           </span>
         </div>
+      </div>
 
-        <div className="flex items-center gap-3">
+      {/* Right: Details and Actions */}
+      <div className="flex flex-wrap items-center gap-6 w-full md:w-auto mt-4 md:mt-0 pl-2 md:pl-0">
+        
+        <div className="flex flex-col min-w-[100px]">
+          <span className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1 flex items-center gap-1">
+            <span className="material-symbols-outlined text-[14px]">payments</span>
+            Precio Base
+          </span>
+          <span className="font-body-lg text-on-surface font-medium">${Number(service.basePrice).toLocaleString('es-CO')}</span>
+        </div>
+        
+        <div className="flex flex-col min-w-[80px]">
+          <span className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1 flex items-center gap-1">
+            <span className="material-symbols-outlined text-[14px]">trending_up</span>
+            Margen
+          </span>
+          <div className="flex items-center gap-1">
+            <span className="font-body-lg text-tertiary font-bold bg-tertiary/10 px-2 py-0.5 rounded text-sm">
+              {service.profitPercentage ? `${service.profitPercentage}%` : '0%'}
+            </span>
+          </div>
+        </div>
 
-          <button
-            onClick={handleEdit}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-primary ${isEditing ? 'bg-primary-container text-on-primary-container' : 'text-secondary hover:bg-secondary-container hover:text-on-secondary-container'}`}
+        <div className="flex flex-col min-w-[120px]">
+          <span className="text-label-sm text-primary uppercase tracking-wider mb-1 font-bold flex items-center gap-1">
+            <span className="material-symbols-outlined text-[14px]">sell</span>
+            PVP
+          </span>
+          <span className="font-title-lg text-primary font-black">{formattedSellingPrice}</span>
+        </div>
+
+        {/* Actions (stop propagation to prevent navigating when clicking buttons) */}
+        <div className="flex items-center gap-2 border-l border-outline-variant/60 pl-6 ml-2" onClick={(e) => e.stopPropagation()}>
+          <Link
+            href={`/servicios/editar_servicio/${service.id}`}
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer outline-none bg-surface text-on-surface-variant border border-outline-variant hover:bg-primary hover:text-on-primary hover:border-primary shadow-sm"
             title="Editar"
           >
-            <span className="material-symbols-outlined text-[18px]">{ACTION_ICONS.edit}</span>
-          </button>
+            <span className="material-symbols-outlined text-[20px]">{ACTION_ICONS.edit}</span>
+          </Link>
           <button
             onClick={handleDelete}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-error hover:bg-error-container hover:text-on-error-container transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-error"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer outline-none bg-surface text-on-surface-variant border border-outline-variant hover:bg-error hover:text-on-error hover:border-error shadow-sm"
             title="Eliminar"
           >
-            <span className="material-symbols-outlined text-[18px]">{ACTION_ICONS.delete}</span>
+            <span className="material-symbols-outlined text-[20px]">{ACTION_ICONS.delete}</span>
           </button>
         </div>
       </div>
-
-      {/* Body Section */}
-      <div className="flex-grow space-y-4">
-        <div>
-          <label className="block font-label-bold text-label-bold text-on-surface-variant mb-1.5">Nombre del Servicio</label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-11 form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 px-3 text-on-surface"
-            />
-          ) : (
-            <div className="h-11 w-full rounded-lg border border-outline-variant/60 bg-surface px-3 flex items-center text-on-surface shadow-sm">
-              {service.name}
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-1.5">Precio (PVP)</label>
-            {isEditing ? (
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-fixed-dim">$</span>
-                <input
-                  type="text"
-                  value={basePrice}
-                  onChange={(e) => setBasePrice(Number(e.target.value.replace(/\D/g, '')))}
-                  className="h-11 form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 pl-7 pr-3 text-on-surface"
-                />
-              </div>
-            ) : (
-              <div className="h-11 w-full rounded-lg border border-outline-variant/60 bg-surface px-3 flex items-center text-on-surface shadow-sm">
-                $ {formatPrice(service.basePrice)}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-1.5">Categoría</label>
-            {isEditing ? (
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="h-11 form-select w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 px-3 text-on-surface"
-              >
-                <option value="LAVADERO">LAVADERO</option>
-                <option value="SERVITECA">SERVITECA</option>
-              </select>
-            ) : (
-              <div className="h-11 w-full rounded-lg border border-outline-variant/60 bg-surface px-3 flex items-center text-on-surface shadow-sm truncate">
-                {service.category || 'N/A'}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Action Section */}
-      {isEditing && (
-        <div className="mt-6 pt-5 border-t border-outline-variant/50 flex justify-end">
-          <PrimaryButton onClick={handleSave} disabled={isSubmitting} className="h-10 text-sm px-4">
-            {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
-          </PrimaryButton>
-        </div>
-      )}
     </div>
   );
 }

@@ -24,9 +24,9 @@ export function InventoryToolbar() {
 
   return (
     <section className="flex flex-col lg:flex-row justify-between items-center gap-4 mb-stack-md">
-      <SearchBar 
-        className="w-full lg:w-1/2" 
-        placeholder="Buscar producto por SKU, nombre, marca..."
+      <SearchBar
+        className="w-full lg:w-1/2"
+        placeholder="Buscar por codigo o nombre..."
       />
       <div className="flex items-center gap-4 w-full lg:w-auto">
         <div className="relative flex-1 lg:flex-none">

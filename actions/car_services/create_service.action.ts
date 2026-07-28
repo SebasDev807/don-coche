@@ -24,6 +24,7 @@ export async function createService(formData: FormData) {
         categoryId: validatedData.categoryId || null,
         category: validatedData.category || null,
         basePrice: validatedData.basePrice,
+        profitPercentage: validatedData.profitPercentage !== undefined ? validatedData.profitPercentage : null,
         description: validatedData.description || null,
         isActive: true,
       },

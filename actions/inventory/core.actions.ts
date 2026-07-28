@@ -5,7 +5,7 @@ import { createProductSchema, createCategorySchema } from '@/validation';
 import { generateEAN13 } from '@/lib/utils/barcode';
 import { generateSlug } from '@/lib/utils/slug';
 import { verifySession } from '@/lib/dal';
-import { ItemCategory } from '@prisma/client';
+import { ItemCategory, Prisma } from '@prisma/client';
 
 /**
  * Server action para obtener las categorías existentes.
@@ -118,6 +118,16 @@ export async function createProduct(formData: FormData) {
     return { success: true, message: 'Producto creado exitosamente' };
   } catch (error: any) {
     console.error('Error creating product:', error);
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return {
+          success: false,
+          message: 'Ya existe otro producto con este código de barras. Usa uno distinto.',
+        };
+      }
+    }
+
     return { success: false, message: error.message || 'Error al crear el producto' };
   }
 }

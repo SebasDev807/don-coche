@@ -123,6 +123,16 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
     };
   } catch (error) {
     console.error('[updateProduct] Error:', error);
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return {
+          success: false,
+          message: 'Ya existe otro producto con este código de barras. Usa uno distinto.',
+        };
+      }
+    }
+
     return {
       success: false,
       message: 'Ocurrió un error al intentar actualizar el producto.',

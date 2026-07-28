@@ -120,7 +120,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-gutter gap-y-6">
           {/* Código de Barras */}
           <div className="col-span-1 md:col-span-2">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Código de Barras (Opcional)</label>
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Código</label>
             <div className="relative">
               <input
                 {...register('barCode')}

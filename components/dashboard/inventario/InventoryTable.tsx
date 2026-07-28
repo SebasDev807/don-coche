@@ -93,7 +93,7 @@ export function InventoryTable({ products }: InventoryTableProps) {
         <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
             <tr className="bg-surface-container border-b border-outline-variant">
-              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CÓDIGO DE BARRAS</th>
+              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CÓDIGO</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">DESCRIPCIÓN</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CATEGORÍA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">COSTO UNIT.</th>

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function ProductDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id } = params;
-  
+
   const product = await prisma.product.findUnique({
     where: { id, isActive: true },
     include: {
@@ -24,11 +24,11 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
   if (!product) {
     notFound();
   }
-  
+
   const unitCost = Number(product.unitCost);
   const salePrice = Number(product.salePrice);
   const profitPercentage = product.profitPercentage ? Number(product.profitPercentage) : 0;
-  
+
   const formattedUnitCost = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(unitCost);
   const formattedSalePrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(salePrice);
 
@@ -41,7 +41,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
   };
 
   const categoryName = product.category_rel?.name || product.category || 'Sin Categoría';
-  
+
   // Use DB imageUrl or a generic Unsplash image for car parts/inventory
   const imageUrl = product.imageUrl || 'https://images.unsplash.com/photo-1530906358829-e84b2769270f?q=80&w=1000&auto=format&fit=crop';
 
@@ -61,17 +61,17 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
           <div className="w-full md:w-2/5 relative min-h-[350px] bg-surface-container-low border-b md:border-b-0 md:border-r border-outline-variant group">
             {/* Img as background cover to avoid next/image domain configuration issues, 
                 or we can just use an img tag for external domains if next/image isn't configured */}
-            <img 
-              src={imageUrl} 
+            <img
+              src={imageUrl}
               alt={product.name}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
             <div className="absolute bottom-4 left-4 right-4 z-10 flex justify-between items-end">
-               <span className="inline-flex items-center justify-center bg-black/40 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-sm border border-white/20">
-                 <span className="material-symbols-outlined text-[16px] mr-1.5">{getIconForCategory(categoryName)}</span>
-                 {categoryName}
-               </span>
+              <span className="inline-flex items-center justify-center bg-black/40 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-sm border border-white/20">
+                <span className="material-symbols-outlined text-[16px] mr-1.5">{getIconForCategory(categoryName)}</span>
+                {categoryName}
+              </span>
             </div>
           </div>
 
@@ -80,7 +80,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
             <div className="flex justify-between items-start mb-6">
               <div>
                 <span className="inline-block bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-md font-bold mb-3 border border-secondary/20 font-mono">
-                  CÓDIGO DE BARRAS: {product.barCode || 'N/A'}
+                  CÓDIGO: {product.barCode || 'N/A'}
                 </span>
                 <h1 className="font-headline-lg text-on-surface leading-tight mb-2">
                   {product.name}
@@ -106,7 +106,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                     {product.stock} {product.stock === 1 ? 'unidad' : 'unidades'}
                   </span>
                   {product.stock <= 10 && (
-                     <span className="bg-error/10 text-error text-[10px] uppercase font-bold px-2 py-0.5 rounded">Stock Bajo</span>
+                    <span className="bg-error/10 text-error text-[10px] uppercase font-bold px-2 py-0.5 rounded">Stock Bajo</span>
                   )}
                 </div>
               </div>
@@ -141,27 +141,27 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
             </div>
 
             <div className="flex-grow mt-6">
-               <h4 className="font-title-md text-on-surface mb-3 flex items-center gap-2">
-                 <span className="material-symbols-outlined text-[20px]">description</span>
-                 Descripción del Producto
-               </h4>
-               <div className="bg-surface-container-low p-4 rounded-xl text-body-md text-on-surface-variant min-h-[100px] border border-outline-variant/40">
-                 {product.description ? (
-                   <p>{product.description}</p>
-                 ) : (
-                   <p className="italic opacity-60">No hay descripción disponible para este producto.</p>
-                 )}
-               </div>
+              <h4 className="font-title-md text-on-surface mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px]">description</span>
+                Descripción del Producto
+              </h4>
+              <div className="bg-surface-container-low p-4 rounded-xl text-body-md text-on-surface-variant min-h-[100px] border border-outline-variant/40">
+                {product.description ? (
+                  <p>{product.description}</p>
+                ) : (
+                  <p className="italic opacity-60">No hay descripción disponible para este producto.</p>
+                )}
+              </div>
             </div>
 
             <div className="mt-8">
-               <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
-                 <span className="material-symbols-outlined text-primary mt-0.5">info</span>
-                 <p className="text-body-sm text-on-surface-variant">
-                   El inventario se valora basándose en el costo unitario de compra actual ({formattedUnitCost}). 
-                   El valor total en stock para este producto es de <strong className="text-on-surface">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(unitCost * product.stock)}</strong>.
-                 </p>
-               </div>
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
+                <span className="material-symbols-outlined text-primary mt-0.5">info</span>
+                <p className="text-body-sm text-on-surface-variant">
+                  El inventario se valora basándose en el costo unitario de compra actual ({formattedUnitCost}).
+                  El valor total en stock para este producto es de <strong className="text-on-surface">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(unitCost * product.stock)}</strong>.
+                </p>
+              </div>
             </div>
           </div>
         </div>

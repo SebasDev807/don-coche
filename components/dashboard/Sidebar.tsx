@@ -70,7 +70,7 @@ export function Sidebar({ logoutAction }: SidebarProps) {
       {/* Overlay (solo visible en mobile cuando está abierto) */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity"
+          className="sm:hidden fixed inset-0 bg-black/50 z-40 transition-opacity"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
@@ -79,17 +79,17 @@ export function Sidebar({ logoutAction }: SidebarProps) {
       {/* Sidebar contenedor */}
       <aside
         className={`
-          fixed lg:relative z-50 lg:z-20 top-0 left-0 h-screen w-72 bg-surface-container-lowest 
+          fixed sm:relative z-50 sm:z-20 top-0 left-0 h-screen w-72 bg-surface-container-lowest 
           border-r border-surface-variant flex flex-col py-8 shrink-0
           transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
+          ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full sm:translate-x-0'}
         `}
       >
-        <div className="flex items-center justify-between px-6 mb-stack-lg lg:mb-stack-lg lg:justify-center">
+        <div className="flex items-center justify-center px-6 mb-stack-lg">
           {/* Logo / Branding */}
           <div className="flex justify-center flex-1">
             <Image
-              src="/images/logo_2.png"
+              src="/images/logo_1.png"
               alt="Don Coche Logo"
               width={180}
               height={60}
@@ -97,14 +97,6 @@ export function Sidebar({ logoutAction }: SidebarProps) {
               className="object-contain w-auto h-auto"
             />
           </div>
-          {/* Botón cerrar (solo mobile) */}
-          <button
-            onClick={() => setIsOpen(false)}
-            className="lg:hidden material-symbols-outlined text-on-surface hover:bg-surface-container-low p-2 rounded-full transition-colors"
-            aria-label="Cerrar menú lateral"
-          >
-            close
-          </button>
         </div>
 
         {/* Navegación principal */}

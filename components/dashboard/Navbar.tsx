@@ -81,7 +81,7 @@ export function Navbar({ user }: NavbarProps) {
   return (
     <header className="bg-surface-container-lowest border-b border-surface-variant flex justify-between items-center w-full px-4 lg:px-6 h-touch-target-min min-h-[72px] shrink-0 relative z-10">
       {/* Mobile: Menú + Título */}
-      <div className="flex items-center gap-2 lg:hidden">
+      <div className="flex items-center gap-2 sm:hidden">
         <button
           onClick={toggleSidebar}
           className="material-symbols-outlined p-2 text-on-surface hover:bg-surface-container-low rounded-full transition-colors cursor-pointer"
@@ -95,7 +95,7 @@ export function Navbar({ user }: NavbarProps) {
       </div>
 
       {/* Desktop: Espacio de búsqueda (futuro) */}
-      <div className="hidden lg:flex flex-1 max-w-xl relative group">
+      <div className="hidden sm:flex flex-1 max-w-xl relative group">
         <div className="relative w-full max-w-md" />
       </div>
 

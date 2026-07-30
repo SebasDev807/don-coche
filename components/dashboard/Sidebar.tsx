@@ -15,7 +15,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSidebarStore } from './useSidebarStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { getPendingOrdersCount } from '@/actions/orders/admin.actions';
 
 /**
  * Definición de un ítem de navegación del sidebar.
@@ -59,6 +60,29 @@ interface SidebarProps {
 export function Sidebar({ logoutAction }: SidebarProps) {
   const pathname = usePathname();
   const { isOpen, setIsOpen } = useSidebarStore();
+  const [pendingCajaCount, setPendingCajaCount] = useState(0);
+
+  // Poll para obtener órdenes pendientes en caja
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const res = await getPendingOrdersCount();
+        if (res.success) {
+          setPendingCajaCount(res.count);
+        }
+      } catch (error) {
+        console.error('Error fetching pending count:', error);
+      }
+    };
+
+    // Llamada inicial
+    fetchPendingCount();
+
+    // Polling cada 15 segundos
+    const intervalId = setInterval(fetchPendingCount, 15000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Cerrar el sidebar al cambiar de ruta en móviles
   useEffect(() => {
@@ -123,7 +147,14 @@ export function Sidebar({ logoutAction }: SidebarProps) {
                 >
                   {item.icon}
                 </span>
-                <span className="font-label-bold text-label-bold">{item.label}</span>
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="font-label-bold text-label-bold">{item.label}</span>
+                  {item.href === '/caja' && pendingCajaCount > 0 && (
+                    <span className="bg-error text-on-error text-xs font-bold px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                      {pendingCajaCount}
+                    </span>
+                  )}
+                </div>
               </Link>
             );
           })}

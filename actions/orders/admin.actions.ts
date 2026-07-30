@@ -240,3 +240,19 @@ export async function getTodayBilledOrders() {
     return { success: false, message: 'Error al obtener cuadre de hoy', data: [] };
   }
 }
+
+export async function getPendingOrdersCount() {
+  try {
+    // Only check if they have access to avoid throwing for unauthenticated sidebar checks, or just use verifyRole
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+
+    const count = await prisma.order.count({
+      where: { status: 'EN_PISTA' }
+    });
+
+    return { success: true, count };
+  } catch (error: any) {
+    console.error('Error fetching pending orders count:', error);
+    return { success: false, count: 0 };
+  }
+}

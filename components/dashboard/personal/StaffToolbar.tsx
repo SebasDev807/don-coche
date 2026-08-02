@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { ExportExcelButton, PrimaryButton, SearchBar } from '@/components/ui';
 
@@ -11,8 +11,8 @@ export function StaffToolbar() {
 
   return (
     <section className="flex flex-col lg:flex-row justify-between items-center gap-4 mb-stack-md">
-      <SearchBar 
-        className="w-full lg:w-1/2" 
+      <SearchBar
+        className="w-full lg:w-1/2"
         placeholder="Buscar empleado por nombre, CC, email, teléfono..."
       />
       <div className="flex items-center gap-4 w-full lg:w-auto">

@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { PrimaryButton, SearchBar } from '@/components/ui';
+import { ExportExcelButton, PrimaryButton, SearchBar } from '@/components/ui';
 import { getServices } from '@/actions/car_services';
 import { ServiceCard } from '@/components/dashboard/servicios/ServiceCard';
 
@@ -31,25 +31,28 @@ export default async function CatalogServicePage(props: {
               Gestione los servicios, precios y márgenes de ganancia.
             </p>
           </div>
-          <PrimaryButton href="/servicios/nuevo_servicio">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className="w-5 h-5"
-            >
-              <path d="M5 12h14"></path>
-              <path d="M12 5v14"></path>
-            </svg>
-            Agregar Nuevo Servicio
-          </PrimaryButton>
+          <div className="flex gap-4 w-full md:w-auto">
+            <ExportExcelButton endpoint="/api/export/servicios" />
+            <PrimaryButton href="/servicios/nuevo_servicio" className="flex-1 md:flex-none">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                className="w-5 h-5"
+              >
+                <path d="M5 12h14"></path>
+                <path d="M12 5v14"></path>
+              </svg>
+              Agregar Nuevo Servicio
+            </PrimaryButton>
+          </div>
         </header>
 
         {/* Tabs Section */}

@@ -1,15 +1,21 @@
 'use client';
 
+import { useState } from 'react';
+
 interface ExportExcelButtonProps {
   /**
-   * Función callback que se ejecuta al hacer clic en el botón para iniciar la exportación.
+   * Función callback que se ejecuta al hacer clic en el botón. Si se provee `endpoint`, esto se ejecuta antes de la petición.
    */
   onClick?: () => void;
   /**
-   * Indica si la exportación está en proceso para mostrar un estado de carga.
-   * Deshabilita el botón y muestra un spinner de carga.
+   * Endpoint de la API que genera el Excel (ej. '/api/export/inventario').
+   * Si se provee, el componente manejará automáticamente la descarga.
    */
-  isLoading?: boolean;
+  endpoint?: string;
+  /**
+   * Nombre sugerido para el archivo al descargar. (Opcional, el backend puede enviar su propio nombre).
+   */
+  filename?: string;
   /**
    * Indica si el botón debe estar deshabilitado.
    */
@@ -35,17 +41,59 @@ interface ExportExcelButtonProps {
  */
 export function ExportExcelButton({
   onClick,
-  isLoading = false,
+  endpoint,
+  filename = 'export.xlsx',
   disabled = false,
   className = '',
   label = 'Exportar a Excel',
 }: ExportExcelButtonProps) {
-  const isBtnDisabled = disabled || isLoading;
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (onClick) onClick();
+    
+    if (!endpoint) return;
+
+    setIsDownloading(true);
+    try {
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error('Error al descargar el archivo');
+      }
+      
+      // Obtener el nombre del archivo del header Content-Disposition si existe
+      let finalFilename = filename;
+      const disposition = response.headers.get('Content-Disposition');
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+        if (matches != null && matches[1]) { 
+          finalFilename = matches[1].replace(/['"]/g, '');
+        }
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = finalFilename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading excel:', error);
+      // Aquí se podría integrar un toast de error si el sistema lo tiene
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const isBtnDisabled = disabled || isDownloading;
 
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleDownload}
       disabled={isBtnDisabled}
       className={`
         group cursor-pointer h-touch-target-min px-6 
@@ -60,7 +108,7 @@ export function ExportExcelButton({
       `}
       aria-label={label}
     >
-      {isLoading ? (
+      {isDownloading ? (
         <svg 
           className="animate-spin h-5 w-5 text-emerald-600" 
           xmlns="http://www.w3.org/2000/svg" 

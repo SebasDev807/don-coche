@@ -21,8 +21,8 @@ import { env } from '@/config/env';
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
 
-  const mode      = searchParams.get('hub.mode');
-  const token     = searchParams.get('hub.verify_token');
+  const mode = searchParams.get('hub.mode');
+  const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
 
   const verifyToken = env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
@@ -54,6 +54,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  *       actualizar el estado del registro correspondiente al wa_id recibido.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+
   let body: unknown;
 
   try {

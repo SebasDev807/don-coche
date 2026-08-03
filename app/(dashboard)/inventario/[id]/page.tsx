@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { ACTION_ICONS } from '@/constants/icons';
 import Image from 'next/image';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
 
 export const metadata: Metadata = {
   title: 'Detalle del Producto | Don Coche',
@@ -47,7 +48,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
 
   return (
     <div className="fade-in flex flex-col min-h-[calc(100vh-140px)]">
-      <main className="flex-grow flex flex-col max-w-[1000px] mx-auto w-full">
+      <main className="flex-grow flex flex-col max-w-[1440px] mx-auto w-full">
         {/* Navigation Breadcrumb */}
         <div className="mb-6">
           <Link href={`/inventario`} className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors font-label-lg">
@@ -57,42 +58,36 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
         </div>
 
         <div className="bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col md:flex-row">
-          {/* Left Side: Unsplash Image Container */}
-          <div className="w-full md:w-2/5 relative min-h-[350px] bg-surface-container-low border-b md:border-b-0 md:border-r border-outline-variant group">
-            {/* Img as background cover to avoid next/image domain configuration issues, 
-                or we can just use an img tag for external domains if next/image isn't configured */}
+          {/* Left Side: Image Container */}
+          <div className="w-full md:w-2/5 relative min-h-[400px] flex items-center justify-center p-4 bg-white border-b md:border-b-0 md:border-r border-outline-variant">
             <img
               src={imageUrl}
               alt={product.name}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="max-w-full max-h-[500px] object-contain"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-            <div className="absolute bottom-4 left-4 right-4 z-10 flex justify-between items-end">
-              <span className="inline-flex items-center justify-center bg-black/40 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-sm border border-white/20">
-                <span className="material-symbols-outlined text-[16px] mr-1.5">{getIconForCategory(categoryName)}</span>
-                {categoryName}
-              </span>
-            </div>
           </div>
 
           {/* Right Side: Product Details */}
           <div className="w-full md:w-3/5 p-8 flex flex-col relative bg-surface">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <span className="inline-block bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-md font-bold mb-3 border border-secondary/20 font-mono">
+                <span className="inline-block bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-md font-bold mb-3 border border-primary/20 font-mono">
                   CÓDIGO: {product.barCode || 'N/A'}
                 </span>
                 <h1 className="font-headline-lg text-on-surface leading-tight mb-2">
                   {product.name}
                 </h1>
+                <p className="text-body-lg text-secondary">
+                  Categoría: {categoryName}
+                </p>
               </div>
-              <Link
+              <PrimaryButton
                 href={`/inventario/editar/${product.id}`}
-                className="w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center transition-all cursor-pointer outline-none bg-surface-container-high text-on-surface-variant hover:bg-primary hover:text-on-primary shadow-sm"
+                className="w-12 h-12 !p-0 flex-shrink-0 rounded-full flex items-center justify-center transition-all cursor-pointer outline-none bg-surface-container-high text-on-surface-variant hover:bg-primary hover:text-on-primary shadow-sm"
                 title="Editar Producto"
               >
                 <span className="material-symbols-outlined text-[24px]">{ACTION_ICONS.edit}</span>
-              </Link>
+              </PrimaryButton>
             </div>
 
             <div className="grid grid-cols-2 gap-6 mb-8 bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/60">

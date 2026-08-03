@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { verifySession, verifyRole } from '@/lib/dal';
 import { revalidatePath } from 'next/cache';
 import { PaymentMethod } from '@prisma/client';
+import { after } from 'next/server';
+import { sendReceiptNotification, type OrderReceiptData } from '@/lib/whatsapp';
 
 export async function getPendingOrders() {
   try {
@@ -147,6 +149,21 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
 
     revalidatePath('/caja');
     revalidatePath('/dashboard');
+
+    const receiptData: OrderReceiptData = {
+      phone: updatedOrder.vehicle.customer?.phone,
+      customerName: updatedOrder.vehicle.customer?.name,
+      vehiclePlate: updatedOrder.vehicle.plate,
+      orderNumber: updatedOrder.orderNumber,
+      grandTotal: Number(updatedOrder.grandTotal),
+    };
+
+    after(() => {
+      sendReceiptNotification(receiptData).catch(err =>
+        console.error('[billOrder] Error al enviar notificación WhatsApp:', err)
+      );
+    });
+
     return {
       success: true,
       message: 'Orden facturada correctamente',

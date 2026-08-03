@@ -13,9 +13,9 @@
 | `lib/whatsapp/whatsapp.types.ts` | ✅ Listo | Tipos completos de la Meta API |
 | `lib/whatsapp/whatsapp.service.ts` | ✅ Listo | Servicio core + notificaciones de alto nivel |
 | `lib/whatsapp/index.ts` | ✅ Listo | Barrel export |
-| `app/api/whatsapp/webhook/route.ts` | ✅ Listo | GET verificación + POST status events |
-| Integración en `billOrder()` | 🔲 Pendiente | Esperando aprobación de templates |
-| Templates aprobados por Meta | ⏳ En revisión | `don_coche_recibo`, `don_coche_recordatorio_mantenimiento` |
+| `app/api/v1/whatsapp/webhook/route.ts` | ✅ Listo | GET verificación + POST status events |
+| Integración en `billOrder()` | ✅ Listo | Enviando notificaciones con `after()` |
+| Templates aprobados por Meta | ✅ Listo | `don_coche_recibo`, `don_coche_recordatorio_mantenimiento` |
 | Log de notificaciones en BD | 🔲 Pendiente | Modelo `WhatsAppNotification` en Prisma |
 
 ---
@@ -54,7 +54,7 @@ Meta WhatsApp Cloud API
     │  Entrega el mensaje al cliente
     │  Envía evento de status al webhook
     ▼
-Route Handler: GET|POST /api/whatsapp/webhook
+Route Handler: GET|POST /api/v1/whatsapp/webhook
     │  GET → responde hub.challenge (verificación inicial)
     │  POST → recibe { status: "delivered" | "read" | "failed" }
     ▼
@@ -172,7 +172,7 @@ Cuando se tengan los templates aprobados y el servidor esté accesible públicam
 
 1. **Obtener URL pública**: En desarrollo usar `ngrok http 3000` o el túnel de Next.js (`next dev --turbo --experimental-https`)
 2. **Registrar en Meta**: Developer Console → Tu App → WhatsApp → Configuración → Webhooks
-   - URL: `https://tudominio.com/api/whatsapp/webhook`
+   - URL: `http://localhost:3000/api/v1/whatsapp/webhook`
    - Verify Token: el valor de `WHATSAPP_WEBHOOK_VERIFY_TOKEN`
    - Suscribir a: `messages` (para recibir status de mensajes)
 3. Meta hace un GET a tu endpoint con `hub.challenge` — el Route Handler responde automáticamente

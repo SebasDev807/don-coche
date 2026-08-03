@@ -52,7 +52,7 @@ export function InventoryToolbar() {
           <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
         </div>
         <ExportExcelButton
-          endpoint="/api/export/inventario"
+          endpoint="/api/v1/export/inventario"
         />
         <PrimaryButton href="/inventario/nuevo_producto" className="flex-1 lg:flex-none">
           <span className="material-symbols-outlined">add</span>

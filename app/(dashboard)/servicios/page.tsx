@@ -32,7 +32,7 @@ export default async function CatalogServicePage(props: {
             </p>
           </div>
           <div className="flex gap-4 w-full md:w-auto">
-            <ExportExcelButton endpoint="/api/export/servicios" />
+            <ExportExcelButton endpoint="/api/v1/export/servicios" />
             <PrimaryButton href="/servicios/nuevo_servicio" className="flex-1 md:flex-none">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

@@ -8,7 +8,7 @@ interface ExportExcelButtonProps {
    */
   onClick?: () => void;
   /**
-   * Endpoint de la API que genera el Excel (ej. '/api/export/inventario').
+   * Endpoint de la API que genera el Excel (ej. '/api/v1/export/inventario').
    * Si se provee, el componente manejará automáticamente la descarga.
    */
   endpoint?: string;

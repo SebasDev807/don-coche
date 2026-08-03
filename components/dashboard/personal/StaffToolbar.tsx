@@ -40,7 +40,7 @@ export function StaffToolbar() {
           <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
         </div>
         <ExportExcelButton
-          endpoint="/api/export/personal"
+          endpoint="/api/v1/export/personal"
         />
         <PrimaryButton href="/personal/nuevo" className="flex-1 lg:flex-none">
           <span className="material-symbols-outlined">add</span>

@@ -1,3 +1,6 @@
+import { CustomerSearchBar, type CustomerSuggestion, type VehicleInfo } from './CustomerSearchBar';
+import { VehicleSelector } from './VehicleSelector';
+
 interface RegistrationFormProps {
   plate: string;
   setPlate: (val: string) => void;
@@ -15,6 +18,9 @@ interface RegistrationFormProps {
   setCarModel: (val: string) => void;
   carColor: string;
   setCarColor: (val: string) => void;
+  onSelectCustomer: (customer: CustomerSuggestion) => void;
+  customerVehicles: VehicleInfo[];
+  onSelectVehicle: (vehicle: VehicleInfo) => void;
 }
 
 export const RegistrationForm = ({
@@ -25,7 +31,10 @@ export const RegistrationForm = ({
   customerEmail, setCustomerEmail,
   carBrand, setCarBrand,
   carModel, setCarModel,
-  carColor, setCarColor
+  carColor, setCarColor,
+  onSelectCustomer,
+  customerVehicles,
+  onSelectVehicle
 }: RegistrationFormProps) => {
   return (
     <section className="w-full md:w-2/5 bg-surface-container-lowest border-r border-surface-variant p-8 flex flex-col overflow-y-auto" data-purpose="registration-form">
@@ -34,6 +43,14 @@ export const RegistrationForm = ({
         <p className="text-on-surface-variant text-base leading-relaxed">Ingrese los detalles para iniciar una nueva orden de servicio.</p>
       </div>
       <form className="flex-1 flex flex-col gap-6">
+        {/* Búsqueda de cliente y selector de vehículo */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <CustomerSearchBar onSelectCustomer={onSelectCustomer} />
+          <VehicleSelector vehicles={customerVehicles} onSelectVehicle={onSelectVehicle} />
+        </div>
+        
+        <hr className="border-surface-variant" />
+
         <div>
           <label className="block text-sm font-bold text-on-surface mb-2 cursor-pointer" htmlFor="placa">Placa</label>
           <input 

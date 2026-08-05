@@ -68,6 +68,51 @@ export async function createCustomer(data: CustomerFormValues) {
   }
 }
 
+/**
+ * Busca clientes existentes por cédula (prefijo) para autocompletar.
+ * Devuelve máximo 5 resultados para mantener la respuesta ligera.
+ */
+export async function searchCustomersByCc(ccQuery: string) {
+  try {
+    await verifySession();
+
+    const trimmed = ccQuery.trim();
+    if (!trimmed || trimmed.length < 3) {
+      return { success: true, data: [] };
+    }
+
+    const customers = await prisma.customer.findMany({
+      where: {
+        cc: { startsWith: trimmed, mode: 'insensitive' },
+      },
+      select: {
+        id: true,
+        cc: true,
+        name: true,
+        phone: true,
+        email: true,
+        vehicles: {
+          select: {
+            id: true,
+            plate: true,
+            brand: true,
+            model: true,
+            color: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { success: true, data: customers };
+  } catch (error: any) {
+    console.error('Error searching customers by CC:', error);
+    return { success: false, data: [], message: 'Error al buscar clientes.' };
+  }
+}
+
 export async function updateCustomer(id: string, data: Partial<CustomerFormValues>) {
   try {
     await verifySession();

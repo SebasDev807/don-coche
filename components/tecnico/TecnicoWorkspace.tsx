@@ -30,6 +30,30 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
   
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customerVehicles, setCustomerVehicles] = useState<{ id: string; plate: string; brand: string | null; model: string | null; color: string | null }[]>([]);
+
+  // Handler para autocompletar datos del cliente seleccionado.
+  // Almacena los vehículos del cliente y limpia los campos del vehículo para que el técnico seleccione uno.
+  const handleSelectCustomer = (customer: { cc: string | null; name: string | null; phone: string | null; email: string | null; vehicles: { id: string; plate: string; brand: string | null; model: string | null; color: string | null }[] }) => {
+    setCustomerCc(customer.cc || '');
+    setCustomerName(customer.name || '');
+    setCustomerPhone(customer.phone || '');
+    setCustomerEmail(customer.email || '');
+    setCustomerVehicles(customer.vehicles || []);
+    // Limpia campos de vehículo para forzar selección explícita
+    setPlate('');
+    setCarBrand('');
+    setCarModel('');
+    setCarColor('');
+  };
+
+  // Handler para autocompletar datos del vehículo seleccionado desde el dropdown.
+  const handleSelectVehicle = (vehicle: { plate: string; brand: string | null; model: string | null; color: string | null }) => {
+    setPlate(vehicle.plate);
+    setCarBrand(vehicle.brand || '');
+    setCarModel(vehicle.model || '');
+    setCarColor(vehicle.color || '');
+  };
 
   // Debounced search for plate
   useEffect(() => {
@@ -110,6 +134,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
       setCarModel('');
       setCarColor('');
       setSelectedServices([]);
+      setCustomerVehicles([]);
       router.refresh();
     } else {
       MySwal.fire('Error', res.message, 'error');
@@ -127,6 +152,9 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
         carBrand={carBrand} setCarBrand={setCarBrand}
         carModel={carModel} setCarModel={setCarModel}
         carColor={carColor} setCarColor={setCarColor}
+        onSelectCustomer={handleSelectCustomer}
+        customerVehicles={customerVehicles}
+        onSelectVehicle={handleSelectVehicle}
       />
       <ServicesPanel 
         catalogServices={userDepartment ? catalogServices.filter(s => s.category === userDepartment) : catalogServices}

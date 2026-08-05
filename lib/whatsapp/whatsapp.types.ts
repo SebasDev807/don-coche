@@ -58,7 +58,7 @@ export interface WhatsAppComponent {
   parameters: WhatsAppParameter[];
 }
 
-export type WhatsAppParameterType = 'text' | 'currency' | 'date_time' | 'image' | 'payload';
+export type WhatsAppParameterType = 'text' | 'currency' | 'date_time' | 'image' | 'document' | 'payload';
 
 export interface WhatsAppParameter {
   type: WhatsAppParameterType;
@@ -71,6 +71,10 @@ export interface WhatsAppParameter {
   };
   date_time?: {
     fallback_value: string;
+  };
+  document?: {
+    link: string;
+    filename?: string;
   };
 }
 
@@ -115,4 +119,29 @@ export interface WhatsAppSendResult {
   success: boolean;
   messageId?: string; // wa_id retornado por Meta
   error?: string;
+}
+
+// ─────────────────────────────────────────────
+// TIPOS DEL WEBHOOK
+// ─────────────────────────────────────────────
+
+export interface WhatsAppWebhookPayload {
+  object: string;
+  entry: Array<{
+    id: string;
+    changes: Array<{
+      value: {
+        messaging_product: string;
+        metadata: { display_phone_number: string; phone_number_id: string };
+        statuses?: Array<{
+          id: string; // wa_id (messageId)
+          status: 'sent' | 'delivered' | 'read' | 'failed';
+          timestamp: string;
+          recipient_id: string;
+          errors?: Array<{ code: number; title: string }>;
+        }>;
+      };
+      field: string;
+    }>;
+  }>;
 }

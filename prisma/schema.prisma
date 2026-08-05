@@ -46,6 +46,14 @@ enum MovementType {
   VENTA
 }
 
+enum WhatsAppStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
 // -----------------------------------------------------------------------
 // MODELOS DE USUARIO Y PERSONAL
 // -----------------------------------------------------------------------
@@ -94,6 +102,7 @@ model AttendanceRecord {
 
 model Customer {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cc        String?  @unique /// Cédula de Ciudadanía
   name      String?
   phone     String? /// WhatsApp para recordatorios
   email     String?
@@ -225,6 +234,7 @@ model Order {
 
   services OrderService[]
   products OrderProduct[]
+  whatsappNotifications WhatsAppNotification[]
 
   @@index([createdAt]) // Índice para acelerar la carga de cuadres de caja diarios
   @@index([status]) // Índice para filtrar rápido las órdenes "EN_PISTA"
@@ -255,4 +265,25 @@ model OrderProduct {
   product Product @relation(fields: [productId], references: [id])
 
   @@map("order_products")
+}
+
+// -----------------------------------------------------------------------
+// MODELO DE TRAZABILIDAD (NOTIFICACIONES WHATSAPP)
+// -----------------------------------------------------------------------
+
+model WhatsAppNotification {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  messageId    String         @unique @map("message_id") /// ID devuelto por Meta (wa_id)
+  phone        String
+  templateName String         @map("template_name")
+  status       WhatsAppStatus @default(PENDING)
+  orderId      String?        @map("order_id") @db.Uuid
+  errorMessage String?        @map("error_message")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@index([messageId])
+  @@map("whatsapp_notifications")
 }

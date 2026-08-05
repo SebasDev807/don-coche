@@ -1,6 +1,8 @@
 interface RegistrationFormProps {
   plate: string;
   setPlate: (val: string) => void;
+  customerCc: string;
+  setCustomerCc: (val: string) => void;
   customerName: string;
   setCustomerName: (val: string) => void;
   customerPhone: string;
@@ -17,6 +19,7 @@ interface RegistrationFormProps {
 
 export const RegistrationForm = ({
   plate, setPlate,
+  customerCc, setCustomerCc,
   customerName, setCustomerName,
   customerPhone, setCustomerPhone,
   customerEmail, setCustomerEmail,
@@ -42,16 +45,29 @@ export const RegistrationForm = ({
             onChange={(e) => setPlate(e.target.value)}
           />
         </div>
-        <div>
-          <label className="block text-sm font-bold text-on-surface mb-2 cursor-pointer" htmlFor="propietario">Nombre del Propietario</label>
-          <input 
-            className="block w-full bg-surface-container-lowest rounded-lg border border-outline shadow-sm focus:border-primary focus:ring-primary text-base py-4 px-4 text-on-surface placeholder-on-surface-variant cursor-pointer" 
-            id="propietario" 
-            placeholder="Nombre Completo" 
-            type="text" 
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-          />
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-bold text-on-surface mb-2 cursor-pointer" htmlFor="cc">Cédula de Ciudadanía (CC)</label>
+            <input 
+              className="block w-full bg-surface-container-lowest rounded-lg border border-outline shadow-sm focus:border-primary focus:ring-primary text-base py-4 px-4 text-on-surface placeholder-on-surface-variant cursor-pointer" 
+              id="cc" 
+              placeholder="Ej: 1700000000" 
+              type="text" 
+              value={customerCc}
+              onChange={(e) => setCustomerCc(e.target.value)}
+            />
+          </div>
+          <div className="flex-[2]">
+            <label className="block text-sm font-bold text-on-surface mb-2 cursor-pointer" htmlFor="propietario">Nombre del Propietario</label>
+            <input 
+              className="block w-full bg-surface-container-lowest rounded-lg border border-outline shadow-sm focus:border-primary focus:ring-primary text-base py-4 px-4 text-on-surface placeholder-on-surface-variant cursor-pointer" 
+              id="propietario" 
+              placeholder="Nombre Completo" 
+              type="text" 
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+            />
+          </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">

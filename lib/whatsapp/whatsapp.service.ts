@@ -1,4 +1,5 @@
 import { env } from '@/config/env';
+import { prisma } from '@/lib/prisma';
 import type {
   WhatsAppMessagePayload,
   WhatsAppTemplate,
@@ -12,7 +13,7 @@ import { isWhatsAppError as checkError } from './whatsapp.types';
 // CONSTANTES DE LA API
 // ─────────────────────────────────────────────
 
-const META_API_VERSION = 'v21.0';
+const META_API_VERSION = 'v25.0';
 const META_API_BASE_URL = 'https://graph.facebook.com';
 
 /**
@@ -40,10 +41,16 @@ function getMessagesEndpoint(): string {
  */
 export async function sendWhatsAppTemplate(
   to: string,
-  template: WhatsAppTemplate
+  template: WhatsAppTemplate,
+  orderId?: string
 ): Promise<WhatsAppSendResult> {
   // Normalizar número: remover '+', espacios y caracteres no numéricos
-  const normalizedPhone = to.replace(/\D/g, '');
+  let normalizedPhone = to.replace(/\D/g, '');
+
+  // Autocompletar el código de país para Colombia si solo tiene 10 dígitos
+  if (normalizedPhone.length === 10) {
+    normalizedPhone = `57${normalizedPhone}`;
+  }
 
   if (!normalizedPhone || normalizedPhone.length < 10) {
     return {
@@ -84,6 +91,18 @@ export async function sendWhatsAppTemplate(
     const messageId = data.messages?.[0]?.id;
     console.log(`[WhatsApp Service] Mensaje enviado a ${normalizedPhone} — wa_id: ${messageId}`);
 
+    if (messageId) {
+      await prisma.whatsAppNotification.create({
+        data: {
+          messageId,
+          phone: normalizedPhone,
+          templateName: template.name,
+          status: 'PENDING',
+          orderId: orderId ?? null,
+        },
+      });
+    }
+
     return { success: true, messageId };
 
   } catch (error: unknown) {
@@ -102,6 +121,7 @@ export async function sendWhatsAppTemplate(
  * Se mapea desde el objeto Order devuelto por billOrder().
  */
 export interface OrderReceiptData {
+  orderId: string;                    // UUID de la orden
   phone: string | null | undefined;   // Teléfono del cliente
   customerName: string | null | undefined;
   vehiclePlate: string;
@@ -138,24 +158,32 @@ export async function sendReceiptNotification(
     language: { code: 'es_CO' },
     components: [
       {
+        type: 'header',
+        parameters: [
+          {
+            type: 'document',
+            document: {
+              link: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+              filename: `Factura_Orden_${order.orderNumber}.pdf`,
+            },
+          },
+        ],
+      },
+      {
         type: 'body',
         parameters: [
           { type: 'text', text: order.customerName ?? 'Cliente' },
           { type: 'text', text: order.vehiclePlate },
-          {
-            type: 'currency',
-            currency: {
-              fallback_value: `$${order.grandTotal.toLocaleString('es-CO')} COP`,
-              code: 'COP',
-              amount_1000: order.grandTotal * 1000,
-            },
+          { 
+            type: 'text', 
+            text: `$${order.grandTotal.toLocaleString('es-CO')} COP`
           },
         ],
       },
     ],
   };
 
-  return sendWhatsAppTemplate(order.phone, template);
+  return sendWhatsAppTemplate(order.phone, template, order.orderId);
 }
 
 /**

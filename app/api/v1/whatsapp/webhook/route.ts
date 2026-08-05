@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/config/env';
+import { prisma } from '@/lib/prisma';
+import type { WhatsAppWebhookPayload } from '@/lib/whatsapp/whatsapp.types';
+import type { WhatsAppStatus } from '@prisma/client';
 
 // ─────────────────────────────────────────────
 // GET — Verificación del Webhook por Meta
@@ -55,19 +58,48 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
 
-  let body: unknown;
+  let body: WhatsAppWebhookPayload;
 
   try {
-    body = await request.json();
+    body = await request.json() as WhatsAppWebhookPayload;
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  // Log completo del evento para debugging (quitar en producción si hay volumen alto)
-  console.log('[WhatsApp Webhook] Evento recibido:', JSON.stringify(body, null, 2));
+  // Iterar y procesar los estados de los mensajes devueltos por Meta
+  if (body.object === 'whatsapp_business_account' && body.entry) {
+    for (const entry of body.entry) {
+      if (!entry.changes) continue;
+      for (const change of entry.changes) {
+        if (change.value?.statuses) {
+          for (const statusObj of change.value.statuses) {
+            const wa_id = statusObj.id;
+            const statusStr = statusObj.status;
+            const errorMsg = statusObj.errors ? JSON.stringify(statusObj.errors) : null;
 
-  // TODO: Validar la firma X-Hub-Signature-256 para seguridad adicional
-  // TODO: Procesar cambios de estado y actualizar WhatsAppNotification en BD
+            let dbStatus: WhatsAppStatus = 'PENDING';
+            if (statusStr === 'sent') dbStatus = 'SENT';
+            else if (statusStr === 'delivered') dbStatus = 'DELIVERED';
+            else if (statusStr === 'read') dbStatus = 'READ';
+            else if (statusStr === 'failed') dbStatus = 'FAILED';
+
+            try {
+              await prisma.whatsAppNotification.update({
+                where: { messageId: wa_id },
+                data: {
+                  status: dbStatus,
+                  errorMessage: errorMsg
+                }
+              });
+              console.log(`[WhatsApp Webhook] Mensaje ${wa_id} -> ${dbStatus}`);
+            } catch (err) {
+              console.warn(`[WhatsApp Webhook] Registro no encontrado o error al actualizar wa_id: ${wa_id}`);
+            }
+          }
+        }
+      }
+    }
+  }
 
   // Siempre responder 200 — Meta reintenta si no recibe una respuesta OK
   return NextResponse.json({ received: true }, { status: 200 });

@@ -151,6 +151,7 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
     revalidatePath('/dashboard');
 
     const receiptData: OrderReceiptData = {
+      orderId: updatedOrder.id,
       phone: updatedOrder.vehicle.customer?.phone,
       customerName: updatedOrder.vehicle.customer?.name,
       vehiclePlate: updatedOrder.vehicle.plate,

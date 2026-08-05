@@ -6,6 +6,7 @@ export const createOrderSchema = z.object({
     .min(5, { message: 'La placa debe tener al menos 5 caracteres' })
     .transform((val) => val.toUpperCase().trim()),
   customerName: z.string().optional(),
+  customerCc: z.string().optional(),
   customerPhone: z.string().optional(),
   customerEmail: z.string().email({ message: 'Email inválido' }).optional().or(z.literal('')),
   carBrand: z.string().optional(),

@@ -19,6 +19,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
   const router = useRouter();
 
   const [plate, setPlate] = useState('');
+  const [customerCc, setCustomerCc] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -38,6 +39,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
         const res = await searchByPlate(trimmedPlate);
         if (res.success && res.data && res.data.customer) {
           const cust = res.data.customer;
+          setCustomerCc(cust.cc || '');
           setCustomerName(cust.name || '');
           setCustomerPhone(cust.phone || '');
           setCustomerEmail(cust.email || '');
@@ -84,6 +86,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
 
     const res = await createOrder({
       plate,
+      customerCc,
       customerName,
       customerPhone,
       customerEmail,
@@ -99,6 +102,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
       await MySwal.fire('¡Éxito!', 'La orden ha sido enviada a la pista.', 'success');
       // Reset form
       setPlate('');
+      setCustomerCc('');
       setCustomerName('');
       setCustomerPhone('');
       setCustomerEmail('');
@@ -116,6 +120,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
     <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
       <RegistrationForm 
         plate={plate} setPlate={setPlate}
+        customerCc={customerCc} setCustomerCc={setCustomerCc}
         customerName={customerName} setCustomerName={setCustomerName}
         customerPhone={customerPhone} setCustomerPhone={setCustomerPhone}
         customerEmail={customerEmail} setCustomerEmail={setCustomerEmail}

@@ -27,7 +27,7 @@ export async function createOrder(data: CreateOrderInput) {
       return { success: false, message: 'Datos inválidos', errors: parsed.error.flatten().fieldErrors };
     }
 
-    const { plate, customerName, customerPhone, customerEmail, carBrand, carModel, carColor, services } = parsed.data;
+    const { plate, customerName, customerCc, customerPhone, customerEmail, carBrand, carModel, carColor, services } = parsed.data;
 
     const order = await prisma.$transaction(async (tx) => {
       // 1. Find existing vehicle
@@ -39,11 +39,12 @@ export async function createOrder(data: CreateOrderInput) {
       let customerId = vehicle?.customerId;
 
       // 2. Manage Customer
-      if (customerName || customerPhone || customerEmail) {
+      if (customerName || customerPhone || customerEmail || customerCc) {
         if (!customerId) {
           // Create new customer if details provided and no customer exists
           const newCustomer = await tx.customer.create({
             data: {
+              cc: customerCc || null,
               name: customerName,
               phone: customerPhone,
               email: customerEmail || null,
@@ -53,10 +54,14 @@ export async function createOrder(data: CreateOrderInput) {
         } else {
           // Optionally update existing customer info if empty
           const customer = vehicle!.customer!;
-          if (!customer.name && customerName) {
+          if ((!customer.name && customerName) || (!customer.cc && customerCc)) {
             await tx.customer.update({
               where: { id: customerId },
-              data: { name: customerName, phone: customerPhone || customer.phone },
+              data: { 
+                name: customerName || customer.name, 
+                cc: customerCc || customer.cc,
+                phone: customerPhone || customer.phone 
+              },
             });
           }
         }

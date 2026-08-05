@@ -36,6 +36,7 @@ export default async function TecnicoScreen() {
       <Header
         technicianName={user.name}
         logoutAction={logoutAction}
+        userDepartment={dbUser?.department}
       />
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
         <TecnicoWorkspace catalogServices={services || []} userDepartment={dbUser?.department} />

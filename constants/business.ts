@@ -3,11 +3,12 @@
  * Actualizar estos valores con la información real del establecimiento.
  */
 export const BUSINESS_INFO = {
-  name: 'Don Coche',
+  name: 'DON COCHE S.A.S.',
   legalName: 'Don Coche Lavadero & Serviteca',
-  nit: 'PENDIENTE',
-  address: 'Dirección del establecimiento',
-  phone: '000 000 0000',
+  nit: '902.087.049-6',
+  address: 'TV 9 58N 68',
+  phone: '310 490 4579',
+  email: 'doncochepopayan@gmail.com',
   city: 'Popayán, Cauca',
   tagline: '¡Gracias por su preferencia!',
 } as const;

@@ -18,7 +18,7 @@ export function AttendanceTable({ records }: AttendanceTableProps) {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
-    }).format(new Date(date));
+    }).format(new Date(date)).replace(/\u202F|\u00A0/g, ' ');
   };
 
   const formatTime = (date: Date | null) => {
@@ -27,7 +27,7 @@ export function AttendanceTable({ records }: AttendanceTableProps) {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
-    }).format(new Date(date));
+    }).format(new Date(date)).replace(/\u202F|\u00A0/g, ' ');
   };
 
   const formatDuration = (minutes: number | null) => {

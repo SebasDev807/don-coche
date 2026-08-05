@@ -9,6 +9,7 @@ const envSchema = z.object({
   // Token secreto que tú defines y configuras en la consola de Meta al registrar el webhook.
   // Puede ser cualquier string — Meta lo envía de vuelta para que verifiques que eres tú.
   WHATSAPP_WEBHOOK_VERIFY_TOKEN: z.string().min(1, "El token de verificación del webhook es requerido").optional(),
+  NEXT_PUBLIC_APP_URL: z.string().url("Debe ser una URL válida").min(1, "La URL pública es requerida"),
 });
 
 const _env = envSchema.safeParse(process.env);

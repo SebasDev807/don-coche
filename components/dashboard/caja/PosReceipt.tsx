@@ -158,18 +158,6 @@ export function PosReceipt({ order }: PosReceiptProps) {
 
       {/* ── Totales ── */}
       <div style={{ margin: '6px 0', fontSize: '11px' }}>
-        {order.services.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
-            <span>Subtotal Servicios</span>
-            <span>{formatCurrency(order.totalServices)}</span>
-          </div>
-        )}
-        {order.products.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
-            <span>Subtotal Productos</span>
-            <span>{formatCurrency(order.totalProducts)}</span>
-          </div>
-        )}
         <div
           style={{
             display: 'flex',

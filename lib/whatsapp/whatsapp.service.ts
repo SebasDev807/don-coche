@@ -163,7 +163,7 @@ export async function sendReceiptNotification(
           {
             type: 'document',
             document: {
-              link: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+              link: `${env.NEXT_PUBLIC_APP_URL}/api/v1/orders/${order.orderId}/receipt.pdf`,
               filename: `Factura_Orden_${order.orderNumber}.pdf`,
             },
           },

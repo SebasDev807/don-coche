@@ -29,6 +29,7 @@ export default function RootLayout({
     <html
       lang="es"
       className={`${publicSans.variable} ${sora.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         <link

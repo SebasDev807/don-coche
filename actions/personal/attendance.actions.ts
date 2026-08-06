@@ -18,6 +18,7 @@ export type DateFilter = 'day' | 'week' | 'month' | 'all';
 export interface AttendanceRecordDTO {
   id: string;
   userId: string;
+  userCc: string;
   userName: string;
   userRole: string;
   date: Date;
@@ -101,6 +102,7 @@ export async function getAttendanceRecordsAction(
     include: {
       user: {
         select: {
+          cc: true,
           name: true,
           role: true,
         },
@@ -115,6 +117,7 @@ export async function getAttendanceRecordsAction(
   return records.map((record) => ({
     id: record.id,
     userId: record.userId,
+    userCc: record.user.cc,
     userName: record.user.name,
     userRole: record.user.role,
     date: record.date,

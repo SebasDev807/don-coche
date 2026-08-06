@@ -11,6 +11,7 @@
  */
 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { DashboardHeader } from '../../components/dashboard/DashboardHeader';
 import { verifySession } from '@/lib/dal';
 import { MOVEMENT_STATUS_STYLES } from '@/data/mocks';
@@ -166,10 +167,10 @@ export default async function DashboardPage() {
             <h2 className="font-headline-md text-xl text-on-surface font-bold">
               Resumen de Últimos Movimientos
             </h2>
-            <button className="text-on-surface hover:text-on-surface-variant font-label-bold text-sm flex items-center gap-1 transition-colors cursor-pointer">
+            <Link href="/auditoria" className="text-on-surface hover:text-on-surface-variant font-label-bold text-sm flex items-center gap-1 transition-colors cursor-pointer">
               Ver Todo{' '}
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </button>
+            </Link>
           </div>
 
           <div className="overflow-x-auto">

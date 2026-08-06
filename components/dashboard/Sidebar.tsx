@@ -38,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: 'inventory_2', label: 'Inventario', href: '/inventario' },
   { icon: 'design_services', label: 'Catálogo de Servicios', href: '/servicios' },
   { icon: 'directions_car', label: 'Clientes y Vehículos', href: '/clientes' },
+  { icon: 'calendar_month', label: 'Próximas Citas', href: '/citas' },
 ];
 
 /**

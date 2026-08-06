@@ -54,6 +54,13 @@ enum WhatsAppStatus {
   FAILED
 }
 
+enum AppointmentStatus {
+  PENDIENTE
+  CUMPLIDA
+  PERDIDA
+  CANCELADA
+}
+
 // -----------------------------------------------------------------------
 // MODELOS DE USUARIO Y PERSONAL
 // -----------------------------------------------------------------------
@@ -72,10 +79,11 @@ model User {
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
   // Relaciones
-  ordersAsTech  Order[]             @relation("TechnicianOrders")
-  ordersAsAdmin Order[]             @relation("AdminOrders")
-  stockMoves    InventoryMovement[] @relation("AdminMovements")
-  attendance    AttendanceRecord[]
+  ordersAsTech        Order[]             @relation("TechnicianOrders")
+  ordersAsAdmin       Order[]             @relation("AdminOrders")
+  stockMoves          InventoryMovement[] @relation("AdminMovements")
+  attendance          AttendanceRecord[]
+  createdAppointments Appointment[]       @relation("CreatedAppointments")
 
   @@index([cc]) // Índice para login rápido
   @@map("users")
@@ -108,7 +116,8 @@ model Customer {
   email     String?
   createdAt DateTime @default(now()) @map("created_at")
 
-  vehicles Vehicle[]
+  vehicles     Vehicle[]
+  appointments Appointment[]
 
   @@map("customers")
 }
@@ -122,8 +131,9 @@ model Vehicle {
   customerId String?  @map("customer_id") @db.Uuid
   createdAt  DateTime @default(now()) @map("created_at")
 
-  customer Customer? @relation(fields: [customerId], references: [id])
-  orders   Order[]
+  customer     Customer?    @relation(fields: [customerId], references: [id])
+  orders       Order[]
+  appointments Appointment[]
 
   @@index([plate]) // Índice para búsqueda rápida en la pista
   @@map("vehicles")
@@ -286,4 +296,29 @@ model WhatsAppNotification {
 
   @@index([messageId])
   @@map("whatsapp_notifications")
+}
+
+// -----------------------------------------------------------------------
+// MODELO DE CITAS / AGENDAMIENTO
+// -----------------------------------------------------------------------
+
+model Appointment {
+  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId  String            @map("customer_id") @db.Uuid
+  vehicleId   String            @map("vehicle_id") @db.Uuid
+  createdById String?           @map("created_by_id") @db.Uuid /// Opcional: null cuando se agenda por WhatsApp
+  scheduledAt DateTime          @map("scheduled_at")
+  status      AppointmentStatus @default(PENDIENTE)
+  description String?           /// Motivo de la cita (ej: "Cambio de aceite")
+  notes       String?           /// Notas adicionales
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  customer  Customer @relation(fields: [customerId], references: [id])
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
+  createdBy User?    @relation("CreatedAppointments", fields: [createdById], references: [id])
+
+  @@index([scheduledAt])
+  @@index([status])
+  @@map("appointments")
 }

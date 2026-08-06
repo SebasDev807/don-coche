@@ -4,6 +4,7 @@ import React from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { deleteVehicle } from '@/actions/vehicles';
+import { VEHICLE_COLORS } from '@/lib/constants';
 
 const MySwal = withReactContent(Swal);
 
@@ -100,8 +101,11 @@ export function VehicleGarage({ vehicles, customerId }: VehicleGarageProps) {
           <div className="text-center space-y-1 mt-2">
             <p className="font-label-lg text-on-surface truncate">{vehicle.brand || 'Marca Desconocida'} {vehicle.model || ''}</p>
             {vehicle.color && (
-              <p className="font-body-sm text-secondary flex items-center justify-center gap-1">
-                <span className="w-3 h-3 rounded-full border border-outline-variant shadow-sm" style={{ backgroundColor: vehicle.color.toLowerCase() }}></span>
+              <p 
+                className="font-body-sm flex items-center justify-center gap-1 font-semibold"
+                style={{ color: VEHICLE_COLORS[vehicle.color.toLowerCase()] || 'inherit' }}
+              >
+                <span className="w-3 h-3 rounded-full border border-outline-variant shadow-sm" style={{ backgroundColor: VEHICLE_COLORS[vehicle.color.toLowerCase()] || vehicle.color.toLowerCase() }}></span>
                 Color {vehicle.color}
               </p>
             )}

@@ -6,9 +6,10 @@ import type { VehicleInfo } from './CustomerSearchBar';
 interface VehicleSelectorProps {
   vehicles: VehicleInfo[];
   onSelectVehicle: (vehicle: VehicleInfo) => void;
+  onClear?: () => void;
 }
 
-export function VehicleSelector({ vehicles, onSelectVehicle }: VehicleSelectorProps) {
+export function VehicleSelector({ vehicles, onSelectVehicle, onClear }: VehicleSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,7 +43,8 @@ export function VehicleSelector({ vehicles, onSelectVehicle }: VehicleSelectorPr
   const handleClear = useCallback(() => {
     setSelectedLabel('');
     setIsOpen(false);
-  }, []);
+    if (onClear) onClear();
+  }, [onClear]);
 
   if (vehicles.length === 0) {
     return (

@@ -22,9 +22,10 @@ export interface CustomerSuggestion {
 
 interface CustomerSearchBarProps {
   onSelectCustomer: (customer: CustomerSuggestion) => void;
+  onClear?: () => void;
 }
 
-export function CustomerSearchBar({ onSelectCustomer }: CustomerSearchBarProps) {
+export function CustomerSearchBar({ onSelectCustomer, onClear }: CustomerSearchBarProps) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<CustomerSuggestion[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -85,7 +86,8 @@ export function CustomerSearchBar({ onSelectCustomer }: CustomerSearchBarProps) 
     setQuery('');
     setSuggestions([]);
     setIsOpen(false);
-  }, []);
+    if (onClear) onClear();
+  }, [onClear]);
 
   return (
     <div ref={containerRef} className="relative w-full">

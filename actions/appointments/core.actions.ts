@@ -2,6 +2,9 @@
 
 import { prisma } from '@/lib/prisma';
 import { verifySession } from '@/lib/dal';
+import { revalidatePath } from 'next/cache';
+import { appointmentSchema, type AppointmentFormValues } from '@/validation';
+import { BUSINESS_HOURS } from '@/constants/business';
 import type { AppointmentStatus } from '@prisma/client';
 
 // -----------------------------------------------------------------------
@@ -195,5 +198,168 @@ export async function getAppointmentKPIs(): Promise<{
       success: false,
       data: { totalPending: 0, todayCount: 0, completedLast7Days: 0, missedLast7Days: 0 },
     };
+  }
+}
+
+/**
+ * Crea una nueva cita validando los datos con Zod.
+ *
+ * Verifica que:
+ * 1. Los datos del formulario son válidos
+ * 2. La fecha no cae en un día cerrado (domingo)
+ * 3. La hora está dentro del horario laboral
+ * 4. El slot no está ya ocupado por otra cita pendiente
+ *
+ * @param data - Datos del formulario de agendamiento.
+ * @returns Resultado con éxito/error y mensaje descriptivo.
+ */
+export async function createAppointment(data: AppointmentFormValues) {
+  try {
+    const session = await verifySession();
+
+    // 1. Validar datos con Zod
+    const parsed = appointmentSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        message: 'Datos inválidos.',
+        errors: parsed.error.flatten().fieldErrors,
+      };
+    }
+
+    const { 
+      customerId, vehicleId, scheduledAt, description, notes,
+      customerCc, customerName, customerPhone, customerEmail,
+      carPlate, carBrand, carModel, carColor 
+    } = parsed.data;
+    const scheduledDate = new Date(scheduledAt);
+
+    // 2. Validar que no sea un día cerrado
+    if (BUSINESS_HOURS.closedDays.includes(scheduledDate.getDay())) {
+      return {
+        success: false,
+        message: 'No se pueden agendar citas en días no laborales (Domingos).',
+      };
+    }
+
+    // 3. Validar que la hora esté dentro del horario laboral
+    const hour = scheduledDate.getHours();
+    if (hour < BUSINESS_HOURS.openHour || hour >= BUSINESS_HOURS.closeHour) {
+      return {
+        success: false,
+        message: `La hora debe estar entre las ${BUSINESS_HOURS.openHour}:00 y las ${BUSINESS_HOURS.closeHour}:00.`,
+      };
+    }
+
+    // 4. Verificar que el slot no esté ocupado
+    const slotStart = new Date(scheduledDate);
+    const slotEnd = new Date(
+      scheduledDate.getTime() + BUSINESS_HOURS.slotDurationMinutes * 60 * 1000
+    );
+
+    const conflicting = await prisma.appointment.findFirst({
+      where: {
+        status: 'PENDIENTE',
+        scheduledAt: {
+          gte: slotStart,
+          lt: slotEnd,
+        },
+      },
+    });
+
+    if (conflicting) {
+      return {
+        success: false,
+        message: 'Ya existe una cita agendada en ese horario. Seleccione otra hora.',
+      };
+    }
+
+    // 5. Crear cliente y/o vehículo si es necesario
+    let finalCustomerId = customerId;
+    let finalVehicleId = vehicleId;
+
+    if (!finalCustomerId) {
+      const newCustomer = await prisma.customer.create({
+        data: {
+          cc: customerCc!,
+          name: customerName!,
+          phone: customerPhone || null,
+          email: customerEmail || null,
+        }
+      });
+      finalCustomerId = newCustomer.id;
+    }
+
+    if (!finalVehicleId) {
+      const newVehicle = await prisma.vehicle.create({
+        data: {
+          plate: carPlate!.toUpperCase(),
+          brand: carBrand || null,
+          model: carModel || null,
+          color: carColor || null,
+          customerId: finalCustomerId,
+        }
+      });
+      finalVehicleId = newVehicle.id;
+    }
+
+    // 6. Crear la cita
+    await prisma.appointment.create({
+      data: {
+        customerId: finalCustomerId,
+        vehicleId: finalVehicleId,
+        createdById: session.userId,
+        scheduledAt: scheduledDate,
+        description: description || null,
+        notes: notes || null,
+      },
+    });
+
+    revalidatePath('/citas');
+    return { success: true, message: 'Cita agendada exitosamente.' };
+  } catch (error: any) {
+    console.error('Error creating appointment:', error);
+    return { success: false, message: 'Ocurrió un error al agendar la cita.' };
+  }
+}
+
+/**
+ * Obtiene las horas ya ocupadas para una fecha específica.
+ *
+ * Consulta todas las citas con estado PENDIENTE en el día dado y retorna
+ * un array de horas (formato 24h) que ya están asignadas. El componente
+ * de selección de hora usa esto para deshabilitar los slots ocupados.
+ *
+ * @param dateStr - Fecha en formato ISO (YYYY-MM-DD).
+ * @returns Objeto con éxito y array de horas ocupadas (ej: [8, 10, 14]).
+ */
+export async function getBookedSlots(dateStr: string): Promise<{
+  success: boolean;
+  data: number[];
+}> {
+  try {
+    await verifySession();
+
+    const date = new Date(dateStr + 'T00:00:00');
+    const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        status: 'PENDIENTE',
+        scheduledAt: {
+          gte: startOfDay,
+          lt: endOfDay,
+        },
+      },
+      select: { scheduledAt: true },
+    });
+
+    const bookedHours = appointments.map((apt) => new Date(apt.scheduledAt).getHours());
+
+    return { success: true, data: bookedHours };
+  } catch (error: any) {
+    console.error('Error fetching booked slots:', error);
+    return { success: false, data: [] };
   }
 }

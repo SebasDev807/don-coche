@@ -36,13 +36,8 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [createdOrderData, setCreatedOrderData] = useState<{
-    customerId: string;
-    vehicleId: string;
-    customerName: string;
-    vehiclePlate: string;
-    orderId: string;
-  } | null>(null);
+  // Removed createdOrderData since modal is now pre-creation
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
   // Handler para autocompletar datos del cliente seleccionado.
   // Almacena los vehículos del cliente y limpia los campos del vehículo para que el técnico seleccione uno.
@@ -131,6 +126,11 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
       return;
     }
 
+    // Instead of creating order immediately, open the modal
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmOrder = async (date: string, reason: string) => {
     setIsSubmitting(true);
     MySwal.showLoading();
 
@@ -143,22 +143,25 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
       carBrand,
       carModel,
       carColor,
-      services: selectedServices
+      services: selectedServices,
+      nextMaintenanceDate: date || undefined,
+      nextMaintenanceReason: reason || undefined
     });
 
     setIsSubmitting(false);
     MySwal.close();
 
     if (res.success) {
-      // Show modal for next appointment
-      setCreatedOrderData({
-        customerId: res.data!.vehicle.customerId || '',
-        vehicleId: res.data!.vehicle.id,
-        customerName: res.data!.vehicle.customer?.name || 'Cliente',
-        vehiclePlate: res.data!.vehicle.plate,
-        orderId: res.data!.id
+      MySwal.fire({
+        toast: true,
+        position: 'top-end',
+        title: '¡Orden creada y recomendación guardada!',
+        icon: 'success',
+        showConfirmButton: false,
+        timer: 3000
       });
-      setIsModalOpen(true);
+      setIsModalOpen(false);
+      resetWorkspace();
     } else {
       MySwal.fire('Error', res.message, 'error');
     }
@@ -166,9 +169,9 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setCreatedOrderData(null);
-    resetWorkspace();
   };
+
+
 
   return (
     <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
@@ -193,17 +196,15 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
         isSubmitting={isSubmitting}
       />
 
-      {createdOrderData && (
-        <NextAppointmentModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          customerId={createdOrderData.customerId}
-          vehicleId={createdOrderData.vehicleId}
-          customerName={createdOrderData.customerName}
-          vehiclePlate={createdOrderData.vehiclePlate}
-          orderId={createdOrderData.orderId}
-        />
-      )}
+      <NextAppointmentModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmitOrder={handleConfirmOrder}
+        department={userDepartment}
+        customerName={customerName}
+        vehiclePlate={plate}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }

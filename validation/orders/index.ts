@@ -13,6 +13,8 @@ export const createOrderSchema = z.object({
   carModel: z.string().optional(),
   carColor: z.string().optional(),
   services: z.array(z.string()).min(1, { message: 'Debe seleccionar al menos un servicio' }),
+  nextMaintenanceDate: z.string().optional(),
+  nextMaintenanceReason: z.string().optional(),
   // In the future, we can add products array here.
 });
 

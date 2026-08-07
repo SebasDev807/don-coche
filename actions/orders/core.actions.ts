@@ -27,7 +27,7 @@ export async function createOrder(data: CreateOrderInput) {
       return { success: false, message: 'Datos inválidos', errors: parsed.error.flatten().fieldErrors };
     }
 
-    const { plate, customerName, customerCc, customerPhone, customerEmail, carBrand, carModel, carColor, services } = parsed.data;
+    const { plate, customerName, customerCc, customerPhone, customerEmail, carBrand, carModel, carColor, services, nextMaintenanceDate, nextMaintenanceReason } = parsed.data;
 
     const order = await prisma.$transaction(async (tx) => {
       // 1. Find existing vehicle
@@ -143,6 +143,8 @@ export async function createOrder(data: CreateOrderInput) {
           services: {
             create: orderServicesData,
           },
+          nextMaintenanceDate: nextMaintenanceDate ? new Date(nextMaintenanceDate) : null,
+          nextMaintenanceReason: nextMaintenanceReason || null,
         },
         include: {
           vehicle: {

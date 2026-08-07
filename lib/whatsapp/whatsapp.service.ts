@@ -216,3 +216,29 @@ export async function sendMaintenanceReminder(
 
   return sendWhatsAppTemplate(phone, template);
 }
+
+/**
+ * Envía la notificación de la próxima cita agendada.
+ *
+ * @param phone - Teléfono del cliente
+ * @param formattedDate - Fecha formateada de la próxima cita (ej: "30 de Octubre de 2026")
+ */
+export async function sendNextAppointmentNotification(
+  phone: string,
+  formattedDate: string
+): Promise<WhatsAppSendResult> {
+  const template: WhatsAppTemplate = {
+    name: 'proxima_cita',
+    language: { code: 'es_CO' },
+    components: [
+      {
+        type: 'body',
+        parameters: [
+          { type: 'text', text: formattedDate },
+        ],
+      },
+    ],
+  };
+
+  return sendWhatsAppTemplate(phone, template);
+}

@@ -1,3 +1,4 @@
+'use server';
 /**
  * @fileoverview Server Actions de autenticación.
  *
@@ -7,7 +8,6 @@
  * Ambas acciones corren exclusivamente en el servidor (`'use server'`).
  */
 
-'use server';
 
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';

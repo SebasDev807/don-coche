@@ -18,5 +18,6 @@ export {
   sendWhatsAppTemplate,
   sendReceiptNotification,
   sendMaintenanceReminder,
+  sendNextAppointmentNotification,
 } from './whatsapp.service';
 

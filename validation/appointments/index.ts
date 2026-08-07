@@ -31,10 +31,8 @@ export const appointmentSchema = z.object({
   scheduledAt: z.string().min(1, 'Debe seleccionar fecha y hora'),
   /** Motivo o descripción de la cita */
   description: z
-    .string()
-    .min(3, 'La descripción debe tener al menos 3 caracteres')
-    .optional()
-    .or(z.literal('')),
+    .string({ message: 'Debe ingresar un motivo' })
+    .min(3, 'La descripción debe tener al menos 3 caracteres'),
   /** Notas adicionales */
   notes: z.string().optional().or(z.literal('')),
 }).superRefine((data, ctx) => {

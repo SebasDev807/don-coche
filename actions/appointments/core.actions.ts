@@ -279,15 +279,34 @@ export async function createAppointment(data: AppointmentFormValues) {
     let finalVehicleId = vehicleId;
 
     if (!finalCustomerId) {
-      const newCustomer = await prisma.customer.create({
-        data: {
-          cc: customerCc!,
-          name: customerName!,
-          phone: customerPhone || null,
-          email: customerEmail || null,
+      let existingCustomer = null;
+      if (customerCc) {
+        existingCustomer = await prisma.customer.findUnique({ where: { cc: customerCc } });
+      }
+
+      if (existingCustomer) {
+        finalCustomerId = existingCustomer.id;
+        if ((!existingCustomer.name && customerName) || (!existingCustomer.phone && customerPhone)) {
+          await prisma.customer.update({
+            where: { id: finalCustomerId },
+            data: {
+              name: customerName || existingCustomer.name,
+              phone: customerPhone || existingCustomer.phone,
+              email: customerEmail || existingCustomer.email,
+            },
+          });
         }
-      });
-      finalCustomerId = newCustomer.id;
+      } else {
+        const newCustomer = await prisma.customer.create({
+          data: {
+            cc: customerCc || null,
+            name: customerName!,
+            phone: customerPhone || null,
+            email: customerEmail || null,
+          }
+        });
+        finalCustomerId = newCustomer.id;
+      }
     }
 
     if (!finalVehicleId) {

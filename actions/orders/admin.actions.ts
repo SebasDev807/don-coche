@@ -5,8 +5,7 @@ import { verifySession, verifyRole } from '@/lib/dal';
 import { revalidatePath } from 'next/cache';
 import { PaymentMethod } from '@prisma/client';
 import { after } from 'next/server';
-import { sendReceiptNotification, type OrderReceiptData } from '@/lib/whatsapp';
-
+import { sendReceiptNotification, sendNextAppointmentNotification, type OrderReceiptData } from '@/lib/whatsapp';
 export async function getPendingOrders() {
   try {
     await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
@@ -159,10 +158,27 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
       grandTotal: Number(updatedOrder.grandTotal),
     };
 
-    after(() => {
-      sendReceiptNotification(receiptData).catch(err =>
-        console.error('[billOrder] Error al enviar notificación WhatsApp:', err)
-      );
+    after(async () => {
+      try {
+        await sendReceiptNotification(receiptData);
+
+        // Fetch latest PENDIENTE appointment for this vehicle
+        const nextAppt = await prisma.appointment.findFirst({
+          where: { vehicleId: updatedOrder.vehicleId, status: 'PENDIENTE' },
+          orderBy: { createdAt: 'desc' }
+        });
+
+        if (nextAppt && receiptData.phone) {
+          const formattedDate = new Date(nextAppt.scheduledAt).toLocaleDateString('es-CO', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          });
+          await sendNextAppointmentNotification(receiptData.phone, formattedDate);
+        }
+      } catch (err) {
+        console.error('[billOrder] Error al enviar notificaciones WhatsApp:', err);
+      }
     });
 
     return {

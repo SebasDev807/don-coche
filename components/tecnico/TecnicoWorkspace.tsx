@@ -8,6 +8,8 @@ import withReactContent from 'sweetalert2-react-content';
 import { searchByPlate, createOrder } from '@/actions/orders';
 import { useRouter } from 'next/navigation';
 
+import { NextAppointmentModal } from './NextAppointmentModal';
+
 const MySwal = withReactContent(Swal);
 
 interface TecnicoWorkspaceProps {
@@ -31,6 +33,15 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customerVehicles, setCustomerVehicles] = useState<{ id: string; plate: string; brand: string | null; model: string | null; color: string | null }[]>([]);
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [createdOrderData, setCreatedOrderData] = useState<{
+    customerId: string;
+    vehicleId: string;
+    customerName: string;
+    vehiclePlate: string;
+  } | null>(null);
 
   // Handler para autocompletar datos del cliente seleccionado.
   // Almacena los vehículos del cliente y limpia los campos del vehículo para que el técnico seleccione uno.
@@ -95,6 +106,20 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
     );
   };
 
+  const resetWorkspace = () => {
+    setPlate('');
+    setCustomerCc('');
+    setCustomerName('');
+    setCustomerPhone('');
+    setCustomerEmail('');
+    setCarBrand('');
+    setCarModel('');
+    setCarColor('');
+    setSelectedServices([]);
+    setCustomerVehicles([]);
+    router.refresh();
+  };
+
   const handleCreateOrder = async () => {
     if (!plate || plate.length < 5) {
       MySwal.fire('Error', 'Debe ingresar una placa válida', 'error');
@@ -121,28 +146,30 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
     });
 
     setIsSubmitting(false);
+    MySwal.close();
 
     if (res.success) {
-      await MySwal.fire('¡Éxito!', 'La orden ha sido enviada a la pista.', 'success');
-      // Reset form
-      setPlate('');
-      setCustomerCc('');
-      setCustomerName('');
-      setCustomerPhone('');
-      setCustomerEmail('');
-      setCarBrand('');
-      setCarModel('');
-      setCarColor('');
-      setSelectedServices([]);
-      setCustomerVehicles([]);
-      router.refresh();
+      // Show modal for next appointment
+      setCreatedOrderData({
+        customerId: res.data!.vehicle.customerId || '',
+        vehicleId: res.data!.vehicle.id,
+        customerName: res.data!.vehicle.customer?.name || 'Cliente',
+        vehiclePlate: res.data!.vehicle.plate
+      });
+      setIsModalOpen(true);
     } else {
       MySwal.fire('Error', res.message, 'error');
     }
   };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setCreatedOrderData(null);
+    resetWorkspace();
+  };
+
   return (
-    <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+    <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
       <RegistrationForm 
         plate={plate} setPlate={setPlate}
         customerCc={customerCc} setCustomerCc={setCustomerCc}
@@ -163,6 +190,17 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
         onSubmit={handleCreateOrder}
         isSubmitting={isSubmitting}
       />
+
+      {createdOrderData && (
+        <NextAppointmentModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          customerId={createdOrderData.customerId}
+          vehicleId={createdOrderData.vehicleId}
+          customerName={createdOrderData.customerName}
+          vehiclePlate={createdOrderData.vehiclePlate}
+        />
+      )}
     </div>
   );
 }

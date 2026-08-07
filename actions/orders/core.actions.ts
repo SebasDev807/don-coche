@@ -41,16 +41,36 @@ export async function createOrder(data: CreateOrderInput) {
       // 2. Manage Customer
       if (customerName || customerPhone || customerEmail || customerCc) {
         if (!customerId) {
-          // Create new customer if details provided and no customer exists
-          const newCustomer = await tx.customer.create({
-            data: {
-              cc: customerCc || null,
-              name: customerName,
-              phone: customerPhone,
-              email: customerEmail || null,
-            },
-          });
-          customerId = newCustomer.id;
+          let existingCustomer = null;
+          if (customerCc) {
+            existingCustomer = await tx.customer.findUnique({ where: { cc: customerCc } });
+          }
+
+          if (existingCustomer) {
+            customerId = existingCustomer.id;
+            // Optionally update existing customer info if empty
+            if ((!existingCustomer.name && customerName) || (!existingCustomer.phone && customerPhone)) {
+              await tx.customer.update({
+                where: { id: customerId },
+                data: {
+                  name: customerName || existingCustomer.name,
+                  phone: customerPhone || existingCustomer.phone,
+                  email: customerEmail || existingCustomer.email,
+                },
+              });
+            }
+          } else {
+            // Create new customer if details provided and no customer exists
+            const newCustomer = await tx.customer.create({
+              data: {
+                cc: customerCc || null,
+                name: customerName,
+                phone: customerPhone,
+                email: customerEmail || null,
+              },
+            });
+            customerId = newCustomer.id;
+          }
         } else {
           // Optionally update existing customer info if empty
           const customer = vehicle!.customer!;
@@ -124,6 +144,11 @@ export async function createOrder(data: CreateOrderInput) {
             create: orderServicesData,
           },
         },
+        include: {
+          vehicle: {
+            include: { customer: true }
+          }
+        }
       });
 
       return newOrder;

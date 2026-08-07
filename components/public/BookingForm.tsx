@@ -14,6 +14,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 const MySwal = withReactContent(Swal);
 
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { ErrorMessage } from '@/components/ui/ErrorMessage';
 
 export const BookingForm = () => {
   const router = useRouter();
@@ -23,6 +24,8 @@ export const BookingForm = () => {
     register,
     handleSubmit,
     control,
+    watch,
+    setValue,
     formState: { errors },
     reset,
   } = useForm<PublicAppointmentSchemaType>({
@@ -82,7 +85,7 @@ export const BookingForm = () => {
               id="customerCc" 
               placeholder="Ej: 1700000000" 
             />
-            {errors.customerCc && <p className="text-error text-xs mt-1 font-bold">{errors.customerCc.message}</p>}
+            <ErrorMessage message={errors.customerCc?.message} />
           </div>
 
           <div>
@@ -93,7 +96,7 @@ export const BookingForm = () => {
               id="customerName" 
               placeholder="Ej: Juan Pérez" 
             />
-            {errors.customerName && <p className="text-error text-xs mt-1 font-bold">{errors.customerName.message}</p>}
+            <ErrorMessage message={errors.customerName?.message} />
           </div>
 
           <div>
@@ -105,7 +108,7 @@ export const BookingForm = () => {
               id="customerPhone" 
               placeholder="Ej: 300 000 0000" 
             />
-            {errors.customerPhone && <p className="text-error text-xs mt-1 font-bold">{errors.customerPhone.message}</p>}
+            <ErrorMessage message={errors.customerPhone?.message} />
           </div>
 
           <div>
@@ -117,7 +120,7 @@ export const BookingForm = () => {
               id="customerEmail" 
               placeholder="correo@ejemplo.com (Opcional)" 
             />
-            {errors.customerEmail && <p className="text-error text-xs mt-1 font-bold">{errors.customerEmail.message}</p>}
+            <ErrorMessage message={errors.customerEmail?.message} />
           </div>
         </div>
       </div>
@@ -138,7 +141,7 @@ export const BookingForm = () => {
               id="plate" 
               placeholder="ABC-1234" 
             />
-            {errors.plate && <p className="text-error text-xs mt-1 font-bold">{errors.plate.message}</p>}
+            <ErrorMessage message={errors.plate?.message} />
           </div>
 
           <div className="lg:col-span-1">
@@ -149,7 +152,7 @@ export const BookingForm = () => {
               id="carBrand" 
               placeholder="Ej: Mazda" 
             />
-            {errors.carBrand && <p className="text-error text-xs mt-1 font-bold">{errors.carBrand.message}</p>}
+            <ErrorMessage message={errors.carBrand?.message} />
           </div>
 
           <div className="lg:col-span-1">
@@ -160,7 +163,7 @@ export const BookingForm = () => {
               id="carModel" 
               placeholder="Ej: 3 Touring" 
             />
-            {errors.carModel && <p className="text-error text-xs mt-1 font-bold">{errors.carModel.message}</p>}
+            <ErrorMessage message={errors.carModel?.message} />
           </div>
 
           <div className="lg:col-span-1">
@@ -171,7 +174,7 @@ export const BookingForm = () => {
               id="carColor" 
               placeholder="Ej: Rojo (Opcional)" 
             />
-            {errors.carColor && <p className="text-error text-xs mt-1 font-bold">{errors.carColor.message}</p>}
+            <ErrorMessage message={errors.carColor?.message} />
           </div>
         </div>
       </div>
@@ -193,7 +196,7 @@ export const BookingForm = () => {
                 <DatePicker
                   placeholderText="Selecciona una fecha"
                   selected={field.value ? new Date(`${field.value}T00:00:00`) : null}
-                  onChange={(date) => {
+                  onChange={(date: Date | null) => {
                     if (date) {
                       // Formatear a YYYY-MM-DD
                       const d = new Date(date);
@@ -209,57 +212,85 @@ export const BookingForm = () => {
                 />
               )}
             />
-            {errors.scheduledAtDate && <p className="text-error text-xs mt-1 font-bold">{errors.scheduledAtDate.message}</p>}
+            <ErrorMessage message={errors.scheduledAtDate?.message} />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="scheduledAtTime">Hora *</label>
-            <select
-              {...register('scheduledAtTime')}
-              className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface focus:ring-primary focus:border-primary ${errors.scheduledAtTime ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="scheduledAtTime"
-            >
-              <option value="">Seleccione una hora</option>
-              <option value="08:00">08:00 AM</option>
-              <option value="09:00">09:00 AM</option>
-              <option value="10:00">10:00 AM</option>
-              <option value="11:00">11:00 AM</option>
-              <option value="12:00">12:00 PM</option>
-              <option value="14:00">02:00 PM</option>
-              <option value="15:00">03:00 PM</option>
-              <option value="16:00">04:00 PM</option>
-              <option value="17:00">05:00 PM</option>
-            </select>
-            {errors.scheduledAtTime && <p className="text-error text-xs mt-1 font-bold">{errors.scheduledAtTime.message}</p>}
+            <label className="block text-sm font-bold text-on-surface mb-2">Hora *</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: '08:00', label: '08:00 AM' },
+                { value: '09:00', label: '09:00 AM' },
+                { value: '10:00', label: '10:00 AM' },
+                { value: '11:00', label: '11:00 AM' },
+                { value: '12:00', label: '12:00 PM' },
+                { value: '14:00', label: '02:00 PM' },
+                { value: '15:00', label: '03:00 PM' },
+                { value: '16:00', label: '04:00 PM' },
+                { value: '17:00', label: '05:00 PM' },
+              ].map((time) => (
+                <button
+                  key={time.value}
+                  type="button"
+                  onClick={() => setValue('scheduledAtTime', time.value, { shouldValidate: true })}
+                  className={`py-2 px-1 text-center text-sm font-bold rounded-lg border transition-all ${
+                    watch('scheduledAtTime') === time.value
+                      ? 'bg-primary text-on-primary border-primary shadow-md transform scale-[1.02]'
+                      : 'bg-surface-container text-on-surface border-outline-variant hover:border-primary hover:bg-surface-container-high'
+                  }`}
+                >
+                  {time.label}
+                </button>
+              ))}
+            </div>
+            {/* Campo oculto para registrar en react-hook-form */}
+            <input type="hidden" {...register('scheduledAtTime')} />
+            <ErrorMessage message={errors.scheduledAtTime?.message} />
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="description">Motivo / Servicio *</label>
-            <select
-              {...register('description')}
-              className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface focus:ring-primary focus:border-primary ${errors.description ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="description"
-            >
-              <option value="">Seleccione un motivo principal</option>
-              <option value="Lavado Sencillo">Lavado Sencillo</option>
-              <option value="Lavado General">Lavado General</option>
-              <option value="Cambio de Aceite">Cambio de Aceite</option>
-              <option value="Mantenimiento Preventivo">Mantenimiento Preventivo</option>
-              <option value="Revisión de Frenos">Revisión de Frenos</option>
-              <option value="Otro">Otro servicio</option>
-            </select>
-            {errors.description && <p className="text-error text-xs mt-1 font-bold">{errors.description.message}</p>}
+            <label className="block text-sm font-bold text-on-surface mb-2">Motivo / Servicio *</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {[
+                { value: 'Lavado Sencillo', icon: 'local_car_wash' },
+                { value: 'Lavado General', icon: 'water_drop' },
+                { value: 'Cambio de Aceite', icon: 'oil_barrel' },
+                { value: 'Mantenimiento Preventivo', icon: 'build' },
+                { value: 'Revisión de Frenos', icon: 'tire_repair' },
+                { value: 'Otro', icon: 'more_horiz' },
+              ].map((motivo) => (
+                <button
+                  key={motivo.value}
+                  type="button"
+                  onClick={() => setValue('description', motivo.value, { shouldValidate: true })}
+                  className={`py-3 px-2 flex flex-col items-center justify-center gap-1 text-center text-sm font-bold rounded-xl border transition-all ${
+                    watch('description') === motivo.value
+                      ? 'bg-primary text-on-primary border-primary shadow-md transform scale-[1.02]'
+                      : 'bg-surface-container text-on-surface border-outline-variant hover:border-primary hover:bg-surface-container-high'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-2xl">{motivo.icon}</span>
+                  <span className="leading-tight">{motivo.value === 'Otro' ? 'Otro servicio' : motivo.value}</span>
+                </button>
+              ))}
+            </div>
+            <input type="hidden" {...register('description')} />
+            <ErrorMessage message={errors.description?.message} />
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end pt-4">
+      <div className="pt-4">
         <PrimaryButton
           type="submit"
-          isLoading={isSubmitting}
-          icon="event"
-          className="h-[56px] px-8 rounded-full font-cta text-[18px] shadow-sm transition-all transform hover:scale-[1.02]"
+          disabled={isSubmitting}
+          className="w-full h-[56px] rounded-full font-cta text-[18px] shadow-sm transition-all transform hover:scale-[1.01]"
         >
+          {isSubmitting ? (
+            <span className="material-symbols-outlined animate-spin">refresh</span>
+          ) : (
+            <span className="material-symbols-outlined">event</span>
+          )}
           Confirmar Agendamiento
         </PrimaryButton>
       </div>

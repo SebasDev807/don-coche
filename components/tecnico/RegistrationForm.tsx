@@ -21,6 +21,9 @@ interface RegistrationFormProps {
   onSelectCustomer: (customer: CustomerSuggestion) => void;
   customerVehicles: VehicleInfo[];
   onSelectVehicle: (vehicle: VehicleInfo) => void;
+  nextMaintenanceDate: string;
+  nextMaintenanceReason: string;
+  onOpenRecommendationModal: () => void;
 }
 
 export const RegistrationForm = ({
@@ -34,7 +37,10 @@ export const RegistrationForm = ({
   carColor, setCarColor,
   onSelectCustomer,
   customerVehicles,
-  onSelectVehicle
+  onSelectVehicle,
+  nextMaintenanceDate,
+  nextMaintenanceReason,
+  onOpenRecommendationModal
 }: RegistrationFormProps) => {
   return (
     <section className="w-full md:w-2/5 bg-surface-container-lowest border-r border-surface-variant p-8 flex flex-col overflow-y-auto" data-purpose="registration-form">
@@ -149,6 +155,35 @@ export const RegistrationForm = ({
         </div>
 
         <hr className="my-2 border-surface-variant" />
+
+        {/* Sección de Próximo Servicio Obligatorio */}
+        <div className={`rounded-xl p-5 border-2 transition-colors ${nextMaintenanceReason ? 'bg-primary-container border-primary text-on-primary-container' : 'bg-error-container border-error text-on-error-container'}`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px]">calendar_month</span>
+                Próximo Servicio <span className="text-xs ml-1 uppercase font-black bg-error text-on-error px-2 py-0.5 rounded-full">Obligatorio</span>
+              </h3>
+              {nextMaintenanceReason ? (
+                <p className="text-sm mt-1">
+                  <strong>Motivo:</strong> {nextMaintenanceReason}
+                  <br />
+                  <strong>Fecha:</strong> {nextMaintenanceDate || 'Sin fecha sugerida'}
+                </p>
+              ) : (
+                <p className="text-sm mt-1 opacity-80">Debe asignar el próximo servicio recomendado al cliente.</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={onOpenRecommendationModal}
+              className={`px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition-colors ${nextMaintenanceReason ? 'bg-surface text-primary hover:bg-surface-variant' : 'bg-error text-on-error hover:bg-error/80'}`}
+            >
+              {nextMaintenanceReason ? 'Editar' : 'Asignar'}
+            </button>
+          </div>
+        </div>
+
         {/* Reception Status Card */}
         <div className="bg-surface-container rounded-xl p-5 flex items-center gap-4 mt-auto cursor-pointer">
           <div className="bg-surface-container-highest p-3 rounded-lg text-on-surface-variant">

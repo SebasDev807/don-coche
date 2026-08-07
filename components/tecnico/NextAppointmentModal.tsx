@@ -104,7 +104,7 @@ export function NextAppointmentModal({
         {/* Header */}
         <div className="p-6 border-b border-outline-variant flex items-start justify-between sticky top-0 bg-surface z-10">
           <div>
-            <h2 className="text-2xl font-headline-bold text-on-surface mb-1">Confirmar Orden y Próximo Servicio</h2>
+            <h2 className="text-2xl font-headline-bold text-on-surface mb-1">Próximo Servicio Recomendado</h2>
             <p className="text-base text-secondary">
               Cliente: {customerName || 'N/A'} | Placa: {vehiclePlate || 'N/A'}
             </p>
@@ -229,11 +229,11 @@ export function NextAppointmentModal({
         <div className="p-6 border-t border-outline-variant bg-surface-container-lowest flex items-center justify-end gap-4 sticky bottom-0">
           <button
             type="button"
-            onClick={handleSkip}
+            onClick={onClose}
             disabled={isSubmitting}
             className="h-[56px] px-8 rounded-full font-cta text-base text-secondary hover:bg-surface-variant transition-colors disabled:opacity-50"
           >
-            Facturar sin recomendación
+            Cancelar
           </button>
           <button
             type="submit"
@@ -244,9 +244,9 @@ export function NextAppointmentModal({
             {isSubmitting ? (
               <span className="material-symbols-outlined animate-spin text-[24px]">refresh</span>
             ) : (
-              <span className="material-symbols-outlined text-[24px]">check_circle</span>
+              <span className="material-symbols-outlined text-[24px]">save</span>
             )}
-            Confirmar Orden
+            Guardar Recomendación
           </button>
         </div>
       </div>

@@ -36,8 +36,8 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Removed createdOrderData since modal is now pre-creation
-  const [pendingSubmit, setPendingSubmit] = useState(false);
+  const [nextMaintenanceDate, setNextMaintenanceDate] = useState('');
+  const [nextMaintenanceReason, setNextMaintenanceReason] = useState('');
 
   // Handler para autocompletar datos del cliente seleccionado.
   // Almacena los vehículos del cliente y limpia los campos del vehículo para que el técnico seleccione uno.
@@ -113,6 +113,8 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
     setCarColor('');
     setSelectedServices([]);
     setCustomerVehicles([]);
+    setNextMaintenanceDate('');
+    setNextMaintenanceReason('');
     router.refresh();
   };
 
@@ -126,11 +128,11 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
       return;
     }
 
-    // Instead of creating order immediately, open the modal
-    setIsModalOpen(true);
-  };
+    if (!nextMaintenanceReason) {
+      MySwal.fire('Error', 'Debe asignar el motivo del próximo servicio (campo obligatorio en el formulario)', 'error');
+      return;
+    }
 
-  const handleConfirmOrder = async (date: string, reason: string) => {
     setIsSubmitting(true);
     MySwal.showLoading();
 
@@ -144,8 +146,8 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
       carModel,
       carColor,
       services: selectedServices,
-      nextMaintenanceDate: date || undefined,
-      nextMaintenanceReason: reason || undefined
+      nextMaintenanceDate: nextMaintenanceDate || undefined,
+      nextMaintenanceReason: nextMaintenanceReason || undefined
     });
 
     setIsSubmitting(false);
@@ -155,16 +157,21 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
       MySwal.fire({
         toast: true,
         position: 'top-end',
-        title: '¡Orden creada y recomendación guardada!',
+        title: '¡Orden y recomendación guardadas!',
         icon: 'success',
         showConfirmButton: false,
         timer: 3000
       });
-      setIsModalOpen(false);
       resetWorkspace();
     } else {
       MySwal.fire('Error', res.message, 'error');
     }
+  };
+
+  const handleSaveRecommendation = (date: string, reason: string) => {
+    setNextMaintenanceDate(date);
+    setNextMaintenanceReason(reason);
+    setIsModalOpen(false);
   };
 
   const handleCloseModal = () => {
@@ -187,6 +194,9 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
         onSelectCustomer={handleSelectCustomer}
         customerVehicles={customerVehicles}
         onSelectVehicle={handleSelectVehicle}
+        nextMaintenanceDate={nextMaintenanceDate}
+        nextMaintenanceReason={nextMaintenanceReason}
+        onOpenRecommendationModal={() => setIsModalOpen(true)}
       />
       <ServicesPanel 
         catalogServices={userDepartment ? catalogServices.filter(s => s.category === userDepartment) : catalogServices}
@@ -199,7 +209,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
       <NextAppointmentModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onSubmitOrder={handleConfirmOrder}
+        onSubmitOrder={handleSaveRecommendation}
         department={userDepartment}
         customerName={customerName}
         vehiclePlate={plate}

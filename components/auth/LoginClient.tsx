@@ -16,7 +16,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { PasswordInput, ErrorMessage } from '@/components/ui';
 import { useRouter } from 'next/navigation';
-import { loginAction } from '@/app/auth/actions';
+import { loginAction } from '@/actions/auth.actions';
 import Swal from 'sweetalert2';
 
 type LoginFormInputs = {

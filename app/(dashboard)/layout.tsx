@@ -10,7 +10,7 @@
  */
 
 import { verifyRole } from '@/lib/dal';
-import { logoutAction } from '@/app/auth/actions';
+import { logoutAction } from '@/actions/auth.actions';
 import { Sidebar, Navbar } from '@/components/dashboard';
 
 /** Roles que tienen acceso al área de gestión. */

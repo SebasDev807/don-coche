@@ -9,7 +9,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { verifyRole } from '@/lib/dal';
-import { logoutAction } from '@/app/auth/actions';
+import { logoutAction } from '@/actions/auth.actions';
 import { Header } from '../../components/tecnico/Header';
 import { TecnicoWorkspace } from '../../components/tecnico/TecnicoWorkspace';
 import { getServices } from '@/actions/car_services';

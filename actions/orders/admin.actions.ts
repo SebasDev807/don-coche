@@ -61,17 +61,17 @@ export async function getOrderDetail(orderId: string) {
         totalServices: Number(order.totalServices),
         totalProducts: Number(order.totalProducts),
         grandTotal: Number(order.grandTotal),
-        services: order.services.map(s => ({ 
-          ...s, 
+        services: order.services.map(s => ({
+          ...s,
           chargedPrice: Number(s.chargedPrice),
           service: s.service ? {
             ...s.service,
             basePrice: Number(s.service.basePrice)
           } : s.service
         })),
-        products: order.products.map(p => ({ 
-          ...p, 
-          unitPrice: Number(p.unitPrice), 
+        products: order.products.map(p => ({
+          ...p,
+          unitPrice: Number(p.unitPrice),
           unitCost: Number(p.unitCost),
           product: p.product ? {
             ...p.product,
@@ -91,7 +91,7 @@ export async function getOrderDetail(orderId: string) {
 export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
   try {
     const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
-    
+
     const updatedOrder = await prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
@@ -108,7 +108,7 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
         if (!product) throw new Error(`Producto ${op.productId} no encontrado.`);
 
         const newStock = product.stock - op.quantity;
-        
+
         await tx.product.update({
           where: { id: op.productId },
           data: { stock: newStock }
@@ -166,12 +166,24 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
         await new Promise(resolve => setTimeout(resolve, 8000));
 
         if (updatedOrder.nextMaintenanceDate && receiptData.phone) {
-          const formattedDate = new Date(updatedOrder.nextMaintenanceDate).toLocaleDateString('es-CO', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          });
-          await sendNextAppointmentNotification(receiptData.phone, formattedDate);
+          const targetDate = new Date(updatedOrder.nextMaintenanceDate);
+          const now = new Date();
+          const diffTime = targetDate.getTime() - now.getTime();
+          const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+          let timeText = 'unas semanas';
+          if (diffDays <= 8) timeText = '1 semana';
+          else if (diffDays <= 16) timeText = '15 días';
+          else if (diffDays <= 32) timeText = '1 mes';
+          else if (diffDays <= 63) timeText = '2 meses';
+          else if (diffDays <= 95) timeText = '3 meses';
+          else if (diffDays <= 125) timeText = '4 meses';
+          else if (diffDays <= 186) timeText = '6 meses';
+          else timeText = 'unos meses';
+
+          // Quitamos el "en" para que quede "2 meses". El mensaje temporal dirá "es el 2 meses" pero evitará error de API.
+          // Cuando actualices el template en Meta podrás reajustar este parámetro.
+          await sendNextAppointmentNotification(receiptData.phone, timeText);
         }
       } catch (err) {
         console.error('[billOrder] Error al enviar notificaciones WhatsApp:', err);

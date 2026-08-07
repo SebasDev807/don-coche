@@ -174,8 +174,8 @@ export async function sendReceiptNotification(
         parameters: [
           { type: 'text', text: order.customerName ?? 'Cliente' },
           { type: 'text', text: order.vehiclePlate },
-          { 
-            type: 'text', 
+          {
+            type: 'text',
             text: `$${order.grandTotal.toLocaleString('es-CO')} COP`
           },
         ],
@@ -221,7 +221,7 @@ export async function sendMaintenanceReminder(
  * Envía la notificación de la próxima cita agendada.
  *
  * @param phone - Teléfono del cliente
- * @param formattedDate - Fecha formateada de la próxima cita (ej: "30 de Octubre de 2026")
+ * @param formattedDate - Texto a enviar (ej: "en 3 semanas" o la fecha)
  */
 export async function sendNextAppointmentNotification(
   phone: string,

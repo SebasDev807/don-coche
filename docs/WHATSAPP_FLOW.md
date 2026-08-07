@@ -170,7 +170,7 @@ Con `after()` (función de Next.js 15+), la notificación se ejecuta **después*
 
 Cuando se tengan los templates aprobados y el servidor esté accesible públicamente:
 
-1. **Obtener URL pública**: En desarrollo usar `ngrok http 3000` o el túnel de Next.js (`next dev --turbo --experimental-https`)
+1. **Obtener URL pública**: Desplegar la aplicación en Vercel para obtener un dominio público HTTPS permanente.
 2. **Registrar en Meta**: Developer Console → Tu App → WhatsApp → Configuración → Webhooks
    - URL: `http://localhost:3000/api/v1/whatsapp/webhook`
    - Verify Token: el valor de `WHATSAPP_WEBHOOK_VERIFY_TOKEN`

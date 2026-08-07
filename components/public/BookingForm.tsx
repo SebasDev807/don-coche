@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { publicAppointmentSchema, type PublicAppointmentSchemaType } from '@/validation/public';
 import { bookAppointment } from '@/actions/public/appointment.actions';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { useRouter } from 'next/navigation';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const MySwal = withReactContent(Swal);
 
@@ -20,6 +22,7 @@ export const BookingForm = () => {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     reset,
   } = useForm<PublicAppointmentSchemaType>({
@@ -183,12 +186,28 @@ export const BookingForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="scheduledAtDate">Fecha de la Cita *</label>
-            <input 
-              {...register('scheduledAtDate')}
-              type="date"
-              min={today}
-              className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface focus:ring-primary focus:border-primary ${errors.scheduledAtDate ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="scheduledAtDate" 
+            <Controller
+              control={control}
+              name="scheduledAtDate"
+              render={({ field }) => (
+                <DatePicker
+                  placeholderText="Selecciona una fecha"
+                  selected={field.value ? new Date(`${field.value}T00:00:00`) : null}
+                  onChange={(date) => {
+                    if (date) {
+                      // Formatear a YYYY-MM-DD
+                      const d = new Date(date);
+                      const isoDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                      field.onChange(isoDate);
+                    } else {
+                      field.onChange('');
+                    }
+                  }}
+                  minDate={new Date()}
+                  dateFormat="dd/MM/yyyy"
+                  className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface focus:ring-primary focus:border-primary ${errors.scheduledAtDate ? 'border-error focus:ring-error' : 'border-outline'}`}
+                />
+              )}
             />
             {errors.scheduledAtDate && <p className="text-error text-xs mt-1 font-bold">{errors.scheduledAtDate.message}</p>}
           </div>

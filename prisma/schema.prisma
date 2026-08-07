@@ -238,6 +238,9 @@ model Order {
   createdAt DateTime  @default(now()) @map("created_at")
   billedAt  DateTime? @map("billed_at") /// Fundamental para el cuadre de caja exacto
 
+  nextMaintenanceDate   DateTime? @map("next_maintenance_date") @db.Date
+  nextMaintenanceReason String?   @map("next_maintenance_reason")
+
   technician User    @relation("TechnicianOrders", fields: [technicianId], references: [id])
   admin      User?   @relation("AdminOrders", fields: [adminId], references: [id])
   vehicle    Vehicle @relation(fields: [vehicleId], references: [id])

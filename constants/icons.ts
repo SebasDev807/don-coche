@@ -1,3 +1,10 @@
+
+/**
+ * 
+ * 
+ * DEPRECATED
+ * Is not longer used in the app
+ */
 export const CAR_SERVICE_ICONS = [
   'directions_car',
   'local_car_wash',

@@ -162,14 +162,11 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
       try {
         await sendReceiptNotification(receiptData);
 
-        // Fetch latest PENDIENTE appointment for this vehicle
-        const nextAppt = await prisma.appointment.findFirst({
-          where: { vehicleId: updatedOrder.vehicleId, status: 'PENDIENTE' },
-          orderBy: { createdAt: 'desc' }
-        });
+        // Esperar 8 segundos para asegurar que WhatsApp entregue primero la factura (PDF es mucho más pesado y la API de Meta lo procesa lento)
+        await new Promise(resolve => setTimeout(resolve, 8000));
 
-        if (nextAppt && receiptData.phone) {
-          const formattedDate = new Date(nextAppt.scheduledAt).toLocaleDateString('es-CO', {
+        if (updatedOrder.nextMaintenanceDate && receiptData.phone) {
+          const formattedDate = new Date(updatedOrder.nextMaintenanceDate).toLocaleDateString('es-CO', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'

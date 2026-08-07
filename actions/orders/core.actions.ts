@@ -170,3 +170,32 @@ export async function createOrder(data: CreateOrderInput) {
     return { success: false, message: error.message || 'Error al crear la orden' };
   }
 }
+
+export async function setNextMaintenance(orderId: string, date: string, reason: string) {
+  try {
+    const session = await verifySession();
+    
+    // Ensure order exists
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order) {
+      return { success: false, message: 'Orden no encontrada' };
+    }
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        nextMaintenanceDate: new Date(date),
+        nextMaintenanceReason: reason
+      }
+    });
+
+    revalidatePath('/tecnico');
+    return { success: true, message: 'Recomendación guardada exitosamente' };
+  } catch (error: any) {
+    console.error('[setNextMaintenance] Error:', error);
+    return { success: false, message: 'Error al guardar la recomendación' };
+  }
+}

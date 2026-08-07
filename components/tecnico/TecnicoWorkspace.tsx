@@ -41,6 +41,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
     vehicleId: string;
     customerName: string;
     vehiclePlate: string;
+    orderId: string;
   } | null>(null);
 
   // Handler para autocompletar datos del cliente seleccionado.
@@ -154,7 +155,8 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
         customerId: res.data!.vehicle.customerId || '',
         vehicleId: res.data!.vehicle.id,
         customerName: res.data!.vehicle.customer?.name || 'Cliente',
-        vehiclePlate: res.data!.vehicle.plate
+        vehiclePlate: res.data!.vehicle.plate,
+        orderId: res.data!.id
       });
       setIsModalOpen(true);
     } else {
@@ -199,6 +201,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
           vehicleId={createdOrderData.vehicleId}
           customerName={createdOrderData.customerName}
           vehiclePlate={createdOrderData.vehiclePlate}
+          orderId={createdOrderData.orderId}
         />
       )}
     </div>

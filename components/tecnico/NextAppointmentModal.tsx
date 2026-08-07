@@ -1,37 +1,23 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { appointmentSchema, type AppointmentFormValues } from '@/validation';
-import { createAppointment, getBookedSlots } from '@/actions/appointments';
+import { useState } from 'react';
+import { setNextMaintenance } from '@/actions/orders/core.actions';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
-import { BUSINESS_HOURS } from '@/constants/business';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 const MySwal = withReactContent(Swal);
-
-function generateTimeSlots(): number[] {
-  const slots: number[] = [];
-  for (let h = BUSINESS_HOURS.openHour; h < BUSINESS_HOURS.closeHour; h++) {
-    slots.push(h);
-  }
-  return slots;
-}
-
-function formatHour(hour: number): string {
-  const suffix = hour >= 12 ? 'PM' : 'AM';
-  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-  return `${displayHour}:00 ${suffix}`;
-}
 
 function getTodayISO(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
-const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+function calculateFutureDateISO(daysToAdd: number): string {
+  const future = new Date();
+  future.setDate(future.getDate() + daysToAdd);
+  return `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, '0')}-${String(future.getDate()).padStart(2, '0')}`;
+}
 
 interface NextAppointmentModalProps {
   isOpen: boolean;
@@ -40,130 +26,46 @@ interface NextAppointmentModalProps {
   vehicleId: string;
   customerName: string;
   vehiclePlate: string;
+  orderId: string;
 }
 
 export function NextAppointmentModal({
   isOpen,
   onClose,
-  customerId,
-  vehicleId,
   customerName,
-  vehiclePlate
+  vehiclePlate,
+  orderId
 }: NextAppointmentModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
-  const [selectedHour, setSelectedHour] = useState<number | null>(null);
-  const [bookedHours, setBookedHours] = useState<number[]>([]);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState('');
 
-  const timeSlots = generateTimeSlots();
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    clearErrors,
-    formState: { errors },
-    reset
-  } = useForm<AppointmentFormValues>({
-    resolver: zodResolver(appointmentSchema),
-    defaultValues: {
-      customerId: '',
-      vehicleId: '',
-      scheduledAt: '',
-      description: '',
-      notes: '',
-    },
-  });
-
-  // Prefill customer and vehicle data when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setValue('customerId', customerId);
-      setValue('vehicleId', vehicleId);
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reason.trim()) {
+      setError('El motivo es obligatorio');
+      return;
     }
-  }, [isOpen, customerId, vehicleId, setValue]);
+    setError('');
 
-  const handleDateChange = useCallback(
-    async (dateStr: string) => {
-      setSelectedDate(dateStr);
-      setSelectedHour(null);
-      setValue('scheduledAt', '');
-
-      if (!dateStr) {
-        setBookedHours([]);
-        return;
-      }
-
-      const date = new Date(dateStr + 'T12:00:00');
-      if (BUSINESS_HOURS.closedDays.includes(date.getDay())) {
-        MySwal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'warning',
-          title: `Los ${DAY_NAMES[date.getDay()]} no hay servicio`,
-          showConfirmButton: false,
-          timer: 3000,
-        });
-        setSelectedDate('');
-        setBookedHours([]);
-        return;
-      }
-
-      setIsLoadingSlots(true);
-      try {
-        const res = await getBookedSlots(dateStr);
-        if (res.success) {
-          setBookedHours(res.data);
-        }
-      } catch (error) {
-        console.error('Error loading booked slots:', error);
-      } finally {
-        setIsLoadingSlots(false);
-      }
-    },
-    [setValue]
-  );
-
-  const handleHourSelect = useCallback(
-    (hour: number) => {
-      setSelectedHour(hour);
-      if (selectedDate) {
-        const isoDateTime = `${selectedDate}T${String(hour).padStart(2, '0')}:00:00`;
-        setValue('scheduledAt', isoDateTime, { shouldValidate: true });
-        clearErrors('scheduledAt');
-      }
-    },
-    [selectedDate, setValue, clearErrors]
-  );
-
-  const isHourInPast = useCallback(
-    (hour: number): boolean => {
-      if (selectedDate !== getTodayISO()) return false;
-      return hour <= new Date().getHours();
-    },
-    [selectedDate]
-  );
-
-  const onSubmit = async (data: AppointmentFormValues) => {
     setIsSubmitting(true);
-    const result = await createAppointment(data);
+    const result = await setNextMaintenance(orderId, selectedDate, reason);
     setIsSubmitting(false);
 
     if (result.success) {
       MySwal.fire({
         toast: true,
         position: 'top-end',
-        title: '¡Cita Agendada!',
-        text: 'Se enviará notificación automática al facturar.',
+        title: '¡Recomendación guardada!',
+        text: 'Se enviará en el mensaje automático al facturar.',
         icon: 'success',
         showConfirmButton: false,
         timer: 3000
       });
       // Reset state and close
-      reset();
+      setReason('');
       setSelectedDate('');
-      setSelectedHour(null);
       onClose();
     } else {
       MySwal.fire({
@@ -177,9 +79,9 @@ export function NextAppointmentModal({
   };
 
   const handleSkip = () => {
-    reset();
+    setReason('');
     setSelectedDate('');
-    setSelectedHour(null);
+    setError('');
     onClose();
   };
 
@@ -191,7 +93,7 @@ export function NextAppointmentModal({
         {/* Header */}
         <div className="p-6 border-b border-outline-variant flex items-start justify-between sticky top-0 bg-surface z-10">
           <div>
-            <h2 className="text-xl font-headline-bold text-on-surface mb-1">Agendar Próximo Servicio</h2>
+            <h2 className="text-xl font-headline-bold text-on-surface mb-1">Próximo Mantenimiento Recomendado</h2>
             <p className="text-sm text-secondary">
               Cliente: {customerName} | Placa: {vehiclePlate}
             </p>
@@ -206,24 +108,26 @@ export function NextAppointmentModal({
 
         {/* Body */}
         <div className="p-6">
-          <form id="next-appointment-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <input type="hidden" {...register('customerId')} />
-            <input type="hidden" {...register('vehicleId')} />
-
+          <form id="next-maintenance-form" onSubmit={onSubmit} className="space-y-6">
+            
             {/* Motivo */}
             <div>
               <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">
                 Motivo del próximo servicio <span className="text-error">*</span>
               </label>
               <textarea
-                {...register('description')}
+                value={reason}
+                onChange={(e) => {
+                  setReason(e.target.value);
+                  if (e.target.value.trim()) setError('');
+                }}
                 rows={2}
                 placeholder="Ej: Cambio de aceite, Próximo lavado..."
                 className={`form-input w-full rounded-lg border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 py-3 text-on-surface resize-none ${
-                  errors.description ? 'border-error focus:border-error focus:ring-error' : ''
+                  error ? 'border-error focus:border-error focus:ring-error' : ''
                 }`}
               />
-              <ErrorMessage message={errors.description?.message} />
+              {error && <ErrorMessage message={error} />}
             </div>
 
             <hr className="border-outline-variant/50 border-t" />
@@ -233,60 +137,47 @@ export function NextAppointmentModal({
               <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">
                 Fecha sugerida
               </label>
+              
+              {/* Botones de acceso rápido */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(calculateFutureDateISO(7))}
+                  className="px-3 py-1.5 text-xs font-medium rounded-full bg-surface-variant text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-colors"
+                >
+                  En 1 semana
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(calculateFutureDateISO(15))}
+                  className="px-3 py-1.5 text-xs font-medium rounded-full bg-surface-variant text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-colors"
+                >
+                  En 15 días
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(calculateFutureDateISO(30))}
+                  className="px-3 py-1.5 text-xs font-medium rounded-full bg-surface-variant text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-colors"
+                >
+                  En 1 mes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(calculateFutureDateISO(90))}
+                  className="px-3 py-1.5 text-xs font-medium rounded-full bg-surface-variant text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-colors"
+                >
+                  En 3 meses
+                </button>
+              </div>
+
               <input
                 type="date"
                 min={getTodayISO()}
                 value={selectedDate}
-                onChange={(e) => handleDateChange(e.target.value)}
+                onChange={(e) => setSelectedDate(e.target.value)}
                 className="h-[56px] form-input w-full max-w-sm rounded-lg border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface cursor-pointer"
               />
             </div>
-
-            {/* Grid de Horas */}
-            {selectedDate && (
-              <div>
-                <label className="block font-label-bold text-label-bold text-on-surface-variant mb-3">
-                  Hora disponible
-                  {isLoadingSlots && (
-                    <span className="ml-2 inline-flex items-center text-xs font-normal text-secondary">
-                      <span className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin mr-1" />
-                      Cargando...
-                    </span>
-                  )}
-                </label>
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                  {timeSlots.map((hour) => {
-                    const isBooked = bookedHours.includes(hour);
-                    const isPast = isHourInPast(hour);
-                    const isSelected = selectedHour === hour;
-                    const isDisabled = isBooked || isPast;
-
-                    return (
-                      <button
-                        key={hour}
-                        type="button"
-                        disabled={isDisabled}
-                        onClick={() => handleHourSelect(hour)}
-                        className={`
-                          relative h-12 rounded-lg border font-medium text-xs transition-all cursor-pointer flex flex-col items-center justify-center
-                          ${isSelected ? 'border-primary bg-primary-container text-on-primary-container ring-1 ring-primary/30' : 
-                            isDisabled ? 'border-outline-variant/50 bg-surface-container text-secondary/50 cursor-not-allowed' : 
-                            'border-outline-variant bg-surface-container-lowest text-on-surface hover:border-primary'}
-                        `}
-                      >
-                        <span>{formatHour(hour)}</span>
-                        {isBooked && (
-                          <span className="text-[9px] text-error font-semibold uppercase">
-                            Ocupado
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-                <ErrorMessage message={errors.scheduledAt?.message} />
-              </div>
-            )}
           </form>
         </div>
 
@@ -302,16 +193,16 @@ export function NextAppointmentModal({
           </button>
           <button
             type="submit"
-            form="next-appointment-form"
-            disabled={isSubmitting || !selectedDate || selectedHour === null}
+            form="next-maintenance-form"
+            disabled={isSubmitting || !selectedDate}
             className="h-[48px] px-8 rounded-full bg-primary-container text-on-primary-container font-cta text-sm hover:bg-primary-fixed-dim transition-all shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <span className="material-symbols-outlined animate-spin text-[18px]">refresh</span>
             ) : (
-              <span className="material-symbols-outlined text-[18px]">calendar_add_on</span>
+              <span className="material-symbols-outlined text-[18px]">save</span>
             )}
-            Agendar
+            Guardar Recomendación
           </button>
         </div>
       </div>

@@ -382,3 +382,39 @@ export async function getBookedSlots(dateStr: string): Promise<{
     return { success: false, data: [] };
   }
 }
+
+/**
+ * Actualiza el estado de una cita.
+ */
+export async function updateAppointmentStatus(id: string, status: AppointmentStatus) {
+  try {
+    await verifySession();
+    await prisma.appointment.update({
+      where: { id },
+      data: { status },
+    });
+    revalidatePath('/citas');
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating appointment status:', error);
+    return { success: false, message: 'Error al actualizar la cita' };
+  }
+}
+
+/**
+ * Reprograma una cita a una nueva fecha.
+ */
+export async function rescheduleAppointment(id: string, newDate: Date) {
+  try {
+    await verifySession();
+    await prisma.appointment.update({
+      where: { id },
+      data: { scheduledAt: newDate },
+    });
+    revalidatePath('/citas');
+    return { success: true };
+  } catch (error) {
+    console.error('Error rescheduling appointment:', error);
+    return { success: false, message: 'Error al reprogramar la cita' };
+  }
+}

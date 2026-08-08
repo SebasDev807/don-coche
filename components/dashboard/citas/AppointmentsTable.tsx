@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 import type { AppointmentDTO } from '@/actions/appointments';
+import { updateAppointmentStatus, rescheduleAppointment } from '@/actions/appointments/core.actions';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 /**
  * Propiedades del componente AppointmentsTable.
@@ -110,6 +115,9 @@ export function AppointmentsTable({ appointments }: AppointmentsTableProps) {
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">
                 Agendado por
               </th>
+              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider text-right">
+                Acciones
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant font-body-md text-on-surface">
@@ -206,13 +214,98 @@ export function AppointmentsTable({ appointments }: AppointmentsTableProps) {
                       </span>
                     )}
                   </td>
+
+                  {/* Acciones */}
+                  <td className="py-4 px-6 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={async () => {
+                          const result = await MySwal.fire({
+                            title: '¿Confirmar Cita?',
+                            text: 'Se marcará la cita como cumplida.',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sí, confirmar',
+                            cancelButtonText: 'Cancelar',
+                          });
+                          if (result.isConfirmed) {
+                            const res = await updateAppointmentStatus(apt.id, 'CUMPLIDA');
+                            if (res.success) {
+                              MySwal.fire('¡Confirmada!', 'La cita ha sido marcada como cumplida.', 'success');
+                            } else {
+                              MySwal.fire('Error', res.message || 'No se pudo confirmar la cita.', 'error');
+                            }
+                          }
+                        }}
+                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                        title="Confirmar (Marcar como cumplida)"
+                      >
+                        <span className="material-symbols-outlined">check_circle</span>
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const { value: newDateStr } = await MySwal.fire({
+                            title: 'Reprogramar Cita',
+                            html: '<input type="datetime-local" id="swal-input-date" class="swal2-input">',
+                            focusConfirm: false,
+                            showCancelButton: true,
+                            confirmButtonText: 'Guardar',
+                            cancelButtonText: 'Cancelar',
+                            preConfirm: () => {
+                              const input = document.getElementById('swal-input-date') as HTMLInputElement;
+                              return input.value;
+                            }
+                          });
+
+                          if (newDateStr) {
+                            const newDate = new Date(newDateStr);
+                            const res = await rescheduleAppointment(apt.id, newDate);
+                            if (res.success) {
+                              MySwal.fire('¡Reprogramada!', 'La cita ha sido reprogramada.', 'success');
+                            } else {
+                              MySwal.fire('Error', res.message || 'No se pudo reprogramar la cita.', 'error');
+                            }
+                          }
+                        }}
+                        className="p-2 text-primary hover:bg-primary-container/30 rounded-lg transition-colors"
+                        title="Reprogramar cita"
+                      >
+                        <span className="material-symbols-outlined">event_note</span>
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const result = await MySwal.fire({
+                            title: '¿Cancelar Cita?',
+                            text: 'Esta acción no se puede deshacer.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'Sí, cancelar cita',
+                            cancelButtonText: 'No, mantenerla',
+                          });
+                          if (result.isConfirmed) {
+                            const res = await updateAppointmentStatus(apt.id, 'CANCELADA');
+                            if (res.success) {
+                              MySwal.fire('Cancelada', 'La cita ha sido cancelada.', 'success');
+                            } else {
+                              MySwal.fire('Error', res.message || 'No se pudo cancelar la cita.', 'error');
+                            }
+                          }
+                        }}
+                        className="p-2 text-error hover:bg-error-container/30 rounded-lg transition-colors"
+                        title="Cancelar cita"
+                      >
+                        <span className="material-symbols-outlined">cancel</span>
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               );
             })}
 
             {appointments.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-secondary">
+                <td colSpan={7} className="py-12 text-center text-secondary">
                   <div className="flex flex-col items-center gap-2">
                     <span className="material-symbols-outlined text-4xl text-surface-variant">
                       event_available

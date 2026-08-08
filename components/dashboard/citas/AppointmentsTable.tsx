@@ -237,7 +237,7 @@ export function AppointmentsTable({ appointments }: AppointmentsTableProps) {
                             }
                           }
                         }}
-                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                        className="p-2 text-emerald-600 transition-colors cursor-pointer"
                         title="Confirmar (Marcar como cumplida)"
                       >
                         <span className="material-symbols-outlined">check_circle</span>
@@ -267,7 +267,7 @@ export function AppointmentsTable({ appointments }: AppointmentsTableProps) {
                             }
                           }
                         }}
-                        className="p-2 text-primary hover:bg-primary-container/30 rounded-lg transition-colors"
+                        className="p-2 text-primary transition-colors cursor-pointer"
                         title="Reprogramar cita"
                       >
                         <span className="material-symbols-outlined">event_note</span>
@@ -292,7 +292,7 @@ export function AppointmentsTable({ appointments }: AppointmentsTableProps) {
                             }
                           }
                         }}
-                        className="p-2 text-error hover:bg-error-container/30 rounded-lg transition-colors"
+                        className="p-2 text-error transition-colors cursor-pointer"
                         title="Cancelar cita"
                       >
                         <span className="material-symbols-outlined">cancel</span>

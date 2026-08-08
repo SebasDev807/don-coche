@@ -171,8 +171,57 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
               padding: '16px 20px',
               borderTop: '1px solid #e5e7eb',
               background: '#fff',
+              flexWrap: 'wrap'
             }}
           >
+            {/* Estado de Facturación Electrónica */}
+            <div style={{ flex: '1 1 100%', marginBottom: '8px' }}>
+              {(() => {
+                const status = order.aliaddoInvoiceStatus;
+                const isSuccess = order.cufe && (!status || status === 'PROCESADA' || status === 'Valida');
+                
+                if (isSuccess) {
+                  return (
+                    <div style={{ padding: '12px', background: '#ecfdf5', border: '1px solid #10b981', borderRadius: '8px', color: '#065f46' }}>
+                      <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check_circle</span>
+                        Factura electrónica emitida
+                      </div>
+                      <div style={{ fontSize: '12px', marginTop: '6px' }}>
+                        <div>Factura: <b>{order.aliaddoConsecutive || 'N/A'}</b></div>
+                        <div style={{ wordBreak: 'break-all' }}>CUFE: <span>{order.cufe}</span></div>
+                      </div>
+                    </div>
+                  );
+                }
+                
+                if (status === 'Rechazada') {
+                  return (
+                    <div style={{ padding: '12px', background: '#fef2f2', border: '1px solid #ef4444', borderRadius: '8px', color: '#991b1b', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>cancel</span>
+                      Factura electrónica rechazada {order.aliaddoErrorMessage ? `- ${order.aliaddoErrorMessage}` : ''}
+                    </div>
+                  );
+                }
+                
+                if (status === 'ERROR' || (!order.aliaddoInvoiceId && !order.cufe)) {
+                  return (
+                    <div style={{ padding: '12px', background: '#fffbeb', border: '1px solid #f59e0b', borderRadius: '8px', color: '#b45309', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>warning</span>
+                      No fue posible emitir la factura electrónica
+                    </div>
+                  );
+                }
+                
+                // Fallback (Pendiente)
+                return (
+                  <div style={{ padding: '12px', background: '#eff6ff', border: '1px solid #3b82f6', borderRadius: '8px', color: '#1d4ed8', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>hourglass_empty</span>
+                    Factura electrónica pendiente
+                  </div>
+                );
+              })()}
+            </div>
             <button
               onClick={onClose}
               style={{

@@ -38,7 +38,23 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
       setIsSubmitting(false);
 
       if (res.success) {
-        MySwal.close();
+        if (res.aliaddoSuccess && res.data.cufe) {
+          await MySwal.fire({
+            title: 'Factura electrónica emitida correctamente',
+            html: `Factura: <b>${res.data.aliaddoConsecutive || 'N/A'}</b><br/>CUFE: <span style="font-size: 0.85em;">${res.data.cufe}</span>`,
+            icon: 'success',
+            confirmButtonText: 'Continuar',
+            confirmButtonColor: '#3085d6',
+          });
+        } else {
+          await MySwal.fire({
+            title: 'Cobro registrado',
+            html: `La venta se guardó correctamente, pero la factura electrónica está pendiente o falló.<br/><br/><b>Estado:</b> ${res.aliaddoStatus || 'Desconocido'}<br/><b>Detalle:</b> ${res.aliaddoError || 'N/A'}`,
+            icon: 'warning',
+            confirmButtonText: 'Continuar',
+            confirmButtonColor: '#f59e0b',
+          });
+        }
         setBilledOrderData(res.data);
       } else {
         MySwal.fire('Error', res.message, 'error');

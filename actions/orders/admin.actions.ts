@@ -1,11 +1,14 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { verifySession, verifyRole } from '@/lib/dal';
+import { verifyRole } from '@/lib/dal';
 import { revalidatePath } from 'next/cache';
 import { PaymentMethod } from '@prisma/client';
 import { after } from 'next/server';
 import { sendReceiptNotification, sendNextAppointmentNotification, type OrderReceiptData } from '@/lib/whatsapp';
+
+
+import { AliaddoService, AliaddoInvoicePayload } from '@/lib/services/aliaddo';
 export async function getPendingOrders() {
   try {
     await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
@@ -102,6 +105,10 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
         throw new Error('La orden no está en pista o no existe.');
       }
 
+      if (order.aliaddoInvoiceId || order.cufe) {
+        throw new Error('La orden ya cuenta con una factura electrónica emitida.');
+      }
+
       // Descontar inventario por cada producto de la orden
       for (const op of order.products) {
         const product = await tx.product.findUnique({ where: { id: op.productId } });
@@ -128,7 +135,7 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
       }
 
       // Actualizar Orden y devolver con relaciones para el recibo
-      return await tx.order.update({
+      const updatedOrderTx = await tx.order.update({
         where: { id: orderId },
         data: {
           status: 'FACTURADA',
@@ -144,7 +151,93 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
           products: { include: { product: true } },
         }
       });
+
+      return updatedOrderTx;
     });
+
+    // =========================================================================
+    // BLOQUE ALIADDO - Facturación Electrónica (No bloqueante)
+    // =========================================================================
+    let aliaddoConsecutive: string | null = null;
+    try {
+      const isCard = paymentMethod === 'TARJETA';
+      const isTransfer = paymentMethod === 'TRANSFERENCIA';
+      // Mapeo básico de método de pago (requiere validación con contador)
+      const paymentMeanCode = isCard ? '48' : (isTransfer ? '47' : '10');
+
+      // Mapeo de items usando los códigos reales sincronizados con Aliaddo
+      // Si un servicio no tiene código (no fue sincronizado), usamos AGUA como fallback
+      const FALLBACK_CODE = 'AGUA';
+      const details = [
+        ...updatedOrder.services.map(s => ({
+          unitValueBeforeTax: Number(s.chargedPrice),
+          quantity: 1,
+          description: s.service?.name || 'Servicio Automotriz',
+          itemCode: s.service?.aliaddoItemCode || FALLBACK_CODE,
+          discountAmount: 0,
+          discountIsPercent: true
+        })),
+        ...updatedOrder.products.map(p => ({
+          unitValueBeforeTax: Number(p.unitPrice),
+          quantity: p.quantity,
+          description: p.product?.name || 'Producto',
+          itemCode: FALLBACK_CODE, // Los productos se mapearán con el contador
+          discountAmount: 0,
+          discountIsPercent: true
+        }))
+      ];
+
+
+      // Obtener fecha actual en zona horaria local (Colombia) para evitar error FAD09e de la DIAN
+      const now = new Date();
+      // Formato YYYY-MM-DD ajustado a la zona horaria local (restando offset)
+      const localDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+      const invoicePayload: AliaddoInvoicePayload = {
+        date: localDate,
+        dueDate: localDate,
+        paymentFormCode: 'CR', // Contado por defecto
+        paymentMeanCode: paymentMeanCode,
+        currencyCode: 'COP',
+        personId: '1b117033-c258-4b88-b59c-f137fa3a316d', // Person ID válido extraído de Aliaddo
+        branchId: '8ffca1e5-8f58-11f1-8ea2-42010a26ccd5', // Sucursal válida
+        details: details,
+        ...(updatedOrder.vehicle.customer?.email ? {
+          customer: { email: updatedOrder.vehicle.customer.email }
+        } : {})
+      };
+
+      // Llamada real a Aliaddo
+      const aliaddoResponse = await AliaddoService.createInvoice(invoicePayload);
+
+      // Guardar el ID de Aliaddo Y el CUFE (identificador DIAN) en la BD
+      await prisma.order.update({
+        where: { id: updatedOrder.id },
+        data: {
+          aliaddoInvoiceId: aliaddoResponse.id,
+          cufe: aliaddoResponse.cufe || null,
+          aliaddoInvoiceStatus: aliaddoResponse.stateDian || aliaddoResponse.status || 'PROCESADA',
+        }
+      });
+      console.log('📝 [ALIADDO] Factura creada exitosamente:', {
+        id: aliaddoResponse.id,
+        consecutive: aliaddoResponse.consecutive,
+        stateDian: aliaddoResponse.stateDian,
+        cufe: aliaddoResponse.cufe?.substring(0, 20) + '...',
+      });
+
+      // Actualizamos el objeto en memoria para que el modal lo reciba
+      updatedOrder.aliaddoInvoiceId = aliaddoResponse.id;
+      updatedOrder.cufe = aliaddoResponse.cufe || null;
+      (updatedOrder as any).aliaddoInvoiceStatus = aliaddoResponse.stateDian || aliaddoResponse.status || 'PROCESADA';
+      aliaddoConsecutive = aliaddoResponse.consecutive || null;
+
+    } catch (aliaddoError: any) {
+      console.error('❌ Error enviando a Aliaddo (la orden local sí se guardó):', aliaddoError.message);
+      (updatedOrder as any).aliaddoInvoiceStatus = 'ERROR';
+      (updatedOrder as any).aliaddoErrorMessage = aliaddoError.message;
+    }
+    // =========================================================================
 
     revalidatePath('/caja');
     revalidatePath('/dashboard');
@@ -193,11 +286,16 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
     return {
       success: true,
       message: 'Orden facturada correctamente',
+      aliaddoSuccess: updatedOrder.aliaddoInvoiceId ? true : false,
+      aliaddoStatus: (updatedOrder as any).aliaddoInvoiceStatus || null,
+      aliaddoError: (updatedOrder as any).aliaddoErrorMessage || null,
       data: {
         ...updatedOrder,
         totalServices: Number(updatedOrder.totalServices),
         totalProducts: Number(updatedOrder.totalProducts),
         grandTotal: Number(updatedOrder.grandTotal),
+        // Consecutivo de Aliaddo para mostrarlo en el modal (Ej: FEDC2)
+        aliaddoConsecutive: aliaddoConsecutive,
         services: updatedOrder.services.map((s: any) => ({
           ...s,
           chargedPrice: Number(s.chargedPrice),

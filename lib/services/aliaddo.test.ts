@@ -6,6 +6,21 @@ import { AliaddoService } from './aliaddo';
 const originalFetch = global.fetch;
 
 describe('AliaddoService', () => {
+  const dummyPayload = {
+    date: '2026-08-08',
+    dueDate: '2026-08-08',
+    paymentFormCode: 'CR',
+    paymentMeanCode: '10',
+    currencyCode: 'COP',
+    details: [
+      {
+        unitValueBeforeTax: 1000,
+        quantity: 1,
+        description: 'Servicio de prueba'
+      }
+    ]
+  };
+
   it('Debería lanzar error si las credenciales no están configuradas', async () => {
     // Temporalmente borramos las variables de entorno
     const backupUrl = process.env.ALIADDO_API_URL;
@@ -15,11 +30,7 @@ describe('AliaddoService', () => {
     delete process.env.ALIADDO_API_KEY;
 
     try {
-      await AliaddoService.createInvoice({
-        paymentFormCode: 'CR',
-        paymentMeanCode: '10',
-        currencyCode: 'COP'
-      });
+      await AliaddoService.createInvoice(dummyPayload);
       assert.fail('Debería haber lanzado un error');
     } catch (error: any) {
       assert.strictEqual(error.message, 'Las credenciales de Aliaddo no están configuradas');
@@ -53,11 +64,7 @@ describe('AliaddoService', () => {
     };
 
     try {
-      const result = await AliaddoService.createInvoice({
-        paymentFormCode: 'CR',
-        paymentMeanCode: '10',
-        currencyCode: 'COP'
-      });
+      const result = await AliaddoService.createInvoice(dummyPayload);
       assert.deepStrictEqual(result, mockResponse);
     } finally {
       global.fetch = originalFetch;
@@ -77,11 +84,7 @@ describe('AliaddoService', () => {
     };
 
     try {
-      await AliaddoService.createInvoice({
-        paymentFormCode: 'CR',
-        paymentMeanCode: '10',
-        currencyCode: 'COP'
-      });
+      await AliaddoService.createInvoice(dummyPayload);
       assert.fail('Debería haber lanzado un error');
     } catch (error: any) {
       assert.ok(error.message.includes('Error en Aliaddo (409)'));
@@ -91,3 +94,4 @@ describe('AliaddoService', () => {
     }
   });
 });
+

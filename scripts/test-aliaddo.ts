@@ -12,23 +12,20 @@ async function runIntegrationTest() {
 
   // Payload básico según la indicación del usuario
   const payload: AliaddoInvoicePayload = {
+    date: new Date().toISOString().split('T')[0],
+    dueDate: new Date().toISOString().split('T')[0],
     paymentFormCode: 'CR',
     paymentMeanCode: '10',
     currencyCode: 'COP',
-    // Mock de datos requeridos típicamente en facturación electrónica
-    // En caso de que la API requiera más, este test fallará y nos dirá qué falta
-    items: [
+    details: [
       {
-        name: 'Servicio de prueba',
-        price: 1000,
-        quantity: 1
+        unitValueBeforeTax: 1000,
+        quantity: 1,
+        description: 'Servicio de prueba',
+        discountAmount: 0,
+        discountIsPercent: true
       }
-    ],
-    customer: {
-      documentType: '13', // Cédula
-      documentNumber: '123456789',
-      name: 'Cliente Prueba'
-    }
+    ]
   };
 
   try {

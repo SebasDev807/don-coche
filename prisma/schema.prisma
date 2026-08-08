@@ -115,6 +115,7 @@ model Customer {
   phone     String? /// WhatsApp para recordatorios
   email     String?
   createdAt DateTime @default(now()) @map("created_at")
+  aliaddoId String?  @map("aliaddo_id") /// Identificador del cliente en Aliaddo
 
   vehicles     Vehicle[]
   appointments Appointment[]
@@ -237,6 +238,9 @@ model Order {
 
   createdAt DateTime  @default(now()) @map("created_at")
   billedAt  DateTime? @map("billed_at") /// Fundamental para el cuadre de caja exacto
+
+  aliaddoInvoiceId String? @map("aliaddo_invoice_id")
+  cufe             String?
 
   nextMaintenanceDate   DateTime? @map("next_maintenance_date") @db.Date
   nextMaintenanceReason String?   @map("next_maintenance_reason")

@@ -57,18 +57,9 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
           </Link>
         </div>
 
-        <div className="bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col md:flex-row">
-          {/* Left Side: Image Container */}
-          <div className="w-full md:w-2/5 relative min-h-[400px] flex items-center justify-center p-4 bg-white border-b md:border-b-0 md:border-r border-outline-variant">
-            <img
-              src={imageUrl}
-              alt={product.name}
-              className="max-w-full max-h-[500px] object-contain"
-            />
-          </div>
-
-          {/* Right Side: Product Details */}
-          <div className="w-full md:w-3/5 p-8 flex flex-col relative bg-surface">
+        <div className="bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col">
+          {/* Product Details */}
+          <div className="w-full p-8 flex flex-col relative bg-surface">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <span className="inline-block bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-md font-bold mb-3 border border-primary/20 font-mono">

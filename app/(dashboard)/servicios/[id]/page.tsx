@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getServiceById } from '@/actions/car_services';
 import { ACTION_ICONS } from '@/constants/icons';
-import Image from 'next/image';
+
 
 export const metadata: Metadata = {
   title: 'Detalle del Servicio | Don Coche',
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function ServiceDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id } = params;
-  
+
   const response = await getServiceById(id);
 
   if (!response.success || !response.data) {
@@ -21,11 +21,11 @@ export default async function ServiceDetailPage(props: { params: Promise<{ id: s
   }
 
   const service = response.data;
-  
+
   const basePrice = Number(service.basePrice);
   const profitPercentage = service.profitPercentage || 0;
   const sellingPrice = basePrice + (basePrice * profitPercentage) / 100;
-  
+
   const formattedBasePrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(basePrice);
   const formattedSellingPrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(sellingPrice);
 
@@ -46,22 +46,9 @@ export default async function ServiceDetailPage(props: { params: Promise<{ id: s
           </Link>
         </div>
 
-        <div className="bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col md:flex-row">
-          {/* Left Side: Mock Image Container */}
-          <div className="w-full md:w-2/5 bg-surface-container-low flex flex-col items-center justify-center p-8 border-b md:border-b-0 md:border-r border-outline-variant relative min-h-[300px]">
-             {/* Fallback to an unstyled div with a placeholder background if next/image cannot load external without config */}
-             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-tertiary/10 z-0"></div>
-             <div className="z-10 bg-surface rounded-2xl p-6 shadow-md border border-outline-variant/50 flex flex-col items-center justify-center text-center">
-               <span className="material-symbols-outlined text-[64px] text-primary mb-4">
-                 {getIconForCategory(service.category)}
-               </span>
-               <h3 className="font-headline-sm text-on-surface mb-2">Imagen de Referencia</h3>
-               <p className="text-body-sm text-secondary">Mock visual para el servicio</p>
-             </div>
-          </div>
-
-          {/* Right Side: Service Details */}
-          <div className="w-full md:w-3/5 p-8 flex flex-col">
+        <div className="bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col">
+          {/* Service Details */}
+          <div className="w-full p-8 flex flex-col">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <span className="inline-block bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-md font-bold mb-3 border border-primary/20">
@@ -91,7 +78,7 @@ export default async function ServiceDetailPage(props: { params: Promise<{ id: s
                 </span>
                 <span className="font-title-md text-on-surface">{formattedBasePrice}</span>
               </div>
-              
+
               <div className="flex flex-col">
                 <span className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1 flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">trending_up</span>

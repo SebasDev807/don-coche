@@ -257,7 +257,7 @@ export async function sendAppointmentCreatedNotification(
 ): Promise<WhatsAppSendResult> {
   const template: WhatsAppTemplate = {
     name: 'cita_creada_exito',
-    language: { code: 'es' },
+    language: { code: 'es_CO' },
     components: [
       {
         type: 'body',

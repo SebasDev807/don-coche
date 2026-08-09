@@ -3,7 +3,7 @@
  *
  * Visible solo en pantallas `lg:` y superiores. Muestra el logo,
  * menú de navegación con ítems resaltados según la ruta activa,
- * botón de "Nueva Orden", y accesos a Soporte y Cerrar Sesión.
+ * y accesos a Soporte y Cerrar Sesión.
  *
  * Reutilizable para todas las pantallas del área de gestión
  * (GERENTE / ADMINISTRADOR).
@@ -163,10 +163,7 @@ export function Sidebar({ logoutAction }: SidebarProps) {
 
         {/* Footer: acciones secundarias */}
         <div className="mt-auto px-6 border-t border-surface-variant pt-6 flex flex-col gap-4">
-          <button className="w-full bg-primary-container text-black font-cta text-cta py-3 rounded-md tracking-wide hover:bg-primary-fixed-dim transition-colors active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
-            <span className="material-symbols-outlined font-bold text-sm">add</span>
-            Nueva Orden
-          </button>
+
 
           <a
             href="#"

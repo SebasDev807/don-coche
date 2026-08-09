@@ -29,31 +29,30 @@ export async function getDashboardKPIs() {
       include: {
         products: {
           include: { product: true }
+        },
+        services: {
+          include: { service: true }
         }
       }
     });
 
     const totalSales = todaysOrders.reduce((sum, order) => sum + Number(order.grandTotal), 0);
 
-    // Rentabilidad Promedio de los productos vendidos hoy
-    // Formula: ((salePrice - unitCost) / salePrice)
-    let totalProfitMargin = 0;
-    let productCount = 0;
+    // Rentabilidad Promedio Global (Margen Bruto)
+    // Formula: ((Total Ventas - Costos Totales) / Total Ventas) * 100
+    let totalCost = 0;
 
     for (const order of todaysOrders) {
       for (const orderProduct of order.products) {
-        const salePrice = Number(orderProduct.unitPrice);
-        const unitCost = Number(orderProduct.unitCost);
-        if (salePrice > 0) {
-          const margin = (salePrice - unitCost) / salePrice;
-          // Ponderar por cantidad
-          totalProfitMargin += margin * orderProduct.quantity;
-          productCount += orderProduct.quantity;
-        }
+        totalCost += Number(orderProduct.unitCost) * orderProduct.quantity;
+      }
+      for (const orderService of order.services) {
+        totalCost += Number(orderService.service.basePrice);
       }
     }
 
-    const averageMargin = productCount > 0 ? (totalProfitMargin / productCount) * 100 : 0;
+    const totalProfit = totalSales - totalCost;
+    const averageMargin = totalSales > 0 ? (totalProfit / totalSales) * 100 : 0;
 
     // Valor Inventario Global (sólo para GERENTE o SUPERUSUARIO)
     let inventoryValueFormatted = 'Acceso Restringido';

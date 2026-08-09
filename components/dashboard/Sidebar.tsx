@@ -1,3 +1,4 @@
+'use client';
 /**
  * @fileoverview Sidebar de navegación lateral para el dashboard.
  *
@@ -9,7 +10,6 @@
  * (GERENTE / ADMINISTRADOR).
  */
 
-'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -165,15 +165,15 @@ export function Sidebar({ logoutAction }: SidebarProps) {
         <div className="mt-auto px-6 border-t border-surface-variant pt-6 flex flex-col gap-4">
 
 
-          <a
-            href="#"
+          <Link
+            href="/soporte"
             className="flex items-center gap-4 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer group"
           >
             <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform">
               support_agent
             </span>
             <span className="font-body-md text-sm">Soporte</span>
-          </a>
+          </Link>
 
           <form action={logoutAction}>
             <button

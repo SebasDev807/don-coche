@@ -18,7 +18,7 @@ import { decrypt, updateSession } from '@/lib/session';
 // ─── Configuración de Rutas ────────────────────────────────────────────────────
 
 /** Rutas públicas que no requieren autenticación. */
-const PUBLIC_ROUTES = ['/auth', '/agendar'];
+const PUBLIC_ROUTES = ['/auth', '/agendar', '/privacidad', '/terminos-de-uso', '/soporte'];
 
 /** Roles que acceden al dashboard de gestión. */
 const DASHBOARD_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];

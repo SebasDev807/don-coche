@@ -242,9 +242,9 @@ export function LoginClient() {
           <span className="text-body-md text-on-secondary-container">© 2026 Don Coche. Lavado y servicio de autos</span>
         </div>
         <div className="flex gap-6">
-          <a href="#" className="text-body-md text-on-secondary-container hover:text-on-surface cursor-pointer">Privacidad</a>
-          <a href="#" className="text-body-md text-on-secondary-container hover:text-on-surface cursor-pointer">Términos de Servicio</a>
-          <a href="#" className="text-body-md text-on-secondary-container hover:text-on-surface cursor-pointer">Soporte Técnico</a>
+          <a href="/privacidad" className="text-body-md text-on-secondary-container hover:text-on-surface cursor-pointer">Privacidad</a>
+          <a href="/terminos-de-uso" className="text-body-md text-on-secondary-container hover:text-on-surface cursor-pointer">Términos de Servicio</a>
+          <a href="/soporte" className="text-body-md text-on-secondary-container hover:text-on-surface cursor-pointer">Soporte Técnico</a>
         </div>
       </footer>
     </div>

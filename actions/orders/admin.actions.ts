@@ -5,7 +5,7 @@ import { verifyRole } from '@/lib/dal';
 import { revalidatePath } from 'next/cache';
 import { PaymentMethod } from '@prisma/client';
 import { after } from 'next/server';
-import { sendReceiptNotification, sendNextAppointmentNotification, type OrderReceiptData } from '@/lib/whatsapp';
+import { sendReceiptNotification, sendNextAppointmentNotification, sendServiceReminderNotification, type OrderReceiptData } from '@/lib/whatsapp';
 
 
 import { AliaddoService, AliaddoInvoicePayload } from '@/lib/services/aliaddo';
@@ -274,9 +274,9 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
           else if (diffDays <= 186) timeText = '6 meses';
           else timeText = 'unos meses';
 
-          // Quitamos el "en" para que quede "2 meses". El mensaje temporal dirá "es el 2 meses" pero evitará error de API.
-          // Cuando actualices el template en Meta podrás reajustar este parámetro.
-          await sendNextAppointmentNotification(receiptData.phone, timeText);
+          // Usamos el template de "recordatorio_proximo_servicio" recién arreglado
+          const serviceReason = updatedOrder.nextMaintenanceReason || 'revisión general';
+          await sendServiceReminderNotification(receiptData.phone, serviceReason, timeText);
         }
       } catch (err) {
         console.error('[billOrder] Error al enviar notificaciones WhatsApp:', err);

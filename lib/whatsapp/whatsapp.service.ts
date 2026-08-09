@@ -68,6 +68,8 @@ export async function sendWhatsAppTemplate(
   };
 
   try {
+    console.log('[WhatsApp Service] Payload a enviar:', JSON.stringify(payload, null, 2));
+
     const response = await fetch(getMessagesEndpoint(), {
       method: 'POST',
       headers: {
@@ -131,10 +133,6 @@ export async function sendServiceReminderNotification(
   serviceName: string,
   timeframe: string
 ): Promise<void> {
-  if (!env.WHATSAPP_ENABLED) {
-    console.log('[WhatsApp Service] [Simulado] Recordatorio enviado a', to);
-    return;
-  }
 
   const template: WhatsAppTemplate = {
     name: 'recordatorio_proximo_servicio',

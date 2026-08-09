@@ -26,7 +26,7 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
         </h2>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="btn-primary text-sm py-2 flex items-center gap-2 shadow-sm"
+          className="btn-primary text-sm px-6 py-3 rounded-full flex items-center gap-2 shadow-sm hover:shadow-md !bg-yellow-500 hover:!bg-yellow-600 !text-yellow-950 border-none cursor-pointer fade-in font-bold transition-all"
         >
           <span className="material-symbols-outlined text-sm">lock_person</span>
           Cerrar Caja

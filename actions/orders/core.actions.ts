@@ -123,7 +123,10 @@ export async function createOrder(data: CreateOrderInput) {
 
       let totalServices = 0;
       const orderServicesData = catalogServices.map((s) => {
-        const price = Number(s.basePrice);
+        const base = Number(s.basePrice);
+        const profit = s.profitPercentage ? Number(s.profitPercentage) : 0;
+        const price = base + (base * profit / 100);
+        
         totalServices += price;
         return {
           serviceId: s.id,

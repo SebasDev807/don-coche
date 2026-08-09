@@ -89,7 +89,7 @@ export function CashClosureModal({ isOpen, onClose }: CashClosureModalProps) {
         <div className="p-6 border-b border-surface-variant flex justify-between items-center bg-surface-container">
           <h2 className="font-headline-sm text-on-surface">Cierre de Caja del Día</h2>
           {!closureId && (
-            <button onClick={onClose} className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors">
+            <button onClick={onClose} className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors cursor-pointer fade-in">
               <span className="material-symbols-outlined">close</span>
             </button>
           )}
@@ -117,14 +117,14 @@ export function CashClosureModal({ isOpen, onClose }: CashClosureModalProps) {
                 <ExportExcelButton 
                   endpoint={`/api/v1/export/caja?closureId=${closureId}`}
                   label="Descargar Reporte (Excel)"
-                  className="w-full"
+                  className="w-full cursor-pointer fade-in"
                 />
                 <button 
                   onClick={() => {
                     onClose();
                     router.refresh();
                   }}
-                  className="btn-outline w-full"
+                  className="btn-outline w-full cursor-pointer fade-in"
                 >
                   Volver al Dashboard
                 </button>
@@ -212,14 +212,14 @@ export function CashClosureModal({ isOpen, onClose }: CashClosureModalProps) {
             <button
               onClick={onClose}
               disabled={closing}
-              className="btn-outline"
+              className="btn-outline cursor-pointer fade-in"
             >
               Cancelar
             </button>
             <button
               onClick={handleCloseRegister}
               disabled={closing || reportedCash === ''}
-              className="btn-primary"
+              className="btn-primary !bg-yellow-500 hover:!bg-yellow-600 !text-yellow-950 border-none cursor-pointer fade-in font-bold px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all"
             >
               {closing ? 'Cerrando...' : 'Confirmar Cierre'}
             </button>

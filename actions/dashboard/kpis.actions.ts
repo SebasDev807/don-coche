@@ -38,6 +38,36 @@ export async function getDashboardKPIs() {
 
     const totalSales = todaysOrders.reduce((sum, order) => sum + Number(order.grandTotal), 0);
 
+    // Calcular ventas de ayer para el porcentaje
+    const startOfYesterday = new Date(startOfDay);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+    const endOfYesterday = new Date(endOfDay);
+    endOfYesterday.setDate(endOfYesterday.getDate() - 1);
+
+    const yesterdaysOrders = await prisma.order.findMany({
+      where: {
+        status: 'FACTURADA',
+        billedAt: {
+          gte: startOfYesterday,
+          lte: endOfYesterday,
+        },
+      },
+      select: { grandTotal: true }
+    });
+
+    const yesterdaySales = yesterdaysOrders.reduce((sum, order) => sum + Number(order.grandTotal), 0);
+    
+    let percentageChange = 0;
+    if (yesterdaySales > 0) {
+      percentageChange = ((totalSales - yesterdaySales) / yesterdaySales) * 100;
+    } else if (totalSales > 0) {
+      percentageChange = 100;
+    }
+
+    const percentageString = percentageChange > 0 
+      ? `+${percentageChange.toFixed(1)}%` 
+      : `${percentageChange.toFixed(1)}%`;
+
     // Rentabilidad Promedio Global (Margen Bruto)
     // Formula: ((Total Ventas - Costos Totales) / Total Ventas) * 100
     let totalCost = 0;
@@ -72,7 +102,7 @@ export async function getDashboardKPIs() {
       data: {
         ventasTotales: {
           valor: formatCurrency(totalSales),
-          porcentaje: '+0.0%', // Placeholder, requiere comparar con ayer
+          porcentaje: percentageString,
           progreso: Math.min(100, (totalSales / 2000000) * 100), // Meta simulada de 2M
         },
         rentabilidad: {

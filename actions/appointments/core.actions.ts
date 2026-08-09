@@ -323,44 +323,78 @@ export async function createAppointment(data: AppointmentFormValues) {
       finalVehicleId = newVehicle.id;
     }
 
-    // 6. Crear la cita
-    await prisma.appointment.create({
-      data: {
-        customerId: finalCustomerId,
-        vehicleId: finalVehicleId,
-        createdById: session.userId,
-        scheduledAt: scheduledDate,
-        description: description || null,
-        notes: notes || null,
-      },
+    // 6. Crear o modificar la cita
+    const existingAppointment = await prisma.appointment.findFirst({
+      where: { customerId: finalCustomerId, status: 'PENDIENTE' }
     });
 
-    // 7. Enviar notificación por WhatsApp
+    let isReschedule = false;
+
+    if (existingAppointment) {
+      await prisma.appointment.update({
+        where: { id: existingAppointment.id },
+        data: {
+          vehicleId: finalVehicleId,
+          scheduledAt: scheduledDate,
+          description: description || null,
+          notes: notes || null,
+        },
+      });
+      isReschedule = true;
+    } else {
+      await prisma.appointment.create({
+        data: {
+          customerId: finalCustomerId,
+          vehicleId: finalVehicleId,
+          createdById: session.userId,
+          scheduledAt: scheduledDate,
+          description: description || null,
+          notes: notes || null,
+        },
+      });
+    }
+
+    // 7. Enviar notificación por WhatsApp y Campana
     try {
       const finalCustomer = await prisma.customer.findUnique({ where: { id: finalCustomerId } });
-      if (finalCustomer && finalCustomer.phone && finalCustomer.name) {
+      if (finalCustomer) {
         const day = scheduledDate.getDate();
         const month = scheduledDate.toLocaleString('es-CO', { month: 'long', timeZone: 'America/Bogota' });
         const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
         const year = scheduledDate.getFullYear();
-        const formattedDate = `${day} de ${capitalizedMonth} de ${year}`;
+        const time = scheduledDate.toLocaleString('es-CO', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Bogota' });
+        const formattedDate = `${day} de ${capitalizedMonth} de ${year} a las ${time}`;
         
-        // Usamos el primer nombre para hacerlo más amigable ("Hola, Juan")
-        const firstName = finalCustomer.name.split(' ')[0];
-        
-        // No esperamos (await) para no bloquear la respuesta al cliente
-        sendAppointmentCreatedNotification(
-          finalCustomer.phone,
-          firstName,
-          formattedDate
-        ).catch(err => console.error('[WhatsApp] Error enviando notificación de cita:', err));
+        if (isReschedule) {
+          const customerName = finalCustomer.name || 'Un cliente';
+          await prisma.appNotification.create({
+            data: {
+              type: 'appointment_rescheduled',
+              title: 'Cita Reagendada',
+              message: `${customerName} ha reagendado su cita para el ${formattedDate}.`,
+              link: '/citas'
+            }
+          });
+        }
+
+        if (finalCustomer.phone && finalCustomer.name) {
+          // Usamos el primer nombre para hacerlo más amigable ("Hola, Juan")
+          const firstName = finalCustomer.name.split(' ')[0];
+          
+          // No esperamos (await) para no bloquear la respuesta al cliente
+          sendAppointmentCreatedNotification(
+            finalCustomer.phone,
+            firstName,
+            formattedDate
+          ).catch(err => console.error('[WhatsApp] Error enviando notificación de cita:', err));
+        }
       }
     } catch (waError) {
-      console.error('[WhatsApp] Error al intentar enviar WhatsApp de cita creada:', waError);
+      console.error('[WhatsApp] Error al intentar enviar WhatsApp/Campana de cita creada:', waError);
     }
 
     revalidatePath('/citas');
-    return { success: true, message: 'Cita agendada exitosamente.' };
+    return { success: true, message: isReschedule ? 'Cita reagendada exitosamente.' : 'Cita agendada exitosamente.' };
   } catch (error: any) {
     console.error('Error creating appointment:', error);
     return { success: false, message: 'Ocurrió un error al agendar la cita.' };

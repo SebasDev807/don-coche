@@ -33,6 +33,8 @@ export async function bookAppointment(data: PublicAppointmentSchemaType) {
     // Add timezone offset so it matches local time. (Assume UTC-5 for Colombia)
     scheduledAt.setHours(scheduledAt.getHours() + 5);
 
+    let isReschedule = false;
+
     await prisma.$transaction(async (tx) => {
       // 1. Manage Customer
       let customer = await tx.customer.findUnique({
@@ -85,26 +87,54 @@ export async function bookAppointment(data: PublicAppointmentSchemaType) {
         }
       }
 
-      // 3. Create Appointment
-      await tx.appointment.create({
-        data: {
-          customerId: customer.id,
-          vehicleId: vehicle.id,
-          scheduledAt,
-          description,
-        }
+      // 3. Create or Update Appointment
+      const existingAppointment = await tx.appointment.findFirst({
+        where: { customerId: customer.id, status: 'PENDIENTE' }
       });
+
+      if (existingAppointment) {
+        await tx.appointment.update({
+          where: { id: existingAppointment.id },
+          data: {
+            vehicleId: vehicle.id,
+            scheduledAt,
+            description,
+          }
+        });
+        isReschedule = true;
+      } else {
+        await tx.appointment.create({
+          data: {
+            customerId: customer.id,
+            vehicleId: vehicle.id,
+            scheduledAt,
+            description,
+          }
+        });
+      }
     });
 
-    // 4. Enviar notificación por WhatsApp
+    // 4. Enviar notificación por WhatsApp y Campana
     if (customerPhone && customerName) {
       try {
         const day = scheduledAt.getDate();
         const month = scheduledAt.toLocaleString('es-CO', { month: 'long', timeZone: 'America/Bogota' });
         const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
         const year = scheduledAt.getFullYear();
-        const formattedDate = `${day} de ${capitalizedMonth} de ${year}`;
+        const time = scheduledAt.toLocaleString('es-CO', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Bogota' });
+        const formattedDate = `${day} de ${capitalizedMonth} de ${year} a las ${time}`;
         
+        if (isReschedule) {
+          await prisma.appNotification.create({
+            data: {
+              type: 'appointment_rescheduled',
+              title: 'Cita Reagendada (Web)',
+              message: `${customerName} ha reagendado su cita para el ${formattedDate}.`,
+              link: '/citas'
+            }
+          });
+        }
+
         // Usamos el primer nombre
         const firstName = customerName.split(' ')[0];
         
@@ -114,12 +144,12 @@ export async function bookAppointment(data: PublicAppointmentSchemaType) {
           formattedDate
         ).catch(err => console.error('[WhatsApp] Error enviando notificación de cita (pública):', err));
       } catch (waError) {
-        console.error('[WhatsApp] Error al intentar enviar WhatsApp de cita creada (pública):', waError);
+        console.error('[WhatsApp] Error al intentar enviar WhatsApp/Campana de cita creada (pública):', waError);
       }
     }
 
     revalidatePath('/citas');
-    return { success: true, message: '¡Cita reservada con éxito!' };
+    return { success: true, message: isReschedule ? '¡Cita reagendada con éxito!' : '¡Cita reservada con éxito!' };
   } catch (error: any) {
     console.error('[bookAppointment] Error:', error);
     return { success: false, message: error.message || 'Error al agendar la cita' };

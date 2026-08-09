@@ -330,3 +330,21 @@ model Appointment {
   @@index([status])
   @@map("appointments")
 }
+
+// -----------------------------------------------------------------------
+// MODELO DE NOTIFICACIONES DEL SISTEMA (CAMPANA)
+// -----------------------------------------------------------------------
+
+model AppNotification {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type      String   // ej: 'stock_low', 'appointment_rescheduled'
+  title     String
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  link      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("app_notifications")
+}

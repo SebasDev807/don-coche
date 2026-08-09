@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   getNotificationsAction,
+  markNotificationAsReadAction,
   type AppNotification,
 } from '@/actions/dashboard/notifications.actions';
 
@@ -58,6 +59,26 @@ export function NotificationsMenu() {
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
+  const handleNotificationClick = async (notification: AppNotification) => {
+    setIsOpen(false);
+    
+    if (!notification.isRead) {
+      // Actualizar estado local inmediatamente
+      setNotifications(prev => prev.map(n => 
+        n.id === notification.id ? { ...n, isRead: true } : n
+      ));
+      
+      // Llamar al server action en background
+      markNotificationAsReadAction(notification.id).catch(err => {
+        console.error('Error marking as read:', err);
+      });
+    }
+
+    if (notification.link) {
+      router.push(notification.link);
+    }
+  };
+
   return (
     <div
       className="relative"
@@ -104,21 +125,18 @@ export function NotificationsMenu() {
                 <div
                   key={notification.id}
                   className="flex gap-4 p-4 border-b border-surface-variant last:border-0 hover:bg-surface-variant/50 transition-colors cursor-pointer group"
-                  onClick={() => {
-                    setIsOpen(false);
-                    if (notification.link) {
-                      router.push(notification.link);
-                    }
-                  }}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                   <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
                     notification.type === 'stock_out' ? 'bg-error-container text-on-error-container' : 
                     notification.type === 'stock_low' ? 'bg-yellow-100 text-yellow-800' : 
+                    notification.type === 'appointment_rescheduled' ? 'bg-secondary-container text-on-secondary-container' :
                     'bg-primary-container text-on-primary-container'
                   }`}>
                     <span className="material-symbols-outlined text-xl">
                       {notification.type === 'stock_out' ? 'block' : 
                        notification.type === 'stock_low' ? 'warning' : 
+                       notification.type === 'appointment_rescheduled' ? 'edit_calendar' :
                        'notifications'}
                     </span>
                   </div>

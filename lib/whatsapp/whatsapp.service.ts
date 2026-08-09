@@ -113,6 +113,54 @@ export async function sendWhatsAppTemplate(
 }
 
 // ─────────────────────────────────────────────
+// RECORDATORIO DE PRÓXIMO MANTENIMIENTO
+// ─────────────────────────────────────────────
+
+/**
+ * Envía un recordatorio al cliente de que se acerca su próximo servicio.
+ * Usa la plantilla: recordatorio_proximo_servicio
+ * Variables de la plantilla:
+ * {{1}} = Tipo de servicio (ej: "cambio de aceite")
+ * {{2}} = Tiempo faltante (ej: "1 semana")
+ * 
+ * NOTA: Esta función no valida si el cliente tiene citas pendientes,
+ * esa lógica de filtrado debe hacerla la capa que invoca esta función (el Cron Job).
+ */
+export async function sendServiceReminderNotification(
+  to: string,
+  serviceName: string,
+  timeframe: string
+): Promise<void> {
+  if (!env.WHATSAPP_ENABLED) {
+    console.log('[WhatsApp Service] [Simulado] Recordatorio enviado a', to);
+    return;
+  }
+
+  const template: WhatsAppTemplate = {
+    name: 'recordatorio_proximo_servicio',
+    language: { code: 'es_CO' },
+    components: [
+      {
+        type: 'body',
+        parameters: [
+          { type: 'text', text: serviceName },
+          { type: 'text', text: timeframe },
+        ],
+      },
+    ],
+  };
+
+  try {
+    const result = await sendWhatsAppTemplate(to, template);
+    if (!result.success) {
+      console.error(`[WhatsApp Service] Falló envío de recordatorio: ${result.error}`);
+    }
+  } catch (error) {
+    console.error('[WhatsApp Service] Excepción al enviar recordatorio:', error);
+  }
+}
+
+// ─────────────────────────────────────────────
 // NOTIFICACIONES DE ALTO NIVEL
 // ─────────────────────────────────────────────
 

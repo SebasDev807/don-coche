@@ -4,11 +4,11 @@ export const metadata = {
   title: 'Política de Privacidad | Don Coche',
 };
 
-const secciones = [
+const sections = [
   {
     icon: 'badge',
-    titulo: '1. Información que Recopilamos',
-    contenido: (
+    title: '1. Información que Recopilamos',
+    content: (
       <>
         <p className="text-on-surface-variant leading-relaxed">
           En Don Coche recopilamos información personal necesaria para la prestación de nuestros
@@ -26,8 +26,8 @@ const secciones = [
   },
   {
     icon: 'settings',
-    titulo: '2. Uso de la Información',
-    contenido: (
+    title: '2. Uso de la Información',
+    content: (
       <p className="text-on-surface-variant leading-relaxed">
         La información recopilada se utiliza exclusivamente para gestionar sus órdenes de
         servicio, enviarle notificaciones importantes (como recibos, confirmaciones de citas o
@@ -38,8 +38,8 @@ const secciones = [
   },
   {
     icon: 'gavel',
-    titulo: '3. Base Legal del Tratamiento',
-    contenido: (
+    title: '3. Base Legal del Tratamiento',
+    content: (
       <p className="text-on-surface-variant leading-relaxed">
         Tratamos sus datos personales con fundamento en su consentimiento previo, expreso e
         informado, en la ejecución del contrato de prestación de servicios que usted acepta al
@@ -50,8 +50,8 @@ const secciones = [
   },
   {
     icon: 'share',
-    titulo: '4. Compartición con Terceros',
-    contenido: (
+    title: '4. Compartición con Terceros',
+    content: (
       <p className="text-on-surface-variant leading-relaxed">
         Sus datos no serán vendidos, alquilados ni compartidos con terceros con fines comerciales
         distintos a los aquí descritos. Podemos compartir información limitada con proveedores que
@@ -63,8 +63,8 @@ const secciones = [
   },
   {
     icon: 'schedule',
-    titulo: '5. Conservación de los Datos',
-    contenido: (
+    title: '5. Conservación de los Datos',
+    content: (
       <p className="text-on-surface-variant leading-relaxed">
         Conservamos su información personal durante el tiempo necesario para cumplir con las
         finalidades descritas en esta política y con las obligaciones legales, contables o
@@ -75,8 +75,8 @@ const secciones = [
   },
   {
     icon: 'lock',
-    titulo: '6. Protección de Datos',
-    contenido: (
+    title: '6. Protección de Datos',
+    content: (
       <p className="text-on-surface-variant leading-relaxed">
         Implementamos medidas de seguridad técnicas, administrativas y organizativas para proteger
         su información personal contra accesos no autorizados, pérdida, alteración o divulgación
@@ -87,8 +87,8 @@ const secciones = [
   },
   {
     icon: 'cookie',
-    titulo: '7. Cookies y Tecnologías Similares',
-    contenido: (
+    title: '7. Cookies y Tecnologías Similares',
+    content: (
       <p className="text-on-surface-variant leading-relaxed">
         Nuestra plataforma puede utilizar cookies u otras tecnologías similares para recordar sus
         preferencias, mantener su sesión activa y analizar el uso del sitio con el fin de mejorar
@@ -99,8 +99,8 @@ const secciones = [
   },
   {
     icon: 'child_care',
-    titulo: '8. Menores de Edad',
-    contenido: (
+    title: '8. Menores de Edad',
+    content: (
       <p className="text-on-surface-variant leading-relaxed">
         Nuestros servicios están dirigidos a personas mayores de edad. No recopilamos
         intencionalmente información personal de menores de edad. Si tiene conocimiento de que un
@@ -111,8 +111,8 @@ const secciones = [
   },
   {
     icon: 'fact_check',
-    titulo: '9. Sus Derechos (Habeas Data)',
-    contenido: (
+    title: '9. Sus Derechos (Habeas Data)',
+    content: (
       <>
         <p className="text-on-surface-variant leading-relaxed">
           Como titular de sus datos personales, usted tiene derecho a:
@@ -130,8 +130,8 @@ const secciones = [
   },
   {
     icon: 'update',
-    titulo: '10. Cambios a esta Política',
-    contenido: (
+    title: '10. Cambios a esta Política',
+    content: (
       <p className="text-on-surface-variant leading-relaxed">
         Podemos actualizar esta Política de Privacidad periódicamente para reflejar cambios en
         nuestras prácticas o por motivos legales, operativos o regulatorios. Le notificaremos
@@ -142,8 +142,8 @@ const secciones = [
   },
   {
     icon: 'support_agent',
-    titulo: '11. Contacto',
-    contenido: (
+    title: '11. Contacto',
+    content: (
       <p className="text-on-surface-variant leading-relaxed">
         Si desea ejercer sus derechos o tiene alguna pregunta sobre esta política, puede
         comunicarse con nuestro equipo de soporte a través de{' '}
@@ -163,7 +163,7 @@ const secciones = [
   },
 ];
 
-export default function PrivacidadPage() {
+export default function PrivacyPolicyPage() {
   return (
     <div className="antialiased min-h-screen bg-background text-on-background flex flex-col fade-in">
       <header className="w-full flex justify-between items-center p-4 border-b border-outline-variant/30 bg-surface">
@@ -200,17 +200,17 @@ export default function PrivacidadPage() {
         </p>
 
         <div className="space-y-stack-lg text-body-md text-on-surface">
-          {secciones.map((s) => (
-            <section key={s.titulo} className="scroll-mt-24">
+          {sections.map((section) => (
+            <section key={section.title} className="scroll-mt-24">
               <div className="flex items-center gap-3 mb-stack-xs">
                 <span className="w-8 h-8 rounded-full bg-primary-fixed-dim/10 flex items-center justify-center shrink-0">
                   <span className="material-symbols-outlined text-primary-fixed-dim text-base">
-                    {s.icon}
+                    {section.icon}
                   </span>
                 </span>
-                <h2 className="font-headline-sm text-on-surface">{s.titulo}</h2>
+                <h2 className="font-headline-sm text-on-surface">{section.title}</h2>
               </div>
-              <div className="ml-11">{s.contenido}</div>
+              <div className="ml-11">{section.content}</div>
             </section>
           ))}
         </div>

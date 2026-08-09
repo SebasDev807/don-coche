@@ -4,7 +4,7 @@ export const metadata = {
   title: 'Soporte Técnico | Don Coche',
 };
 
-export default function SoportePage() {
+export default function SupportPage() {
   return (
     <div className="antialiased min-h-screen bg-background text-on-background flex flex-col fade-in">
       <header className="w-full flex justify-between items-center p-4 border-b border-outline-variant/30 bg-surface">

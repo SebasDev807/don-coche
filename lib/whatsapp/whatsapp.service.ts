@@ -141,8 +141,8 @@ export async function sendServiceReminderNotification(
       {
         type: 'body',
         parameters: [
-          { type: 'text', text: serviceName },
-          { type: 'text', text: timeframe },
+          { type: 'text', text: serviceName.trim() },
+          { type: 'text', text: timeframe.trim() },
         ],
       },
     ],

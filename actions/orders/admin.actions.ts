@@ -255,10 +255,11 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
       try {
         await sendReceiptNotification(receiptData);
 
-        // Esperar 8 segundos para asegurar que WhatsApp entregue primero la factura (PDF es mucho más pesado y la API de Meta lo procesa lento)
-        await new Promise(resolve => setTimeout(resolve, 8000));
+        // Esperar 10 segundos para asegurar que WhatsApp entregue primero la factura y evitar filtros anti-spam de Meta
+        await new Promise(resolve => setTimeout(resolve, 10000));
 
         if (updatedOrder.nextMaintenanceDate && receiptData.phone) {
+          console.log('[billOrder] La orden tiene fecha de próximo mantenimiento. Intentando enviar recordatorio...');
           const targetDate = new Date(updatedOrder.nextMaintenanceDate);
           const now = new Date();
           const diffTime = targetDate.getTime() - now.getTime();
@@ -276,7 +277,10 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
 
           // Usamos el template de "recordatorio_proximo_servicio" recién arreglado
           const serviceReason = updatedOrder.nextMaintenanceReason || 'revisión general';
+          console.log(`[billOrder] Enviando recordatorio a ${receiptData.phone} por ${serviceReason} en ${timeText}`);
           await sendServiceReminderNotification(receiptData.phone, serviceReason, timeText);
+        } else {
+          console.log('[billOrder] No se envió recordatorio: falta nextMaintenanceDate o teléfono del cliente.');
         }
       } catch (err) {
         console.error('[billOrder] Error al enviar notificaciones WhatsApp:', err);

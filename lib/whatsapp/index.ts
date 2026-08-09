@@ -20,5 +20,6 @@ export {
   sendMaintenanceReminder,
   sendNextAppointmentNotification,
   sendServiceReminderNotification,
+  sendExpiredAppointmentNotification,
 } from './whatsapp.service';
 

@@ -159,6 +159,52 @@ export async function sendServiceReminderNotification(
 }
 
 // ─────────────────────────────────────────────
+// CITA VENCIDA / PERDIDA
+// ─────────────────────────────────────────────
+
+/**
+ * Envía una notificación al cliente cuando su cita ha caducado por inasistencia.
+ * Usa la plantilla: cita_vencida
+ * Variables de la plantilla:
+ * {{1}} = Nombre del cliente
+ * {{2}} = Fecha de la cita (ej: "2 de Agosto")
+ * {{3}} = Hora de la cita (ej: "2:00 PM")
+ */
+export async function sendExpiredAppointmentNotification(
+  to: string,
+  customerName: string,
+  dateStr: string,
+  timeStr: string,
+  appointmentId?: string
+): Promise<void> {
+
+  const template: WhatsAppTemplate = {
+    name: 'cita_vencida',
+    language: { code: 'es_CO' },
+    components: [
+      {
+        type: 'body',
+        parameters: [
+          { type: 'text', text: customerName.trim() },
+          { type: 'text', text: dateStr.trim() },
+          { type: 'text', text: timeStr.trim() },
+        ],
+      },
+    ],
+  };
+
+  try {
+    const result = await sendWhatsAppTemplate(to, template, appointmentId);
+    if (!result.success) {
+      console.error(`[WhatsApp Service] Falló envío de cita_vencida: ${result.error}`);
+    }
+  } catch (error) {
+    console.error('[WhatsApp Service] Excepción al enviar cita_vencida:', error);
+  }
+}
+
+
+// ─────────────────────────────────────────────
 // NOTIFICACIONES DE ALTO NIVEL
 // ─────────────────────────────────────────────
 

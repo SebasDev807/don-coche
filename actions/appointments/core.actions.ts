@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { appointmentSchema, type AppointmentFormValues } from '@/validation';
 import { BUSINESS_HOURS } from '@/constants/business';
 import type { AppointmentStatus } from '@prisma/client';
-import { sendAppointmentCreatedNotification } from '@/lib/whatsapp/whatsapp.service';
+import { sendAppointmentCreatedNotification, sendCancelledAppointmentNotification } from '@/lib/whatsapp';
 
 // -----------------------------------------------------------------------
 // TIPOS Y DTOs
@@ -365,7 +365,7 @@ export async function createAppointment(data: AppointmentFormValues) {
             finalCustomer.phone,
             firstName,
             formattedDate
-          ).catch(err => console.error('[WhatsApp] Error enviando notificación de cita:', err));
+          ).catch((err: any) => console.error('[WhatsApp] Error enviando notificación de cita:', err));
         }
       }
     } catch (waError) {
@@ -427,10 +427,28 @@ export async function getBookedSlots(dateStr: string): Promise<{
 export async function updateAppointmentStatus(id: string, status: AppointmentStatus) {
   try {
     await verifySession();
-    await prisma.appointment.update({
+    const apt = await prisma.appointment.update({
       where: { id },
       data: { status },
+      include: { customer: true }
     });
+
+    // Enviar WhatsApp si fue cancelada
+    if (status === 'CANCELADA' && apt.customer.phone) {
+      const scheduledDate = new Date(apt.scheduledAt);
+      const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+      const dateStr = `${scheduledDate.getDate()} de ${meses[scheduledDate.getMonth()]}`;
+      const customerName = apt.customer.name ? apt.customer.name.split(' ')[0] : 'Cliente';
+
+      // Disparamos la notificación de forma asíncrona sin bloquear
+      sendCancelledAppointmentNotification(
+        apt.customer.phone,
+        customerName,
+        dateStr,
+        apt.id
+      ).catch((err: any) => console.error('[WhatsApp Service] Error al enviar cita cancelada:', err));
+    }
+
     revalidatePath('/citas');
     return { success: true };
   } catch (error) {

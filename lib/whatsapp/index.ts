@@ -21,5 +21,7 @@ export {
   sendNextAppointmentNotification,
   sendServiceReminderNotification,
   sendExpiredAppointmentNotification,
+  sendCancelledAppointmentNotification,
+  sendAppointmentCreatedNotification,
 } from './whatsapp.service';
 

@@ -54,6 +54,8 @@ export async function GET() {
         ? appointment.customer.name.split(' ')[0] 
         : 'Cliente';
 
+      const dateTimeStr = `${dateStr} a las ${timeStr}`;
+
       // 1. Actualizar estado a PERDIDA
       await prisma.appointment.update({
         where: { id: appointment.id },
@@ -65,9 +67,7 @@ export async function GET() {
         await sendExpiredAppointmentNotification(
           appointment.customer.phone,
           customerName,
-          dateStr,
-          timeStr,
-          appointment.id
+          dateTimeStr
         );
         sentCount++;
         console.log(`[Cron Expired] Cita ${appointment.id} de ${customerName} marcada como PERDIDA. WhatsApp enviado.`);

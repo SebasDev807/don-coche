@@ -83,7 +83,6 @@ export function NotificationsMenu() {
     <div
       className="relative"
       ref={dropdownRef}
-      onMouseEnter={() => setIsOpen(true)}
     >
       <button
         onClick={() => setIsOpen(!isOpen)}

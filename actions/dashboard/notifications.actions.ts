@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { verifyRole } from '@/lib/dal';
 
-export type AppNotificationType = 'stock_low' | 'stock_out' | 'user' | 'car' | 'system' | 'appointment_rescheduled';
+export type AppNotificationType = 'stock_low' | 'stock_out' | 'user' | 'car' | 'system' | 'appointment_rescheduled' | 'appointment_created';
 
 export interface AppNotification {
   id: string;

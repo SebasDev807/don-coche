@@ -131,12 +131,14 @@ export function NotificationsMenu() {
                     notification.type === 'stock_out' ? 'bg-error-container text-on-error-container' : 
                     notification.type === 'stock_low' ? 'bg-yellow-100 text-yellow-800' : 
                     notification.type === 'appointment_rescheduled' ? 'bg-secondary-container text-on-secondary-container' :
+                    notification.type === 'appointment_created' ? 'bg-tertiary-container text-on-tertiary-container' :
                     'bg-primary-container text-on-primary-container'
                   }`}>
                     <span className="material-symbols-outlined text-xl">
                       {notification.type === 'stock_out' ? 'block' : 
                        notification.type === 'stock_low' ? 'warning' : 
                        notification.type === 'appointment_rescheduled' ? 'edit_calendar' :
+                       notification.type === 'appointment_created' ? 'event_available' :
                        'notifications'}
                     </span>
                   </div>

@@ -33,8 +33,6 @@ export async function bookAppointment(data: PublicAppointmentSchemaType) {
     // Add timezone offset so it matches local time. (Assume UTC-5 for Colombia)
     scheduledAt.setHours(scheduledAt.getHours() + 5);
 
-    let isReschedule = false;
-
     await prisma.$transaction(async (tx) => {
       // 1. Manage Customer
       let customer = await tx.customer.findUnique({
@@ -47,33 +45,31 @@ export async function bookAppointment(data: PublicAppointmentSchemaType) {
             cc: customerCc,
             name: customerName,
             phone: customerPhone,
-            email: customerEmail || null,
+            email: customerEmail,
           },
         });
       } else {
-        // Update info if it was missing
-        const updates: any = {};
-        if (!customer.name && customerName) updates.name = customerName;
-        if (!customer.phone && customerPhone) updates.phone = customerPhone;
-        if (!customer.email && customerEmail) updates.email = customerEmail;
-
-        if (Object.keys(updates).length > 0) {
-          customer = await tx.customer.update({
-            where: { id: customer.id },
-            data: updates,
-          });
-        }
+        // Update customer details if they provided new ones
+        await tx.customer.update({
+          where: { id: customer.id },
+          data: {
+            name: customerName || customer.name,
+            phone: customerPhone || customer.phone,
+            email: customerEmail || customer.email,
+          },
+        });
       }
 
-      // 2. Manage Vehicle
+      // 2. Find or create vehicle
+      const plateUpper = plate.toUpperCase();
       let vehicle = await tx.vehicle.findUnique({
-        where: { plate },
+        where: { plate: plateUpper },
       });
 
       if (!vehicle) {
         vehicle = await tx.vehicle.create({
           data: {
-            plate,
+            plate: plateUpper,
             brand: carBrand,
             model: carModel,
             color: carColor || null,
@@ -87,31 +83,15 @@ export async function bookAppointment(data: PublicAppointmentSchemaType) {
         }
       }
 
-      // 3. Create or Update Appointment
-      const existingAppointment = await tx.appointment.findFirst({
-        where: { customerId: customer.id, status: 'PENDIENTE' }
+      // 3. Create Appointment
+      await tx.appointment.create({
+        data: {
+          customerId: customer.id,
+          vehicleId: vehicle.id,
+          scheduledAt,
+          description,
+        }
       });
-
-      if (existingAppointment) {
-        await tx.appointment.update({
-          where: { id: existingAppointment.id },
-          data: {
-            vehicleId: vehicle.id,
-            scheduledAt,
-            description,
-          }
-        });
-        isReschedule = true;
-      } else {
-        await tx.appointment.create({
-          data: {
-            customerId: customer.id,
-            vehicleId: vehicle.id,
-            scheduledAt,
-            description,
-          }
-        });
-      }
     });
 
     // 4. Enviar notificación por WhatsApp y Campana
@@ -124,16 +104,14 @@ export async function bookAppointment(data: PublicAppointmentSchemaType) {
         const time = scheduledAt.toLocaleString('es-CO', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Bogota' });
         const formattedDate = `${day} de ${capitalizedMonth} de ${year} a las ${time}`;
         
-        if (isReschedule) {
-          await prisma.appNotification.create({
-            data: {
-              type: 'appointment_rescheduled',
-              title: 'Cita Reagendada (Web)',
-              message: `${customerName} ha reagendado su cita para el ${formattedDate}.`,
-              link: '/citas'
-            }
-          });
-        }
+        await prisma.appNotification.create({
+          data: {
+            type: 'appointment_created',
+            title: 'Nueva Cita (Web)',
+            message: `${customerName} ha programado una nueva cita para el ${formattedDate}.`,
+            link: '/citas'
+          }
+        });
 
         // Usamos el primer nombre
         const firstName = customerName.split(' ')[0];
@@ -149,9 +127,38 @@ export async function bookAppointment(data: PublicAppointmentSchemaType) {
     }
 
     revalidatePath('/citas');
-    return { success: true, message: isReschedule ? '¡Cita reagendada con éxito!' : '¡Cita reservada con éxito!' };
+    return { success: true, message: '¡Cita reservada con éxito!' };
   } catch (error: any) {
     console.error('[bookAppointment] Error:', error);
     return { success: false, message: error.message || 'Error al agendar la cita' };
+  }
+}
+
+/**
+ * Obtiene los slots reservados para un día específico (público).
+ * @param dateStr - Fecha en formato ISO (YYYY-MM-DD).
+ * @returns Array de horas ocupadas (ej: [8, 10, 14]).
+ */
+export async function getPublicBookedSlots(dateStr: string): Promise<number[]> {
+  try {
+    const date = new Date(dateStr + 'T00:00:00');
+    const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        status: 'PENDIENTE',
+        scheduledAt: {
+          gte: startOfDay,
+          lt: endOfDay,
+        },
+      },
+      select: { scheduledAt: true },
+    });
+
+    return appointments.map((apt) => new Date(apt.scheduledAt).getHours());
+  } catch (error: any) {
+    console.error('Error fetching public booked slots:', error);
+    return [];
   }
 }

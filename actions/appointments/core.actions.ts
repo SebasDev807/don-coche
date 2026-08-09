@@ -323,36 +323,17 @@ export async function createAppointment(data: AppointmentFormValues) {
       finalVehicleId = newVehicle.id;
     }
 
-    // 6. Crear o modificar la cita
-    const existingAppointment = await prisma.appointment.findFirst({
-      where: { customerId: finalCustomerId, status: 'PENDIENTE' }
+    // 6. Crear la cita
+    await prisma.appointment.create({
+      data: {
+        customerId: finalCustomerId,
+        vehicleId: finalVehicleId,
+        createdById: session.userId,
+        scheduledAt: scheduledDate,
+        description: description || null,
+        notes: notes || null,
+      },
     });
-
-    let isReschedule = false;
-
-    if (existingAppointment) {
-      await prisma.appointment.update({
-        where: { id: existingAppointment.id },
-        data: {
-          vehicleId: finalVehicleId,
-          scheduledAt: scheduledDate,
-          description: description || null,
-          notes: notes || null,
-        },
-      });
-      isReschedule = true;
-    } else {
-      await prisma.appointment.create({
-        data: {
-          customerId: finalCustomerId,
-          vehicleId: finalVehicleId,
-          createdById: session.userId,
-          scheduledAt: scheduledDate,
-          description: description || null,
-          notes: notes || null,
-        },
-      });
-    }
 
     // 7. Enviar notificación por WhatsApp y Campana
     try {
@@ -365,17 +346,15 @@ export async function createAppointment(data: AppointmentFormValues) {
         const time = scheduledDate.toLocaleString('es-CO', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Bogota' });
         const formattedDate = `${day} de ${capitalizedMonth} de ${year} a las ${time}`;
         
-        if (isReschedule) {
-          const customerName = finalCustomer.name || 'Un cliente';
-          await prisma.appNotification.create({
-            data: {
-              type: 'appointment_rescheduled',
-              title: 'Cita Reagendada',
-              message: `${customerName} ha reagendado su cita para el ${formattedDate}.`,
-              link: '/citas'
-            }
-          });
-        }
+        const customerName = finalCustomer.name || 'Un cliente';
+        await prisma.appNotification.create({
+          data: {
+            type: 'appointment_created',
+            title: 'Nueva Cita',
+            message: `${customerName} ha programado una nueva cita para el ${formattedDate}.`,
+            link: '/citas'
+          }
+        });
 
         if (finalCustomer.phone && finalCustomer.name) {
           // Usamos el primer nombre para hacerlo más amigable ("Hola, Juan")
@@ -394,7 +373,7 @@ export async function createAppointment(data: AppointmentFormValues) {
     }
 
     revalidatePath('/citas');
-    return { success: true, message: isReschedule ? 'Cita reagendada exitosamente.' : 'Cita agendada exitosamente.' };
+    return { success: true, message: 'Cita agendada exitosamente.' };
   } catch (error: any) {
     console.error('Error creating appointment:', error);
     return { success: false, message: 'Ocurrió un error al agendar la cita.' };

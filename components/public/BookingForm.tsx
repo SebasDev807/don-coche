@@ -10,6 +10,7 @@ import withReactContent from 'sweetalert2-react-content';
 import { useRouter } from 'next/navigation';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { getPublicBookedSlots } from '@/actions/public/appointment.actions';
 
 const MySwal = withReactContent(Swal);
 
@@ -19,6 +20,8 @@ import { ErrorMessage } from '@/components/ui/ErrorMessage';
 export const BookingForm = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookedSlots, setBookedSlots] = useState<number[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   const {
     register,
@@ -66,6 +69,26 @@ export const BookingForm = () => {
 
   // Hoy para el mínimo de fecha
   const today = new Date().toISOString().split('T')[0];
+
+  // Observamos la fecha para cargar los slots ocupados
+  const selectedDate = watch('scheduledAtDate');
+  
+  React.useEffect(() => {
+    if (selectedDate) {
+      setLoadingSlots(true);
+      getPublicBookedSlots(selectedDate).then(slots => {
+        setBookedSlots(slots);
+        setLoadingSlots(false);
+        // Si la hora actual seleccionada está en los slots ocupados, limpiarla
+        const currentSlot = watch('scheduledAtTime');
+        if (currentSlot && slots.includes(parseInt(currentSlot.split(':')[0]))) {
+          setValue('scheduledAtTime', '', { shouldValidate: true });
+        }
+      });
+    } else {
+      setBookedSlots([]);
+    }
+  }, [selectedDate, setValue, watch]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 fade-in">
@@ -228,20 +251,28 @@ export const BookingForm = () => {
                 { value: '15:00', label: '03:00 PM' },
                 { value: '16:00', label: '04:00 PM' },
                 { value: '17:00', label: '05:00 PM' },
-              ].map((time) => (
-                <button
-                  key={time.value}
-                  type="button"
-                  onClick={() => setValue('scheduledAtTime', time.value, { shouldValidate: true })}
-                  className={`py-2 px-1 text-center text-sm font-bold rounded-lg border transition-all ${
-                    watch('scheduledAtTime') === time.value
-                      ? 'bg-primary text-on-primary border-primary shadow-md transform scale-[1.02]'
-                      : 'bg-surface-container text-on-surface border-outline-variant hover:border-primary hover:bg-surface-container-high'
-                  }`}
-                >
-                  {time.label}
-                </button>
-              ))}
+              ].map((time) => {
+                const hour = parseInt(time.value.split(':')[0]);
+                const isBooked = bookedSlots.includes(hour);
+                
+                return (
+                  <button
+                    key={time.value}
+                    type="button"
+                    disabled={isBooked || loadingSlots}
+                    onClick={() => setValue('scheduledAtTime', time.value, { shouldValidate: true })}
+                    className={`py-2 px-1 text-center text-sm font-bold rounded-lg border transition-all ${
+                      isBooked
+                        ? 'bg-surface-variant text-on-surface-variant border-surface-variant opacity-50 cursor-not-allowed'
+                        : watch('scheduledAtTime') === time.value
+                        ? 'bg-primary text-on-primary border-primary shadow-md transform scale-[1.02]'
+                        : 'bg-surface-container text-on-surface border-outline-variant hover:border-primary hover:bg-surface-container-high'
+                    }`}
+                  >
+                    {time.label} {isBooked && ' (Reservado)'}
+                  </button>
+                );
+              })}
             </div>
             {/* Campo oculto para registrar en react-hook-form */}
             <input type="hidden" {...register('scheduledAtTime')} />

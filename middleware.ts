@@ -18,14 +18,14 @@ import { decrypt, updateSession } from '@/lib/session';
 // ─── Configuración de Rutas ────────────────────────────────────────────────────
 
 /** Rutas públicas que no requieren autenticación. */
-const PUBLIC_ROUTES = ['/auth'];
+const PUBLIC_ROUTES = ['/auth', '/agendar'];
 
 /** Roles que acceden al dashboard de gestión. */
 const DASHBOARD_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 
-export default async function proxy(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Determinar si la ruta actual está protegida (todo menos las públicas)

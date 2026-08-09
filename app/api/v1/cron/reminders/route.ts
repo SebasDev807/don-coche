@@ -15,17 +15,23 @@ export async function GET(request: Request) {
     //   return new Response('Unauthorized', { status: 401 });
     // }
 
-    // 1. Calcular la fecha destino: Hoy + 7 días
-    // Usamos UTC y truncamos la hora para comparar solo fechas
+    // 1. Calcular la fecha destino: Hoy (local) + 7 días -> a las 00:00 UTC
     const today = new Date();
-    const targetDate = new Date(today);
-    targetDate.setDate(targetDate.getDate() + 7);
-    targetDate.setUTCHours(0, 0, 0, 0);
+    const targetDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + 7));
 
     const endOfTargetDate = new Date(targetDate);
     endOfTargetDate.setUTCHours(23, 59, 59, 999);
 
-    console.log(`[Cron Reminders] Ejecutando búsqueda para mantenimientos entre ${targetDate.toISOString()} y ${endOfTargetDate.toISOString()}`);
+    // Para depuración: buscar cualquier orden con nextMaintenanceDate futuro
+    const allFutureOrders = await prisma.order.findMany({
+      where: {
+        nextMaintenanceDate: { not: null }
+      },
+      select: { id: true, orderNumber: true, nextMaintenanceDate: true, nextMaintenanceReason: true }
+    });
+    console.log('[Cron Reminders] Todos los mantenimientos futuros en DB:', allFutureOrders);
+
+    console.log(`[Cron Reminders] Ejecutando búsqueda estricta para mantenimientos entre ${targetDate.toISOString()} y ${endOfTargetDate.toISOString()}`);
 
     // 2. Buscar órdenes cuyo próximo mantenimiento caiga en ese rango
     const orders = await prisma.order.findMany({
@@ -52,7 +58,13 @@ export async function GET(request: Request) {
 
     if (orders.length === 0) {
       console.log('[Cron Reminders] No se encontraron mantenimientos para recordar hoy.');
-      return NextResponse.json({ success: true, sentCount: 0, message: 'Sin mantenimientos para recordar.' });
+      return NextResponse.json({ 
+        success: true, 
+        sentCount: 0, 
+        totalFound: 0,
+        allFutureDates: allFutureOrders.map(o => o.nextMaintenanceDate),
+        message: 'Sin mantenimientos para recordar.' 
+      });
     }
 
     let sentCount = 0;
@@ -91,6 +103,7 @@ export async function GET(request: Request) {
       success: true, 
       sentCount, 
       totalFound: orders.length,
+      allFutureDates: allFutureOrders.map(o => o.nextMaintenanceDate),
       message: `Se enviaron ${sentCount} recordatorios.` 
     });
 

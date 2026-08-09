@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { appointmentSchema, type AppointmentFormValues } from '@/validation';
 import { BUSINESS_HOURS } from '@/constants/business';
 import type { AppointmentStatus } from '@prisma/client';
+import { sendAppointmentCreatedNotification } from '@/lib/whatsapp/whatsapp.service';
 
 // -----------------------------------------------------------------------
 // TIPOS Y DTOs
@@ -333,6 +334,30 @@ export async function createAppointment(data: AppointmentFormValues) {
         notes: notes || null,
       },
     });
+
+    // 7. Enviar notificación por WhatsApp
+    try {
+      const finalCustomer = await prisma.customer.findUnique({ where: { id: finalCustomerId } });
+      if (finalCustomer && finalCustomer.phone && finalCustomer.name) {
+        const day = scheduledDate.getDate();
+        const month = scheduledDate.toLocaleString('es-CO', { month: 'long', timeZone: 'America/Bogota' });
+        const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
+        const year = scheduledDate.getFullYear();
+        const formattedDate = `${day} de ${capitalizedMonth} de ${year}`;
+        
+        // Usamos el primer nombre para hacerlo más amigable ("Hola, Juan")
+        const firstName = finalCustomer.name.split(' ')[0];
+        
+        // No esperamos (await) para no bloquear la respuesta al cliente
+        sendAppointmentCreatedNotification(
+          finalCustomer.phone,
+          firstName,
+          formattedDate
+        ).catch(err => console.error('[WhatsApp] Error enviando notificación de cita:', err));
+      }
+    } catch (waError) {
+      console.error('[WhatsApp] Error al intentar enviar WhatsApp de cita creada:', waError);
+    }
 
     revalidatePath('/citas');
     return { success: true, message: 'Cita agendada exitosamente.' };

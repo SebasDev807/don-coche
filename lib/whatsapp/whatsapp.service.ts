@@ -242,3 +242,32 @@ export async function sendNextAppointmentNotification(
 
   return sendWhatsAppTemplate(phone, template);
 }
+
+/**
+ * Envía la notificación de cita creada exitosamente.
+ *
+ * @param phone - Teléfono del cliente
+ * @param customerName - Nombre del cliente ({{1}})
+ * @param formattedDate - Fecha formateada de la cita (ej: "2 de Febrero de 2027") ({{2}})
+ */
+export async function sendAppointmentCreatedNotification(
+  phone: string,
+  customerName: string,
+  formattedDate: string
+): Promise<WhatsAppSendResult> {
+  const template: WhatsAppTemplate = {
+    name: 'cita_creada_exito',
+    language: { code: 'es' },
+    components: [
+      {
+        type: 'body',
+        parameters: [
+          { type: 'text', text: customerName },
+          { type: 'text', text: formattedDate },
+        ],
+      },
+    ],
+  };
+
+  return sendWhatsAppTemplate(phone, template);
+}

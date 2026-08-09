@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { publicAppointmentSchema, type PublicAppointmentSchemaType } from '@/validation/public';
 import { revalidatePath } from 'next/cache';
+import { sendAppointmentCreatedNotification } from '@/lib/whatsapp/whatsapp.service';
 
 export async function bookAppointment(data: PublicAppointmentSchemaType) {
   try {
@@ -94,6 +95,28 @@ export async function bookAppointment(data: PublicAppointmentSchemaType) {
         }
       });
     });
+
+    // 4. Enviar notificación por WhatsApp
+    if (customerPhone && customerName) {
+      try {
+        const day = scheduledAt.getDate();
+        const month = scheduledAt.toLocaleString('es-CO', { month: 'long', timeZone: 'America/Bogota' });
+        const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
+        const year = scheduledAt.getFullYear();
+        const formattedDate = `${day} de ${capitalizedMonth} de ${year}`;
+        
+        // Usamos el primer nombre
+        const firstName = customerName.split(' ')[0];
+        
+        sendAppointmentCreatedNotification(
+          customerPhone,
+          firstName,
+          formattedDate
+        ).catch(err => console.error('[WhatsApp] Error enviando notificación de cita (pública):', err));
+      } catch (waError) {
+        console.error('[WhatsApp] Error al intentar enviar WhatsApp de cita creada (pública):', waError);
+      }
+    }
 
     revalidatePath('/citas');
     return { success: true, message: '¡Cita reservada con éxito!' };

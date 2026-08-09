@@ -1,8 +1,15 @@
+'use client';
+
+import { useState } from 'react';
+import { CashClosureModal } from './CashClosureModal';
+
 interface DailyCashSummaryProps {
   orders: any[];
 }
 
 export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const totalEfectivo = orders.filter(o => o.paymentMethod === 'EFECTIVO').reduce((acc, o) => acc + o.grandTotal, 0);
   const totalTarjeta = orders.filter(o => o.paymentMethod === 'TARJETA').reduce((acc, o) => acc + o.grandTotal, 0);
   const totalTransferencia = orders.filter(o => o.paymentMethod === 'TRANSFERENCIA').reduce((acc, o) => acc + o.grandTotal, 0);
@@ -10,12 +17,20 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
   const totalGeneral = totalEfectivo + totalTarjeta + totalTransferencia;
 
   return (
+    <>
     <div className="bg-surface-container-lowest border border-surface-variant rounded-xl overflow-hidden flex flex-col h-full">
-      <div className="p-5 border-b border-surface-variant bg-surface-container">
+      <div className="p-5 border-b border-surface-variant bg-surface-container flex justify-between items-center">
         <h2 className="font-bold text-lg text-on-surface flex items-center gap-2">
           <span className="material-symbols-outlined text-green-600">point_of_sale</span>
           Cuadre de Caja (Hoy)
         </h2>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="btn-primary text-sm py-2 flex items-center gap-2 shadow-sm"
+        >
+          <span className="material-symbols-outlined text-sm">lock_person</span>
+          Cerrar Caja
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-0">
@@ -75,5 +90,11 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
         </div>
       </div>
     </div>
+    
+    <CashClosureModal 
+      isOpen={isModalOpen}
+      onClose={() => setIsModalOpen(false)}
+    />
+    </>
   );
 }

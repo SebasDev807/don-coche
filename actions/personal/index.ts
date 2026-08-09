@@ -9,3 +9,4 @@ export { getStaffUsers } from './getStaffUsers.actions';
 export { deleteStaffUser } from './deleteStaffUser.actions';
 export { createStaffUser } from './createStaffUser.actions';
 export { updateStaffUser } from './updateStaffUser.actions';
+export { changeStaffPassword } from './changeStaffPassword.actions';

@@ -70,9 +70,9 @@ export async function GET() {
           dateTimeStr
         );
         sentCount++;
-        console.log(`[Cron Expired] Cita ${appointment.id} de ${customerName} marcada como PERDIDA. WhatsApp enviado.`);
+        // Silently mark as lost
       } else {
-        console.log(`[Cron Expired] Cita ${appointment.id} marcada como PERDIDA. Sin teléfono para WhatsApp.`);
+        // Silently mark as lost without whatsapp
       }
     }
 

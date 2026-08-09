@@ -68,7 +68,7 @@ export async function sendWhatsAppTemplate(
   };
 
   try {
-    console.log('[WhatsApp Service] Payload a enviar:', JSON.stringify(payload, null, 2));
+
 
     const response = await fetch(getMessagesEndpoint(), {
       method: 'POST',
@@ -86,12 +86,10 @@ export async function sendWhatsAppTemplate(
         ? `[Meta API ${data.error.code}] ${data.error.message}`
         : `HTTP ${response.status}: ${response.statusText}`;
 
-      console.error('[WhatsApp Service] Error al enviar mensaje:', errorMsg);
       return { success: false, error: errorMsg };
     }
 
     const messageId = data.messages?.[0]?.id;
-    console.log(`[WhatsApp Service] Mensaje enviado a ${normalizedPhone} — wa_id: ${messageId}`);
 
     if (messageId) {
       await prisma.whatsAppNotification.create({

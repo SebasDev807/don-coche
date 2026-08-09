@@ -225,13 +225,6 @@ export function LoginClient() {
               )}
             </button>
           </form>
-
-          {/* Footer Link */}
-          <div className="mt-stack-sm flex justify-center">
-            <a href="#" className="font-body-md text-body-md text-on-secondary-container hover:text-on-surface transition-colors underline underline-offset-4 cursor-pointer">
-              ¿Olvidaste tu contraseña?
-            </a>
-          </div>
         </div>
       </main>
 

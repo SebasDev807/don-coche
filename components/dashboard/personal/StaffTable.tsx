@@ -2,7 +2,7 @@
 
 import { User } from '@prisma/client';
 import { useState, useTransition } from 'react';
-import { deleteStaffUser } from '@/actions/personal';
+import { deleteStaffUser, changeStaffPassword } from '@/actions/personal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
@@ -58,6 +58,48 @@ export function StaffTable({ users }: StaffTableProps) {
           if (res.success) {
             MySwal.fire('¡Eliminado!', res.message, 'success');
             router.refresh();
+          } else {
+            MySwal.fire('Error', res.message, 'error');
+          }
+        });
+      }
+    });
+  };
+
+  const handleChangePassword = (userId: string, userName: string) => {
+    MySwal.fire({
+      title: `Cambiar contraseña`,
+      html: `
+        <div style="text-align: left; margin-bottom: 10px; font-size: 14px;">
+          Nueva contraseña para <strong>${userName}</strong>:
+        </div>
+        <input type="password" id="new-password-input" class="swal2-input" placeholder="Mínimo 6 caracteres" style="width: 100%; box-sizing: border-box; margin: 0;">
+      `,
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonColor: 'rgba(221, 213, 51, 1)',
+      cancelButtonColor: 'rgba(2, 14, 30, 1)',
+      customClass: {
+        confirmButton: '!text-black',
+        cancelButton: '!text-white'
+      },
+      confirmButtonText: 'Guardar',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const input = document.getElementById('new-password-input') as HTMLInputElement;
+        const value = input?.value || '';
+        if (!value || value.length < 6) {
+          MySwal.showValidationMessage('La contraseña debe tener al menos 6 caracteres');
+          return false;
+        }
+        return value;
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        startTransition(async () => {
+          const res = await changeStaffPassword(userId, result.value);
+          if (res.success) {
+            MySwal.fire('¡Actualizada!', res.message, 'success');
           } else {
             MySwal.fire('Error', res.message, 'error');
           }
@@ -132,7 +174,12 @@ export function StaffTable({ users }: StaffTableProps) {
                     >
                       <span className="material-symbols-outlined text-[20px]">edit</span>
                     </Link>
-                    <button title="Actualizar Contraseña" className="cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors">
+                    <button 
+                      title="Actualizar Contraseña" 
+                      className={`cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => handleChangePassword(user.id, user.name)}
+                      disabled={!user.isActive || isPending}
+                    >
                       <span className="material-symbols-outlined text-[20px]">lock</span>
                     </button>
                     <button

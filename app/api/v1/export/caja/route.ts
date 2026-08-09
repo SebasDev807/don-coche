@@ -43,15 +43,16 @@ export async function GET(req: NextRequest) {
     // --- Hoja 1: Resumen del Cierre ---
     const summarySheet = workbook.addWorksheet('Resumen de Cierre');
     summarySheet.columns = [
-      { header: 'Concepto', key: 'concepto', width: 30 },
-      { header: 'Valor', key: 'valor', width: 25 },
+      { header: 'Concepto', key: 'concepto', width: 35 },
+      { header: 'Valor / Detalle', key: 'valor', width: 45 },
     ];
     
     const currencyFormat = '"$"#,##0.00;[Red]"-$"#,##0.00';
     
-    // Format headers
-    summarySheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    summarySheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F4F4F' } };
+    // Estilos del encabezado principal
+    summarySheet.getRow(1).height = 25;
+    summarySheet.getRow(1).font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    summarySheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEC00' } };
     summarySheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
 
     summarySheet.addRows([
@@ -70,6 +71,22 @@ export async function GET(req: NextRequest) {
     // Apply formatting to values
     [6, 7, 8, 9, 10].forEach(rowIndex => {
       summarySheet.getCell(`B${rowIndex}`).numFmt = currencyFormat;
+      summarySheet.getCell(`B${rowIndex}`).font = { bold: true, color: { argb: 'FF020E1E' } };
+    });
+
+    // Añadir bordes y estilos a la columna de concepto
+    summarySheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) {
+        row.getCell(1).font = { bold: true, color: { argb: 'FF4F4F4F' } };
+      }
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFEEEEEE' } },
+          left: { style: 'thin', color: { argb: 'FFEEEEEE' } },
+          bottom: { style: 'thin', color: { argb: 'FFEEEEEE' } },
+          right: { style: 'thin', color: { argb: 'FFEEEEEE' } }
+        };
+      });
     });
 
     // --- Hoja 2: Detalle de Órdenes ---
@@ -89,8 +106,9 @@ export async function GET(req: NextRequest) {
       { header: 'Facturada en', key: 'billedAt', width: 25 },
     ];
 
-    detailsSheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    detailsSheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F4F4F' } };
+    detailsSheet.getRow(1).height = 25;
+    detailsSheet.getRow(1).font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    detailsSheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEC00' } };
     detailsSheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
 
     const ordersData = closure.orders.map(order => {
@@ -115,6 +133,18 @@ export async function GET(req: NextRequest) {
     });
 
     detailsSheet.addRows(ordersData);
+
+    // Añadir bordes a la hoja de detalles
+    detailsSheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFEEEEEE' } },
+          left: { style: 'thin', color: { argb: 'FFEEEEEE' } },
+          bottom: { style: 'thin', color: { argb: 'FFEEEEEE' } },
+          right: { style: 'thin', color: { argb: 'FFEEEEEE' } }
+        };
+      });
+    });
 
     const lastCol = detailsSheet.getColumn(detailsSheet.columns.length).letter;
     detailsSheet.autoFilter = `A1:${lastCol}1`;

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const verifyToken = env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
 
   if (mode === 'subscribe' && token === verifyToken) {
-    console.log('[WhatsApp Webhook] Verificación exitosa.');
+
     // Responder con el challenge en texto plano (Meta lo requiere así)
     return new NextResponse(challenge, { status: 200 });
   }
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                   errorMessage: errorMsg
                 }
               });
-              console.log(`[WhatsApp Webhook] Mensaje ${wa_id} -> ${dbStatus}`);
+
             } catch (err) {
               console.warn(`[WhatsApp Webhook] Registro no encontrado o error al actualizar wa_id: ${wa_id}`);
             }

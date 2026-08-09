@@ -70,15 +70,28 @@ const sections = [
   },
   {
     icon: 'gavel',
-    title: '6. Responsabilidad',
+    title: '6. Responsabilidad y Uso de la Plataforma',
     content: (
-      <p className="text-on-surface-variant leading-relaxed">
-        Don Coche se esfuerza por brindar servicios de la más alta calidad. Sin embargo, no nos
-        hacemos responsables por objetos de valor dejados en el interior de los vehículos a menos
-        que hayan sido reportados previamente y entregados a la administración para su custodia.
-        Tampoco nos hacemos responsables por daños preexistentes no informados al momento de
-        recibir el vehículo, los cuales serán documentados antes de iniciar el servicio.
-      </p>
+      <div className="space-y-4">
+        <p className="text-on-surface-variant leading-relaxed">
+          <strong>Sobre los bienes físicos:</strong> Don Coche se esfuerza por brindar servicios de la más 
+          alta calidad. Sin embargo, no nos hacemos responsables por objetos de valor dejados en el interior 
+          de los vehículos a menos que hayan sido reportados previamente y entregados a la administración 
+          para su custodia. Tampoco nos hacemos responsables por daños preexistentes no informados al 
+          momento de recibir el vehículo.
+        </p>
+        <p className="text-on-surface-variant leading-relaxed">
+          <strong>Sobre los datos y el sistema:</strong> Toda la información, precios, y datos ingresados 
+          en la plataforma son de entera responsabilidad del usuario o administrador que los digita. Por su 
+          parte, los errores propios del software (bugs, fallos de código o caídas del sistema) son 
+          responsabilidad del equipo desarrollador. En caso de experimentar cualquier error del sistema, 
+          el usuario debe comunicarse de inmediato con nuestra área de{' '}
+          <Link href="/soporte" className="text-primary-fixed-dim hover:underline underline-offset-2">
+            Soporte Técnico
+          </Link>{' '}
+          para recibir asistencia oportuna.
+        </p>
+      </div>
     ),
   },
   {

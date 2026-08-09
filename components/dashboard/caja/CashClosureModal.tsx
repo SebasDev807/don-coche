@@ -162,9 +162,13 @@ export function CashClosureModal({ isOpen, onClose }: CashClosureModalProps) {
                       <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">$</span>
                         <input 
-                          type="number"
-                          value={reportedCash}
-                          onChange={(e) => setReportedCash(e.target.value)}
+                          type="text"
+                          inputMode="numeric"
+                          value={reportedCash ? Number(reportedCash).toLocaleString() : ''}
+                          onChange={(e) => {
+                            const rawValue = e.target.value.replace(/\D/g, '');
+                            setReportedCash(rawValue);
+                          }}
                           className="w-full h-12 pl-8 pr-4 rounded-xl border border-outline-variant bg-surface focus:border-primary focus:ring-2 focus:ring-primary transition-all text-on-surface"
                           placeholder="0"
                         />
@@ -219,7 +223,7 @@ export function CashClosureModal({ isOpen, onClose }: CashClosureModalProps) {
             <button
               onClick={handleCloseRegister}
               disabled={closing || reportedCash === ''}
-              className="btn-primary !bg-yellow-500 hover:!bg-yellow-600 !text-yellow-950 border-none cursor-pointer fade-in font-bold px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all"
+              className="bg-primary-container text-black hover:bg-primary-fixed-dim border-none cursor-pointer fade-in font-bold px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {closing ? 'Cerrando...' : 'Confirmar Cierre'}
             </button>

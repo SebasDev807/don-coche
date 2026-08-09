@@ -29,9 +29,9 @@ export async function GET(request: Request) {
       },
       select: { id: true, orderNumber: true, nextMaintenanceDate: true, nextMaintenanceReason: true }
     });
-    console.log('[Cron Reminders] Todos los mantenimientos futuros en DB:', allFutureOrders);
 
-    console.log(`[Cron Reminders] Ejecutando búsqueda estricta para mantenimientos entre ${targetDate.toISOString()} y ${endOfTargetDate.toISOString()}`);
+
+
 
     // 2. Buscar órdenes cuyo próximo mantenimiento caiga en ese rango
     const orders = await prisma.order.findMany({
@@ -57,7 +57,7 @@ export async function GET(request: Request) {
     });
 
     if (orders.length === 0) {
-      console.log('[Cron Reminders] No se encontraron mantenimientos para recordar hoy.');
+
       return NextResponse.json({ 
         success: true, 
         sentCount: 0, 
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
 
       // 3. Verificar que el cliente NO tenga citas pendientes
       if (customer.appointments.length > 0) {
-        console.log(`[Cron Reminders] Cliente ${customer.name} (CC: ${customer.cc}) omitido. Ya tiene una cita pendiente.`);
+
         continue;
       }
 
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
         await sendServiceReminderNotification(customer.phone, serviceReason, timeframe);
         sentCount++;
         processedCustomers.add(customer.id);
-        console.log(`[Cron Reminders] Recordatorio enviado a ${customer.name} para ${serviceReason}`);
+
       } catch (err) {
         console.error(`[Cron Reminders] Falló el envío a ${customer.name}:`, err);
       }

@@ -219,12 +219,6 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
           aliaddoInvoiceStatus: aliaddoResponse.stateDian || aliaddoResponse.status || 'PROCESADA',
         }
       });
-      console.log('📝 [ALIADDO] Factura creada exitosamente:', {
-        id: aliaddoResponse.id,
-        consecutive: aliaddoResponse.consecutive,
-        stateDian: aliaddoResponse.stateDian,
-        cufe: aliaddoResponse.cufe?.substring(0, 20) + '...',
-      });
 
       // Actualizamos el objeto en memoria para que el modal lo reciba
       updatedOrder.aliaddoInvoiceId = aliaddoResponse.id;
@@ -233,7 +227,6 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
       aliaddoConsecutive = aliaddoResponse.consecutive || null;
 
     } catch (aliaddoError: any) {
-      console.error('❌ Error enviando a Aliaddo (la orden local sí se guardó):', aliaddoError.message);
       (updatedOrder as any).aliaddoInvoiceStatus = 'ERROR';
       (updatedOrder as any).aliaddoErrorMessage = aliaddoError.message;
     }
@@ -259,7 +252,6 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
         await new Promise(resolve => setTimeout(resolve, 10000));
 
         if (updatedOrder.nextMaintenanceDate && receiptData.phone) {
-          console.log('[billOrder] La orden tiene fecha de próximo mantenimiento. Intentando enviar recordatorio...');
           const targetDate = new Date(updatedOrder.nextMaintenanceDate);
           const now = new Date();
           const diffTime = targetDate.getTime() - now.getTime();
@@ -277,13 +269,9 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
 
           // Usamos el template de "recordatorio_proximo_servicio" recién arreglado
           const serviceReason = updatedOrder.nextMaintenanceReason || 'revisión general';
-          console.log(`[billOrder] Enviando recordatorio a ${receiptData.phone} por ${serviceReason} en ${timeText}`);
           await sendServiceReminderNotification(receiptData.phone, serviceReason, timeText);
-        } else {
-          console.log('[billOrder] No se envió recordatorio: falta nextMaintenanceDate o teléfono del cliente.');
         }
       } catch (err) {
-        console.error('[billOrder] Error al enviar notificaciones WhatsApp:', err);
       }
     });
 

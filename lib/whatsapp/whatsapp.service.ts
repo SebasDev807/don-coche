@@ -130,7 +130,7 @@ export async function sendServiceReminderNotification(
   to: string,
   serviceName: string,
   timeframe: string
-): Promise<void> {
+): Promise<WhatsAppSendResult> {
 
   const template: WhatsAppTemplate = {
     name: 'recordatorio_proximo_servicio',
@@ -151,8 +151,10 @@ export async function sendServiceReminderNotification(
     if (!result.success) {
       console.error(`[WhatsApp Service] Falló envío de recordatorio: ${result.error}`);
     }
-  } catch (error) {
+    return result;
+  } catch (error: any) {
     console.error('[WhatsApp Service] Excepción al enviar recordatorio:', error);
+    return { success: false, error: error.message };
   }
 }
 

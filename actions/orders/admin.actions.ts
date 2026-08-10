@@ -248,8 +248,8 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
       try {
         await sendReceiptNotification(receiptData);
 
-        // Esperar 10 segundos para asegurar que WhatsApp entregue primero la factura y evitar filtros anti-spam de Meta
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        // Esperar 2 segundos en lugar de 10 para asegurar que la función serverless no caduque por timeout
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         if (updatedOrder.nextMaintenanceDate && receiptData.phone) {
           const targetDate = new Date(updatedOrder.nextMaintenanceDate);
@@ -269,9 +269,14 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
 
           // Usamos el template de "recordatorio_proximo_servicio" recién arreglado
           const serviceReason = updatedOrder.nextMaintenanceReason || 'revisión general';
-          await sendServiceReminderNotification(receiptData.phone, serviceReason, timeText);
+          console.log(`[WhatsApp] Enviando recordatorio proximo servicio a ${receiptData.phone}: ${serviceReason} en ${timeText}`);
+          const reminderResult = await sendServiceReminderNotification(receiptData.phone, serviceReason, timeText);
+          console.log(`[WhatsApp] Resultado de recordatorio:`, reminderResult);
+        } else {
+          console.log(`[WhatsApp] No se envía recordatorio. nextMaintenanceDate: ${updatedOrder.nextMaintenanceDate}, phone: ${receiptData.phone}`);
         }
       } catch (err) {
+        console.error('[WhatsApp] Error en bloque after al enviar notificaciones:', err);
       }
     });
 

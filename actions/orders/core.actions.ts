@@ -134,6 +134,9 @@ export async function createOrder(data: CreateOrderInput) {
         };
       });
 
+      const ivaAmount = totalServices * 0.19;
+      const grandTotal = totalServices + ivaAmount;
+
       // 5. Create Order
       const newOrder = await tx.order.create({
         data: {
@@ -142,7 +145,7 @@ export async function createOrder(data: CreateOrderInput) {
           status: 'EN_PISTA',
           totalServices,
           totalProducts: 0,
-          grandTotal: totalServices,
+          grandTotal: grandTotal,
           services: {
             create: orderServicesData,
           },

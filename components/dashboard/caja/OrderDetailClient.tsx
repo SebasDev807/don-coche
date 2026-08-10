@@ -178,6 +178,10 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
             <span>Total Repuestos</span>
             <span className="font-label-bold text-on-surface">${order.totalProducts.toLocaleString()}</span>
           </div>
+          <div className="flex justify-between items-center text-on-surface-variant">
+            <span>IVA (19%)</span>
+            <span className="font-label-bold text-on-surface">${(order.grandTotal - (order.totalServices + order.totalProducts)).toLocaleString()}</span>
+          </div>
           <div className="pt-4 mt-4 border-t border-outline-variant flex justify-between items-end">
             <span className="uppercase text-sm font-label-bold tracking-wider text-on-surface-variant">Gran Total</span>
             <span className="text-4xl font-headline-lg text-primary">${order.grandTotal.toLocaleString()}</span>

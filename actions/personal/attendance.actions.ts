@@ -25,6 +25,7 @@ export interface AttendanceRecordDTO {
   clockIn: Date;
   clockOut: Date | null;
   durationMinutes: number | null;
+  extraMinutes: number | null;
 }
 
 export interface AttendanceMetrics {
@@ -114,17 +115,26 @@ export async function getAttendanceRecordsAction(
     ],
   });
 
-  return records.map((record) => ({
-    id: record.id,
-    userId: record.userId,
-    userCc: record.user.cc,
-    userName: record.user.name,
-    userRole: record.user.role,
-    date: record.date,
-    clockIn: record.clockIn,
-    clockOut: record.clockOut,
-    durationMinutes: calculateDuration(record.clockIn, record.clockOut),
-  }));
+  return records.map((record) => {
+    const durationMinutes = calculateDuration(record.clockIn, record.clockOut);
+    let extraMinutes = null;
+    if (durationMinutes !== null && durationMinutes > 480) { // 480 minutos = 8 horas
+      extraMinutes = durationMinutes - 480;
+    }
+
+    return {
+      id: record.id,
+      userId: record.userId,
+      userCc: record.user.cc,
+      userName: record.user.name,
+      userRole: record.user.role,
+      date: record.date,
+      clockIn: record.clockIn,
+      clockOut: record.clockOut,
+      durationMinutes,
+      extraMinutes,
+    };
+  });
 }
 
 /**

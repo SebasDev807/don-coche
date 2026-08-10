@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Public_Sans, Sora } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { SessionWarningProvider } from "@/components/auth/SessionWarningProvider";
 
 const publicSans = Public_Sans({
   subsets: ["latin"],
@@ -39,7 +40,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
+          <SessionWarningProvider>
+            {children}
+          </SessionWarningProvider>
         </ThemeProvider>
       </body>
     </html>

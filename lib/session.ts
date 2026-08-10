@@ -38,8 +38,8 @@ if (!SECRET_KEY) {
 }
 const ENCODED_KEY = new TextEncoder().encode(SECRET_KEY);
 
-/** Duración de la sesión en milisegundos (7 días). */
-const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+/** Duración de la sesión en milisegundos (8 horas). */
+const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
 
 /** Nombre de la cookie de sesión. */
 const SESSION_COOKIE_NAME = 'session';
@@ -56,7 +56,7 @@ export async function encrypt(payload: SessionPayload): Promise<string> {
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime('8h')
     .sign(ENCODED_KEY);
 }
 

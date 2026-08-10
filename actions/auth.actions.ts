@@ -11,7 +11,7 @@
 
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { createSession, deleteSession, getSession } from '@/lib/session';
+import { createSession, deleteSession, getSession, updateSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────────
@@ -155,4 +155,37 @@ export async function logoutAction(): Promise<never> {
 
   await deleteSession();
   redirect('/auth');
+}
+
+// ─── Control de Expiración de Sesión ───────────────────────────────────────────
+
+/**
+ * Retorna la fecha de expiración actual del token JWT.
+ */
+export async function getSessionExpiryAction(): Promise<Date | undefined> {
+  try {
+    const session = await getSession();
+    if (session?.expiresAt) {
+      return new Date(session.expiresAt);
+    }
+  } catch (error) {
+    console.error('[getSessionExpiryAction] Error:', error);
+  }
+  return undefined;
+}
+
+/**
+ * Extiende manualmente la sesión actual 8 horas más.
+ */
+export async function extendSessionAction(): Promise<boolean> {
+  try {
+    const session = await getSession();
+    if (session) {
+      await updateSession();
+      return true;
+    }
+  } catch (error) {
+    console.error('[extendSessionAction] Error:', error);
+  }
+  return false;
 }

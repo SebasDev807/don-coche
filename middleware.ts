@@ -51,7 +51,10 @@ export default async function middleware(req: NextRequest) {
   }
 
   // ── Renovar sesión (sliding expiration) ─────────────────────────────────────
-  // Solo si hay sesión activa, renovamos para extender el TTL.
+  // Se elimina la renovación automática para que la sesión expire exactamente a las 8 horas.
+  // El usuario tendrá la opción de extenderla mediante un modal.
+  // Si desea restaurarlo en el futuro, descomentar la siguiente lógica:
+  /*
   if (session?.userId) {
     try {
       await updateSession();
@@ -59,6 +62,7 @@ export default async function middleware(req: NextRequest) {
       // Si falla la renovación no bloqueamos el request
     }
   }
+  */
 
   return NextResponse.next();
 }

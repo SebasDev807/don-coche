@@ -57,6 +57,7 @@ export function AttendanceTable({ records }: AttendanceTableProps) {
         { header: 'Entrada', key: 'clockIn', width: 15 },
         { header: 'Salida', key: 'clockOut', width: 15 },
         { header: 'Tiempo Total', key: 'duration', width: 15 },
+        { header: 'Horas Extra', key: 'extra', width: 15 },
       ];
 
       // Style header
@@ -78,7 +79,10 @@ export function AttendanceTable({ records }: AttendanceTableProps) {
           clockOut: formatTime(record.clockOut),
           duration: record.durationMinutes === null 
             ? 'En turno' 
-            : `${Math.floor(record.durationMinutes / 60)}h ${record.durationMinutes % 60}m`
+            : `${Math.floor(record.durationMinutes / 60)}h ${record.durationMinutes % 60}m`,
+          extra: record.extraMinutes === null
+            ? '-'
+            : `${Math.floor(record.extraMinutes / 60)}h ${record.extraMinutes % 60}m`
         });
       });
 
@@ -121,12 +125,13 @@ export function AttendanceTable({ records }: AttendanceTableProps) {
                 <th className="py-4 px-6 font-medium">Entrada</th>
                 <th className="py-4 px-6 font-medium">Salida</th>
                 <th className="py-4 px-6 font-medium">Tiempo Total</th>
+                <th className="py-4 px-6 font-medium">Horas Extra</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant text-sm">
               {records.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-on-surface-variant">
+                  <td colSpan={8} className="py-8 text-center text-on-surface-variant">
                     No hay registros de asistencia para el período seleccionado.
                   </td>
                 </tr>
@@ -145,6 +150,15 @@ export function AttendanceTable({ records }: AttendanceTableProps) {
                     <td className="py-4 px-6 text-on-surface-variant font-mono">{formatTime(record.clockOut)}</td>
                     <td className="py-4 px-6 font-medium text-on-surface">
                       {formatDuration(record.durationMinutes)}
+                    </td>
+                    <td className="py-4 px-6 font-medium">
+                      {record.extraMinutes ? (
+                        <span className="px-2 py-1 bg-tertiary-container text-on-tertiary-container rounded-md text-xs">
+                          {Math.floor(record.extraMinutes / 60)}h {record.extraMinutes % 60}m
+                        </span>
+                      ) : (
+                        <span className="text-on-surface-variant">--</span>
+                      )}
                     </td>
                   </tr>
                 ))

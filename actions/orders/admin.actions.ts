@@ -244,41 +244,38 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
       grandTotal: Number(updatedOrder.grandTotal),
     };
 
-    after(async () => {
-      try {
-        await sendReceiptNotification(receiptData);
+    // =========================================================================
+    // ENVIAR NOTIFICACIONES WHATSAPP (SÍNCRONO PARA GARANTIZAR EJECUCIÓN)
+    // =========================================================================
+    try {
+      await sendReceiptNotification(receiptData);
 
-        // Esperar 2 segundos en lugar de 10 para asegurar que la función serverless no caduque por timeout
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      // Esperar 2 segundos para dar tiempo a WhatsApp y garantizar el orden
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-        if (updatedOrder.nextMaintenanceDate && receiptData.phone) {
-          const targetDate = new Date(updatedOrder.nextMaintenanceDate);
-          const now = new Date();
-          const diffTime = targetDate.getTime() - now.getTime();
-          const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      if (updatedOrder.nextMaintenanceDate && receiptData.phone) {
+        const targetDate = new Date(updatedOrder.nextMaintenanceDate);
+        const now = new Date();
+        const diffTime = targetDate.getTime() - now.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-          let timeText = 'unas semanas';
-          if (diffDays <= 8) timeText = '1 semana';
-          else if (diffDays <= 16) timeText = '15 días';
-          else if (diffDays <= 32) timeText = '1 mes';
-          else if (diffDays <= 63) timeText = '2 meses';
-          else if (diffDays <= 95) timeText = '3 meses';
-          else if (diffDays <= 125) timeText = '4 meses';
-          else if (diffDays <= 186) timeText = '6 meses';
-          else timeText = 'unos meses';
+        let timeText = '5'; // Por defecto, si el texto del template dice "en {{2}} meses"
+        if (diffDays <= 32) timeText = '1';
+        else if (diffDays <= 63) timeText = '2';
+        else if (diffDays <= 95) timeText = '3';
+        else if (diffDays <= 125) timeText = '4';
+        else if (diffDays <= 186) timeText = '6';
+        else timeText = String(Math.round(diffDays / 30));
 
-          // Usamos el template de "recordatorio_proximo_servicio" recién arreglado
-          const serviceReason = updatedOrder.nextMaintenanceReason || 'revisión general';
-          console.log(`[WhatsApp] Enviando recordatorio proximo servicio a ${receiptData.phone}: ${serviceReason} en ${timeText}`);
-          const reminderResult = await sendServiceReminderNotification(receiptData.phone, serviceReason, timeText);
-          console.log(`[WhatsApp] Resultado de recordatorio:`, reminderResult);
-        } else {
-          console.log(`[WhatsApp] No se envía recordatorio. nextMaintenanceDate: ${updatedOrder.nextMaintenanceDate}, phone: ${receiptData.phone}`);
-        }
-      } catch (err) {
-        console.error('[WhatsApp] Error en bloque after al enviar notificaciones:', err);
+        const serviceReason = updatedOrder.nextMaintenanceReason || 'revisión general';
+        console.log(`[WhatsApp] Enviando recordatorio a ${receiptData.phone}: ${serviceReason} en ${timeText} meses`);
+        const reminderResult = await sendServiceReminderNotification(receiptData.phone, serviceReason, timeText);
+        console.log(`[WhatsApp] Resultado de recordatorio:`, reminderResult);
       }
-    });
+    } catch (err) {
+      console.error('[WhatsApp] Error al enviar notificaciones:', err);
+    }
+    // =========================================================================
 
     return {
       success: true,

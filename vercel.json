@@ -1,5 +1,5 @@
 {
-  "crons": [
+  "_disabled_crons_for_hobby_plan": [
     {
       "path": "/api/v1/cron/expired-appointments",
       "schedule": "*/30 * * * *"

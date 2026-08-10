@@ -268,12 +268,19 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
         else timeText = String(Math.round(diffDays / 30));
 
         const serviceReason = updatedOrder.nextMaintenanceReason || 'revisión general';
-        console.log(`[WhatsApp] Enviando recordatorio a ${receiptData.phone}: ${serviceReason} en ${timeText} meses`);
+        console.log(`[WhatsApp] Intentando enviar recordatorio a ${receiptData.phone}: "${serviceReason}" en "${timeText}" meses`);
         const reminderResult = await sendServiceReminderNotification(receiptData.phone, serviceReason, timeText);
-        console.log(`[WhatsApp] Resultado de recordatorio:`, reminderResult);
+        
+        if (!reminderResult.success) {
+          console.error(`[WhatsApp ERROR Meta] Falló el recordatorio:`, reminderResult.error);
+        } else {
+          console.log(`[WhatsApp EXITO] Recordatorio enviado correctamente. MessageId:`, reminderResult.messageId);
+        }
+      } else {
+        console.log(`[WhatsApp] Omitido: La orden no tiene fecha de próximo mantenimiento o el cliente no tiene teléfono.`);
       }
     } catch (err) {
-      console.error('[WhatsApp] Error al enviar notificaciones:', err);
+      console.error('[WhatsApp ERROR GENERAL] Excepción al enviar notificaciones:', err);
     }
     // =========================================================================
 

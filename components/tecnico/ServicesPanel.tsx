@@ -30,7 +30,7 @@ export const ServicesPanel = ({
   }, 0);
 
   return (
-    <section className="w-full md:w-3/5 bg-background flex flex-col overflow-hidden" data-purpose="services-order">
+    <section className="w-full h-full bg-background flex flex-col overflow-hidden" data-purpose="services-order">
       {/* Search Bar Area */}
       <div className="p-6 border-b border-surface-variant bg-surface-container-lowest">
         <div className="relative">
@@ -52,7 +52,7 @@ export const ServicesPanel = ({
       {/* Services Grid */}
       <div className="p-6 flex-1 overflow-y-auto border-b border-surface-variant">
         <h2 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-4">Catálogo de Servicios</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredServices.map(service => (
             <ServiceCard 
               key={service.id} 

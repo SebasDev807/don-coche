@@ -30,65 +30,66 @@ export async function createOrder(data: CreateOrderInput) {
     const { plate, customerName, customerCc, customerPhone, customerEmail, carBrand, carModel, carColor, services, nextMaintenanceDate, nextMaintenanceReason } = parsed.data;
 
     const order = await prisma.$transaction(async (tx) => {
-      // 1. Find existing vehicle
+      // 1. Buscar vehículo existente por placa
       let vehicle = await tx.vehicle.findUnique({
         where: { plate },
         include: { customer: true },
       });
 
-      let customerId = vehicle?.customerId;
+      let customerId = vehicle?.customerId ?? null;
 
-      // 2. Manage Customer
+      // 2. Gestionar Cliente (crear o actualizar siempre con datos nuevos)
       if (customerName || customerPhone || customerEmail || customerCc) {
         if (!customerId) {
+          // Sin cliente asociado al vehículo — buscar por CC o crear nuevo
           let existingCustomer = null;
           if (customerCc) {
             existingCustomer = await tx.customer.findUnique({ where: { cc: customerCc } });
           }
 
           if (existingCustomer) {
+            // Cliente encontrado por CC: actualizar con datos que el técnico haya ingresado
             customerId = existingCustomer.id;
-            // Optionally update existing customer info if empty
-            if ((!existingCustomer.name && customerName) || (!existingCustomer.phone && customerPhone)) {
-              await tx.customer.update({
-                where: { id: customerId },
-                data: {
-                  name: customerName || existingCustomer.name,
-                  phone: customerPhone || existingCustomer.phone,
-                  email: customerEmail || existingCustomer.email,
-                },
-              });
-            }
+            await tx.customer.update({
+              where: { id: customerId },
+              data: {
+                name: customerName || existingCustomer.name,
+                phone: customerPhone || existingCustomer.phone,
+                email: customerEmail || existingCustomer.email,
+                cc: customerCc || existingCustomer.cc,
+              },
+            });
           } else {
-            // Create new customer if details provided and no customer exists
+            // Crear nuevo cliente con todos los datos ingresados
             const newCustomer = await tx.customer.create({
               data: {
                 cc: customerCc || null,
-                name: customerName,
-                phone: customerPhone,
+                name: customerName || null,
+                phone: customerPhone || null,
                 email: customerEmail || null,
               },
             });
             customerId = newCustomer.id;
           }
         } else {
-          // Optionally update existing customer info if empty
+          // Ya hay cliente asociado: actualizar sus datos con lo que el técnico ingresó
+          // (solo sobreescribe campos que el técnico proporcionó, preserva los vacíos)
           const customer = vehicle!.customer!;
-          if ((!customer.name && customerName) || (!customer.cc && customerCc)) {
-            await tx.customer.update({
-              where: { id: customerId },
-              data: { 
-                name: customerName || customer.name, 
-                cc: customerCc || customer.cc,
-                phone: customerPhone || customer.phone 
-              },
-            });
-          }
+          await tx.customer.update({
+            where: { id: customerId },
+            data: {
+              name: customerName || customer.name,
+              cc: customerCc || customer.cc,
+              phone: customerPhone || customer.phone,
+              email: customerEmail || customer.email,
+            },
+          });
         }
       }
 
-      // 3. Create or update vehicle
+      // 3. Crear o actualizar vehículo
       if (!vehicle) {
+        // Vehículo nuevo: crear con todos los datos
         vehicle = await tx.vehicle.create({
           data: {
             plate,
@@ -99,17 +100,26 @@ export async function createOrder(data: CreateOrderInput) {
           },
           include: { customer: true }
         });
-      } else if (!vehicle.customerId && customerId) {
-        vehicle = await tx.vehicle.update({
-          where: { id: vehicle.id },
-          data: { 
-            customerId: customerId || vehicle.customerId,
-            brand: carBrand || vehicle.brand,
-            model: carModel || vehicle.model,
-            color: carColor || vehicle.color,
-          },
-          include: { customer: true }
-        });
+      } else {
+        // Vehículo existente: actualizar brand/model/color/customerId si se proporcionaron datos nuevos
+        const needsUpdate =
+          (carBrand && carBrand !== vehicle.brand) ||
+          (carModel && carModel !== vehicle.model) ||
+          (carColor && carColor !== vehicle.color) ||
+          (customerId && customerId !== vehicle.customerId);
+
+        if (needsUpdate) {
+          vehicle = await tx.vehicle.update({
+            where: { id: vehicle.id },
+            data: {
+              customerId: customerId ?? vehicle.customerId,
+              brand: carBrand || vehicle.brand,
+              model: carModel || vehicle.model,
+              color: carColor || vehicle.color,
+            },
+            include: { customer: true }
+          });
+        }
       }
 
       // 4. Fetch services to get real prices
@@ -163,6 +173,7 @@ export async function createOrder(data: CreateOrderInput) {
     });
 
     revalidatePath('/tecnico');
+    revalidatePath('/clientes');
     return { 
       success: true, 
       message: 'Orden creada exitosamente', 

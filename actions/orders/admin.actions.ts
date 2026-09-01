@@ -91,7 +91,7 @@ export async function getOrderDetail(orderId: string) {
   }
 }
 
-export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
+export async function billOrder(orderId: string, paymentMethod: PaymentMethod, emitirFactura: boolean = true) {
   try {
     const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
 
@@ -134,6 +134,10 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
         });
       }
 
+      const subtotal = Number(order.totalServices) + Number(order.totalProducts);
+      const iva = subtotal * 0.19;
+      const expectedGrandTotal = subtotal + iva;
+
       // Actualizar Orden y devolver con relaciones para el recibo
       const updatedOrderTx = await tx.order.update({
         where: { id: orderId },
@@ -141,7 +145,8 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
           status: 'FACTURADA',
           paymentMethod,
           adminId: session.userId,
-          billedAt: new Date()
+          billedAt: new Date(),
+          grandTotal: expectedGrandTotal
         },
         include: {
           vehicle: { include: { customer: true } },
@@ -156,79 +161,84 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod) {
     });
 
     // =========================================================================
-    // BLOQUE ALIADDO - Facturación Electrónica (No bloqueante)
+    // BLOQUE ALIADDO - Facturación Electrónica (Opcional)
     // =========================================================================
     let aliaddoConsecutive: string | null = null;
-    try {
-      const isCard = paymentMethod === 'TARJETA';
-      const isTransfer = paymentMethod === 'TRANSFERENCIA';
-      // Mapeo básico de método de pago (requiere validación con contador)
-      const paymentMeanCode = isCard ? '48' : (isTransfer ? '47' : '10');
+    if (emitirFactura) {
+      try {
+        const isCard = paymentMethod === 'TARJETA';
+        const isTransfer = paymentMethod === 'TRANSFERENCIA';
+        // Mapeo básico de método de pago (requiere validación con contador)
+        const paymentMeanCode = isCard ? '48' : (isTransfer ? '47' : '10');
 
-      // Mapeo de items usando los códigos reales sincronizados con Aliaddo
-      // Si un servicio no tiene código (no fue sincronizado), usamos AGUA como fallback
-      const FALLBACK_CODE = 'AGUA';
-      const details = [
-        ...updatedOrder.services.map(s => ({
-          unitValueBeforeTax: Number(s.chargedPrice),
-          quantity: 1,
-          description: s.service?.name || 'Servicio Automotriz',
-          itemCode: s.service?.aliaddoItemCode || FALLBACK_CODE,
-          discountAmount: 0,
-          discountIsPercent: true
-        })),
-        ...updatedOrder.products.map(p => ({
-          unitValueBeforeTax: Number(p.unitPrice),
-          quantity: p.quantity,
-          description: p.product?.name || 'Producto',
-          itemCode: FALLBACK_CODE, // Los productos se mapearán con el contador
-          discountAmount: 0,
-          discountIsPercent: true
-        }))
-      ];
+        // Mapeo de items usando los códigos reales sincronizados con Aliaddo
+        // Si un servicio no tiene código (no fue sincronizado), usamos AGUA como fallback
+        const FALLBACK_CODE = 'AGUA';
+        const details = [
+          ...updatedOrder.services.map(s => ({
+            unitValueBeforeTax: Number(s.chargedPrice),
+            quantity: 1,
+            description: s.service?.name || 'Servicio Automotriz',
+            itemCode: s.service?.aliaddoItemCode || FALLBACK_CODE,
+            discountAmount: 0,
+            discountIsPercent: true
+          })),
+          ...updatedOrder.products.map(p => ({
+            unitValueBeforeTax: Number(p.unitPrice),
+            quantity: p.quantity,
+            description: p.product?.name || 'Producto',
+            itemCode: FALLBACK_CODE, // Los productos se mapearán con el contador
+            discountAmount: 0,
+            discountIsPercent: true
+          }))
+        ];
 
 
-      // Obtener fecha actual en zona horaria local (Colombia) para evitar error FAD09e de la DIAN
-      const now = new Date();
-      // Formato YYYY-MM-DD ajustado a la zona horaria local (restando offset)
-      const localDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+        // Obtener fecha actual en zona horaria local (Colombia) para evitar error FAD09e de la DIAN
+        const now = new Date();
+        // Formato YYYY-MM-DD ajustado a la zona horaria local (restando offset)
+        const localDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
 
-      const invoicePayload: AliaddoInvoicePayload = {
-        date: localDate,
-        dueDate: localDate,
-        paymentFormCode: 'CR', // Contado por defecto
-        paymentMeanCode: paymentMeanCode,
-        currencyCode: 'COP',
-        personId: '1b117033-c258-4b88-b59c-f137fa3a316d', // Person ID válido extraído de Aliaddo
-        branchId: '8ffca1e5-8f58-11f1-8ea2-42010a26ccd5', // Sucursal válida
-        details: details,
-        ...(updatedOrder.vehicle.customer?.email ? {
-          customer: { email: updatedOrder.vehicle.customer.email }
-        } : {})
-      };
+        const invoicePayload: AliaddoInvoicePayload = {
+          date: localDate,
+          dueDate: localDate,
+          paymentFormCode: 'CR', // Contado por defecto
+          paymentMeanCode: paymentMeanCode,
+          currencyCode: 'COP',
+          personId: '1b117033-c258-4b88-b59c-f137fa3a316d', // Person ID válido extraído de Aliaddo
+          branchId: '8ffca1e5-8f58-11f1-8ea2-42010a26ccd5', // Sucursal válida
+          details: details,
+          ...(updatedOrder.vehicle.customer?.email ? {
+            customer: { email: updatedOrder.vehicle.customer.email }
+          } : {})
+        };
 
-      // Llamada real a Aliaddo
-      const aliaddoResponse = await AliaddoService.createInvoice(invoicePayload);
+        // Llamada real a Aliaddo
+        const aliaddoResponse = await AliaddoService.createInvoice(invoicePayload);
 
-      // Guardar el ID de Aliaddo Y el CUFE (identificador DIAN) en la BD
-      await prisma.order.update({
-        where: { id: updatedOrder.id },
-        data: {
-          aliaddoInvoiceId: aliaddoResponse.id,
-          cufe: aliaddoResponse.cufe || null,
-          aliaddoInvoiceStatus: aliaddoResponse.stateDian || aliaddoResponse.status || 'PROCESADA',
-        }
-      });
+        // Guardar el ID de Aliaddo Y el CUFE (identificador DIAN) en la BD
+        await prisma.order.update({
+          where: { id: updatedOrder.id },
+          data: {
+            aliaddoInvoiceId: aliaddoResponse.id,
+            cufe: aliaddoResponse.cufe || null,
+            aliaddoInvoiceStatus: aliaddoResponse.stateDian || aliaddoResponse.status || 'PROCESADA',
+          }
+        });
 
-      // Actualizamos el objeto en memoria para que el modal lo reciba
-      updatedOrder.aliaddoInvoiceId = aliaddoResponse.id;
-      updatedOrder.cufe = aliaddoResponse.cufe || null;
-      (updatedOrder as any).aliaddoInvoiceStatus = aliaddoResponse.stateDian || aliaddoResponse.status || 'PROCESADA';
-      aliaddoConsecutive = aliaddoResponse.consecutive || null;
+        // Actualizamos el objeto en memoria para que el modal lo reciba
+        updatedOrder.aliaddoInvoiceId = aliaddoResponse.id;
+        updatedOrder.cufe = aliaddoResponse.cufe || null;
+        (updatedOrder as any).aliaddoInvoiceStatus = aliaddoResponse.stateDian || aliaddoResponse.status || 'PROCESADA';
+        aliaddoConsecutive = aliaddoResponse.consecutive || null;
 
-    } catch (aliaddoError: any) {
-      (updatedOrder as any).aliaddoInvoiceStatus = 'ERROR';
-      (updatedOrder as any).aliaddoErrorMessage = aliaddoError.message;
+      } catch (aliaddoError: any) {
+        (updatedOrder as any).aliaddoInvoiceStatus = 'ERROR';
+        (updatedOrder as any).aliaddoErrorMessage = aliaddoError.message;
+      }
+    } else {
+      // Factura electrónica omitida por decisión del usuario
+      (updatedOrder as any).aliaddoInvoiceStatus = 'OMITIDA';
     }
     // =========================================================================
 

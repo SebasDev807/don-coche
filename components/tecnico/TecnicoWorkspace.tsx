@@ -7,7 +7,6 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { searchByPlate, createOrder } from '@/actions/orders';
 import { useRouter } from 'next/navigation';
-
 import { NextAppointmentModal } from './NextAppointmentModal';
 
 const MySwal = withReactContent(Swal);
@@ -180,31 +179,82 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
 
 
 
+  const [activeTab, setActiveTab] = useState<'registro' | 'servicios'>('registro');
+
   return (
-    <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-      <RegistrationForm 
-        plate={plate} setPlate={setPlate}
-        customerCc={customerCc} setCustomerCc={setCustomerCc}
-        customerName={customerName} setCustomerName={setCustomerName}
-        customerPhone={customerPhone} setCustomerPhone={setCustomerPhone}
-        customerEmail={customerEmail} setCustomerEmail={setCustomerEmail}
-        carBrand={carBrand} setCarBrand={setCarBrand}
-        carModel={carModel} setCarModel={setCarModel}
-        carColor={carColor} setCarColor={setCarColor}
-        onSelectCustomer={handleSelectCustomer}
-        customerVehicles={customerVehicles}
-        onSelectVehicle={handleSelectVehicle}
-        nextMaintenanceDate={nextMaintenanceDate}
-        nextMaintenanceReason={nextMaintenanceReason}
-        onOpenRecommendationModal={() => setIsModalOpen(true)}
-      />
-      <ServicesPanel 
-        catalogServices={userDepartment ? catalogServices.filter(s => s.category === userDepartment) : catalogServices}
-        selectedServices={selectedServices}
-        onToggleService={handleToggleService}
-        onSubmit={handleCreateOrder}
-        isSubmitting={isSubmitting}
-      />
+    <div className="flex-1 flex flex-col overflow-hidden relative">
+
+      {/* Tabs — solo visible en tablet (oculto en lg+) */}
+      <div className="lg:hidden flex border-b border-surface-variant bg-surface-container-lowest">
+        <button
+          type="button"
+          onClick={() => setActiveTab('registro')}
+          className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border-b-2 ${
+            activeTab === 'registro'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">directions_car</span>
+          Registro de Vehículo
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('servicios')}
+          className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border-b-2 relative ${
+            activeTab === 'servicios'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">build</span>
+          Servicios
+          {selectedServices.length > 0 && (
+            <span className="absolute top-2 right-6 bg-primary text-on-primary text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+              {selectedServices.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Layout lado a lado en lg+; tabs en tablet/mobile */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+
+        {/* Panel Registro — visible en lg siempre; en tablet según tab activa */}
+        <div className={`flex-1 lg:flex lg:w-2/5 flex-col overflow-hidden ${
+          activeTab === 'registro' ? 'flex' : 'hidden lg:flex'
+        }`}>
+          <RegistrationForm
+            plate={plate} setPlate={setPlate}
+            customerCc={customerCc} setCustomerCc={setCustomerCc}
+            customerName={customerName} setCustomerName={setCustomerName}
+            customerPhone={customerPhone} setCustomerPhone={setCustomerPhone}
+            customerEmail={customerEmail} setCustomerEmail={setCustomerEmail}
+            carBrand={carBrand} setCarBrand={setCarBrand}
+            carModel={carModel} setCarModel={setCarModel}
+            carColor={carColor} setCarColor={setCarColor}
+            onSelectCustomer={handleSelectCustomer}
+            customerVehicles={customerVehicles}
+            onSelectVehicle={handleSelectVehicle}
+            nextMaintenanceDate={nextMaintenanceDate}
+            nextMaintenanceReason={nextMaintenanceReason}
+            onOpenRecommendationModal={() => setIsModalOpen(true)}
+          />
+        </div>
+
+        {/* Panel Servicios — visible en lg siempre; en tablet según tab activa */}
+        <div className={`flex-1 lg:flex lg:w-3/5 flex-col overflow-hidden ${
+          activeTab === 'servicios' ? 'flex' : 'hidden lg:flex'
+        }`}>
+          <ServicesPanel
+            catalogServices={userDepartment ? catalogServices.filter(s => s.category === userDepartment) : catalogServices}
+            selectedServices={selectedServices}
+            onToggleService={handleToggleService}
+            onSubmit={handleCreateOrder}
+            isSubmitting={isSubmitting}
+          />
+        </div>
+      </div>
 
       <NextAppointmentModal
         isOpen={isModalOpen}

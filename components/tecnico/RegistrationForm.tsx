@@ -43,7 +43,7 @@ export const RegistrationForm = ({
   onOpenRecommendationModal
 }: RegistrationFormProps) => {
   return (
-    <section className="w-full md:w-2/5 bg-surface-container-lowest border-r border-surface-variant p-8 flex flex-col overflow-y-auto" data-purpose="registration-form">
+    <section className="w-full h-full bg-surface-container-lowest border-r border-surface-variant lg:border-r p-8 flex flex-col overflow-y-auto" data-purpose="registration-form">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-on-surface mb-2">Registro de Vehículo</h1>
         <p className="text-on-surface-variant text-base leading-relaxed">Ingrese los detalles para iniciar una nueva orden de servicio.</p>

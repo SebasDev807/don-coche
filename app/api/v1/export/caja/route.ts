@@ -102,6 +102,7 @@ export async function GET(req: NextRequest) {
       { header: 'Concepto', key: 'concept', width: 40 },
       { header: 'Total Servicios', key: 'totalServices', width: 20, style: { numFmt: currencyFormat } },
       { header: 'Total Productos', key: 'totalProducts', width: 20, style: { numFmt: currencyFormat } },
+      { header: 'IVA (19%)', key: 'iva', width: 20, style: { numFmt: currencyFormat } },
       { header: 'Total General', key: 'grandTotal', width: 20, style: { numFmt: currencyFormat } },
       { header: 'Facturada en', key: 'billedAt', width: 25 },
     ];
@@ -127,6 +128,7 @@ export async function GET(req: NextRequest) {
         concept: concept || 'Sin items',
         totalServices: Number(order.totalServices),
         totalProducts: Number(order.totalProducts),
+        iva: Number(order.grandTotal) - (Number(order.totalServices) + Number(order.totalProducts)),
         grandTotal: Number(order.grandTotal),
         billedAt: order.billedAt ? order.billedAt.toLocaleString('es-CO') : '-',
       };

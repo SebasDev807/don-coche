@@ -18,11 +18,16 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [billedOrderData, setBilledOrderData] = useState<any>(null);
+  const [emitirFactura, setEmitirFactura] = useState(true);
+
+  const subtotal = order.totalServices + order.totalProducts;
+  const iva = subtotal * 0.19;
+  const calculatedGrandTotal = subtotal + iva;
 
   const handleBill = async (method: PaymentMethod) => {
     const result = await MySwal.fire({
       title: 'Confirmar Cobro',
-      text: `¿Desea facturar esta orden por $${order.grandTotal.toLocaleString()} con ${method}?`,
+      text: `¿Desea facturar esta orden por $${calculatedGrandTotal.toLocaleString()} con ${method}?${!emitirFactura ? ' (Sin factura electrónica)' : ''}`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Sí, Facturar',
@@ -34,7 +39,7 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
       setIsSubmitting(true);
       MySwal.showLoading();
 
-      const res = await billOrder(order.id, method);
+      const res = await billOrder(order.id, method, emitirFactura);
       setIsSubmitting(false);
 
       if (res.success) {
@@ -180,16 +185,44 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
           </div>
           <div className="flex justify-between items-center text-on-surface-variant">
             <span>IVA (19%)</span>
-            <span className="font-label-bold text-on-surface">${(order.grandTotal - (order.totalServices + order.totalProducts)).toLocaleString()}</span>
+            <span className="font-label-bold text-on-surface">${iva.toLocaleString()}</span>
           </div>
           <div className="pt-4 mt-4 border-t border-outline-variant flex justify-between items-end">
             <span className="uppercase text-sm font-label-bold tracking-wider text-on-surface-variant">Gran Total</span>
-            <span className="text-4xl font-headline-lg text-primary">${order.grandTotal.toLocaleString()}</span>
+            <span className="text-4xl font-headline-lg text-primary">${calculatedGrandTotal.toLocaleString()}</span>
           </div>
         </div>
 
         <div className="mt-12 space-y-3">
-          <p className="text-xs font-label-bold text-on-surface-variant uppercase tracking-wider mb-2 text-center">Seleccionar Método de Pago</p>
+        <p className="text-xs font-label-bold text-on-surface-variant uppercase tracking-wider mb-2 text-center">Seleccionar Método de Pago</p>
+
+          {/* Toggle Factura Electrónica */}
+          <button
+            type="button"
+            onClick={() => setEmitirFactura(prev => !prev)}
+            className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-all duration-200 cursor-pointer ${
+              emitirFactura
+                ? 'bg-primary/10 border-primary/40 text-primary'
+                : 'bg-surface-container border-outline-variant text-on-surface-variant'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[20px]">
+                {emitirFactura ? 'receipt_long' : 'receipt'}
+              </span>
+              <span className="text-sm font-label-bold">
+                {emitirFactura ? 'Emitir factura electrónica' : 'Sin factura electrónica'}
+              </span>
+            </div>
+            {/* Switch visual */}
+            <div className={`relative w-10 h-6 rounded-full transition-colors duration-200 ${
+              emitirFactura ? 'bg-primary' : 'bg-outline-variant'
+            }`}>
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${
+                emitirFactura ? 'left-5' : 'left-1'
+              }`} />
+            </div>
+          </button>
           <button 
             onClick={() => handleBill('EFECTIVO')}
             disabled={isSubmitting}

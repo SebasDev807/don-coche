@@ -192,6 +192,10 @@ export function OrderAuditModal({ orderId, onClose }: OrderAuditModalProps) {
               <span>Total Repuestos</span>
               <span className="font-bold text-on-surface">${order.totalProducts.toLocaleString('es-CO')}</span>
             </div>
+            <div className="flex justify-between text-sm text-on-surface-variant">
+              <span>IVA (19%)</span>
+              <span className="font-bold text-on-surface">${(order.grandTotal - (order.totalServices + order.totalProducts)).toLocaleString('es-CO')}</span>
+            </div>
             <div className="flex justify-between items-end pt-3 border-t border-surface-variant">
               <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Gran Total</span>
               <span className="text-2xl font-black text-on-surface">${order.grandTotal.toLocaleString('es-CO')}</span>

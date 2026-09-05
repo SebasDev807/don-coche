@@ -53,8 +53,8 @@ export function CreateProductForm() {
   const unitCostValue = watch('unitCost');
   const profitPercentageValue = watch('profitPercentage');
   const ivaValue = watch('iva');
-  const hasIvaValue = watch('hasIva');
-  const autoRoundValue = watch('autoRound');
+  const hasIvaValue = watch('hasIva') as boolean;
+  const autoRoundValue = watch('autoRound') as boolean;
   const { formattedSellingPrice } = useSellingPrice(unitCostValue as number, profitPercentageValue as number, ivaValue as number, hasIvaValue, autoRoundValue);
 
 

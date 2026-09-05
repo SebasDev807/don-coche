@@ -66,8 +66,8 @@ export function EditProductForm({ product }: EditProductFormProps) {
     : unitCostValue;
 
   const ivaValue = watch('iva');
-  const hasIvaValue = watch('hasIva');
-  const autoRoundValue = watch('autoRound');
+  const hasIvaValue = watch('hasIva') as boolean;
+  const autoRoundValue = watch('autoRound') as boolean;
   const { formattedSellingPrice } = useSellingPrice(numericUnitCost as number, profitPercentageValue as number, ivaValue as number, hasIvaValue, autoRoundValue);
 
   const fetchCategories = async () => {

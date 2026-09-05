@@ -58,11 +58,31 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     products = getSeedProducts() as any;
   }
 
-  // Cálculos mock de KPIs (Normalmente vendrían del backend o calculados dinámicamente)
+  // Cálculos dinámicos de KPIs
   const totalValue = products.reduce((acc, p) => acc + (Number(p.unitCost) * p.stock), 0);
   const totalProducts = products.length;
-  const lowStockAlerts = products.filter(p => p.stock <= 10).length;
-  const leadingCategory = 'Lubricantes';
+  const lowStockAlerts = products.filter(p => p.stock <= 5).length;
+  
+  // Encontrar la categoría líder
+  const categoryCounts = products.reduce((acc, p) => {
+    const cat = p.category_rel?.name || p.category || 'Sin Categoría';
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  let leadingCategoryRaw = 'N/A';
+  let maxCount = 0;
+  for (const [cat, count] of Object.entries(categoryCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      leadingCategoryRaw = cat;
+    }
+  }
+  
+  // Capitalizar para mostrar correctamente ("ALMACEN" -> "Almacen")
+  const leadingCategory = leadingCategoryRaw !== 'N/A' 
+    ? leadingCategoryRaw.charAt(0).toUpperCase() + leadingCategoryRaw.slice(1).toLowerCase() 
+    : 'N/A';
 
   // Serializar objetos Decimal y Date para enviarlos al Client Component
   const serializedProducts = products.map((p) => ({
@@ -79,10 +99,10 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     iva: p.iva ? Number(p.iva) : 19
   }));
 
-  // Ordenar los productos para mostrar primero los de stock bajo (<= 10)
+  // Ordenar los productos para mostrar primero los de stock bajo (<= 5)
   serializedProducts.sort((a, b) => {
-    const aLowStock = a.stock <= 10;
-    const bLowStock = b.stock <= 10;
+    const aLowStock = a.stock <= 5;
+    const bLowStock = b.stock <= 5;
 
     if (aLowStock && !bLowStock) return -1;
     if (!aLowStock && bLowStock) return 1;

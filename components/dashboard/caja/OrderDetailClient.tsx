@@ -18,21 +18,22 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [billedOrderData, setBilledOrderData] = useState<any>(null);
-  const [emitirFactura, setEmitirFactura] = useState(true);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('EFECTIVO');
 
   const subtotal = order.totalServices + order.totalProducts;
   const iva = subtotal * 0.19;
   const calculatedGrandTotal = subtotal + iva;
 
-  const handleBill = async (method: PaymentMethod) => {
+  const handleBill = async (method: PaymentMethod, emitirFactura: boolean) => {
+    const actionLabel = emitirFactura ? 'Factura Electrónica DIAN' : 'Recibo POS (Sin electrónica)';
     const result = await MySwal.fire({
-      title: 'Confirmar Cobro',
-      text: `¿Desea facturar esta orden por $${calculatedGrandTotal.toLocaleString()} con ${method}?${!emitirFactura ? ' (Sin factura electrónica)' : ''}`,
+      title: emitirFactura ? 'Emitir Factura Electrónica' : 'Confirmar Cobro POS',
+      text: `¿Desea facturar esta orden por $${calculatedGrandTotal.toLocaleString()} con ${method} como ${actionLabel}?`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonText: 'Sí, Facturar',
+      confirmButtonText: emitirFactura ? 'Sí, Emitir Factura Electrónica' : 'Sí, Generar Recibo POS',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#3085d6',
+      confirmButtonColor: emitirFactura ? '#3085d6' : '#475569',
     });
 
     if (result.isConfirmed) {
@@ -49,6 +50,14 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
             html: `Factura: <b>${res.data.aliaddoConsecutive || 'N/A'}</b><br/>CUFE: <span style="font-size: 0.85em;">${res.data.cufe}</span>`,
             icon: 'success',
             confirmButtonText: 'Continuar',
+            confirmButtonColor: '#3085d6',
+          });
+        } else if (!emitirFactura) {
+          await MySwal.fire({
+            title: 'Cobro Registrado',
+            text: 'La orden se facturó exitosamente como Recibo POS.',
+            icon: 'success',
+            confirmButtonText: 'Ver Recibo',
             confirmButtonColor: '#3085d6',
           });
         } else {
@@ -171,7 +180,7 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
       </div>
 
       {/* Panel de Facturación (Derecha) */}
-      <div className="w-full md:w-[350px] bg-surface-container-highest text-on-surface p-8 flex flex-col">
+      <div className="w-full md:w-[360px] bg-surface-container-highest text-on-surface p-8 flex flex-col">
         <h2 className="font-headline-md text-headline-md mb-8">Facturación</h2>
         
         <div className="space-y-4 mb-auto font-body-lg text-body-lg">
@@ -189,64 +198,78 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
           </div>
           <div className="pt-4 mt-4 border-t border-outline-variant flex justify-between items-end">
             <span className="uppercase text-sm font-label-bold tracking-wider text-on-surface-variant">Gran Total</span>
-            <span className="text-4xl font-headline-lg text-primary">${calculatedGrandTotal.toLocaleString()}</span>
+            <span className="text-3xl font-headline-lg text-primary">${calculatedGrandTotal.toLocaleString()}</span>
           </div>
         </div>
 
-        <div className="mt-12 space-y-3">
-        <p className="text-xs font-label-bold text-on-surface-variant uppercase tracking-wider mb-2 text-center">Seleccionar Método de Pago</p>
+        <div className="mt-8 space-y-6">
+          {/* Selector de Método de Pago */}
+          <div>
+            <p className="text-xs font-label-bold text-on-surface-variant uppercase tracking-wider mb-2">
+              Método de Pago
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('EFECTIVO')}
+                className={`py-3 px-2 rounded-xl flex flex-col items-center justify-center gap-1 font-label-bold text-xs transition-all cursor-pointer ${
+                  paymentMethod === 'EFECTIVO'
+                    ? 'bg-primary text-on-primary shadow-sm'
+                    : 'bg-surface-container-lowest hover:bg-surface-container text-on-surface border border-outline-variant'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[20px]">payments</span>
+                Efectivo
+              </button>
 
-          {/* Toggle Factura Electrónica */}
-          <button
-            type="button"
-            onClick={() => setEmitirFactura(prev => !prev)}
-            className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-all duration-200 cursor-pointer ${
-              emitirFactura
-                ? 'bg-primary/10 border-primary/40 text-primary'
-                : 'bg-surface-container border-outline-variant text-on-surface-variant'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px]">
-                {emitirFactura ? 'receipt_long' : 'receipt'}
-              </span>
-              <span className="text-sm font-label-bold">
-                {emitirFactura ? 'Emitir factura electrónica' : 'Sin factura electrónica'}
-              </span>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('TARJETA')}
+                className={`py-3 px-2 rounded-xl flex flex-col items-center justify-center gap-1 font-label-bold text-xs transition-all cursor-pointer ${
+                  paymentMethod === 'TARJETA'
+                    ? 'bg-primary text-on-primary shadow-sm'
+                    : 'bg-surface-container-lowest hover:bg-surface-container text-on-surface border border-outline-variant'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[20px]">credit_card</span>
+                Tarjeta
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('TRANSFERENCIA')}
+                className={`py-3 px-2 rounded-xl flex flex-col items-center justify-center gap-1 font-label-bold text-xs transition-all cursor-pointer ${
+                  paymentMethod === 'TRANSFERENCIA'
+                    ? 'bg-primary text-on-primary shadow-sm'
+                    : 'bg-surface-container-lowest hover:bg-surface-container text-on-surface border border-outline-variant'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[20px]">account_balance</span>
+                Transferencia
+              </button>
             </div>
-            {/* Switch visual */}
-            <div className={`relative w-10 h-6 rounded-full transition-colors duration-200 ${
-              emitirFactura ? 'bg-primary' : 'bg-outline-variant'
-            }`}>
-              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${
-                emitirFactura ? 'left-5' : 'left-1'
-              }`} />
-            </div>
-          </button>
-          <button 
-            onClick={() => handleBill('EFECTIVO')}
-            disabled={isSubmitting}
-            className="w-full bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-          >
-            <span className="material-symbols-outlined">payments</span>
-            Efectivo
-          </button>
-          <button 
-            onClick={() => handleBill('TARJETA')}
-            disabled={isSubmitting}
-            className="w-full bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-          >
-            <span className="material-symbols-outlined">credit_card</span>
-            Tarjeta
-          </button>
-          <button 
-            onClick={() => handleBill('TRANSFERENCIA')}
-            disabled={isSubmitting}
-            className="w-full bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-          >
-            <span className="material-symbols-outlined">account_balance</span>
-            Transferencia
-          </button>
+          </div>
+
+          {/* Botones Explícitos de Facturación */}
+          <div className="space-y-3">
+            <button 
+              onClick={() => handleBill(paymentMethod, false)}
+              disabled={isSubmitting}
+              className="w-full bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 border border-outline-variant transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-sm shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[20px] text-on-surface-variant">receipt</span>
+              Generar Recibo POS (Sin Electrónica)
+            </button>
+
+            <button 
+              onClick={() => handleBill(paymentMethod, true)}
+              disabled={isSubmitting}
+              className="w-full bg-primary hover:bg-primary/90 text-on-primary font-label-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-sm"
+            >
+              <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+              Enviar Factura Electrónica (DIAN)
+            </button>
+          </div>
         </div>
 
         <button 

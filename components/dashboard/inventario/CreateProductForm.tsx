@@ -44,12 +44,14 @@ export function CreateProductForm() {
       stock: 0,
       unitCost: '',
       profitPercentage: '' as unknown as number,
+      iva: 19,
     },
   });
 
   const unitCostValue = watch('unitCost');
   const profitPercentageValue = watch('profitPercentage');
-  const { formattedSellingPrice } = useSellingPrice(unitCostValue as number, profitPercentageValue as number);
+  const ivaValue = watch('iva');
+  const { formattedSellingPrice } = useSellingPrice(unitCostValue as number, profitPercentageValue as number, ivaValue as number);
 
 
 
@@ -206,6 +208,21 @@ export function CreateProductForm() {
               placeholder="Ej. 15"
             />
             <ErrorMessage message={errors.profitPercentage?.message} />
+          </div>
+
+          {/* IVA */}
+          <div className="col-span-1">
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">IVA [%]</label>
+            <input
+              {...register('iva')}
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.iva ? 'border-error focus:border-error focus:ring-error' : ''}`}
+              placeholder="Ej. 19"
+            />
+            <ErrorMessage message={errors.iva?.message} />
           </div>
 
           {/* Precio de Venta al Público */}

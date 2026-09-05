@@ -169,6 +169,7 @@ model Product {
   unitCost         Decimal       @map("unit_cost") @db.Decimal(10, 2) /// Costo de compra
   salePrice        Decimal       @map("sale_price") @db.Decimal(10, 2) /// Precio de venta
   profitPercentage Decimal?      @map("profit_percentage") @db.Decimal(5, 2) /// % Ganancia (Exclusivo Gerencia)
+  iva              Decimal?      @default(19) @map("iva") @db.Decimal(5, 2) /// % IVA
   isActive         Boolean       @default(true) @map("is_active") /// Soft delete
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")

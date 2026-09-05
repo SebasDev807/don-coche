@@ -19,6 +19,7 @@ export interface InventoryProduct {
   unitCost: number;
   salePrice: number;
   profitPercentage: number;
+  iva?: number;
 }
 
 /**
@@ -98,7 +99,8 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">DESCRIPCIÓN</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CATEGORÍA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">COSTO UNIT.</th>
-              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">PORCENTAJE DE GANANCIA</th>
+              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">GANANCIA</th>
+              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">IVA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">PRECIO VENTA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">STOCK</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider text-right">ACCIONES</th>
@@ -123,6 +125,7 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
                   </td>
                   <td className="py-4 px-6 text-secondary">{formatCurrency(product.unitCost)}</td>
                   <td className="py-4 px-6 text-tertiary font-medium">{product.profitPercentage}%</td>
+                  <td className="py-4 px-6 text-secondary font-medium">{product.iva ?? 19}%</td>
                   <td className="py-4 px-6 font-semibold">{formatCurrency(product.salePrice)}</td>
                   <td className="py-4 px-6 text-center">
                     <div className={`font-bold ${product.stock === 0 ? 'text-error' : product.stock <= 5 ? 'text-yellow-600' : 'text-on-surface'}`}>{product.stock}</div>

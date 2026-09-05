@@ -75,7 +75,8 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     stock: p.stock,
     unitCost: Number(p.unitCost),
     salePrice: Number(p.salePrice),
-    profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0
+    profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0,
+    iva: p.iva ? Number(p.iva) : 19
   }));
 
   // Ordenar los productos para mostrar primero los de stock bajo (<= 10)

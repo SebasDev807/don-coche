@@ -94,10 +94,11 @@ export async function createProduct(formData: FormData) {
     const barCode = validatedData.barCode || generateEAN13();
     const slug = generateSlug(validatedData.name);
 
-    // Calculate salePrice based on unitCost and profitPercentage
+    // Calculate salePrice based on unitCost, profitPercentage, and iva
     const unitCost = validatedData.unitCost;
     const profitPercentage = validatedData.profitPercentage || 0;
-    const computedSalePrice = unitCost + (unitCost * profitPercentage / 100);
+    const iva = validatedData.iva !== undefined ? validatedData.iva : 19;
+    const computedSalePrice = (unitCost + (unitCost * profitPercentage / 100)) * (1 + iva / 100);
 
     // Insertar en la base de datos
     await prisma.product.create({
@@ -109,6 +110,7 @@ export async function createProduct(formData: FormData) {
         unitCost: unitCost,
         salePrice: computedSalePrice,
         profitPercentage: profitPercentage,
+        iva: iva,
         barCode: barCode,
         slug: slug,
         isActive: true,

@@ -26,6 +26,7 @@ interface EditProductFormProps {
     unitCost: number;
     salePrice: number;
     profitPercentage: number | null;
+    iva: number | null;
   };
 }
 
@@ -50,6 +51,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
       stock: product.stock,
       unitCost: new Intl.NumberFormat('es-CO').format(product.unitCost) as any,
       profitPercentage: product.profitPercentage || undefined as unknown as number,
+      iva: product.iva || 19,
     },
   });
 
@@ -61,7 +63,8 @@ export function EditProductForm({ product }: EditProductFormProps) {
     ? parseInt(unitCostValue.replace(/\D/g, ''), 10) || 0
     : unitCostValue;
 
-  const { formattedSellingPrice } = useSellingPrice(numericUnitCost as number, profitPercentageValue as number);
+  const ivaValue = watch('iva');
+  const { formattedSellingPrice } = useSellingPrice(numericUnitCost as number, profitPercentageValue as number, ivaValue as number);
 
   const fetchCategories = async () => {
     const cats = await getCategories();
@@ -84,6 +87,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
       stock: data.stock,
       unitCost: Number(data.unitCost),
       profitPercentage: data.profitPercentage ? Number(data.profitPercentage) : null,
+      iva: data.iva ? Number(data.iva) : null,
     } as any);
 
     setIsSubmitting(false);
@@ -201,6 +205,21 @@ export function EditProductForm({ product }: EditProductFormProps) {
               placeholder="Ej. 15"
             />
             <ErrorMessage message={errors.profitPercentage?.message} />
+          </div>
+
+          {/* IVA */}
+          <div className="col-span-1">
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">IVA [%]</label>
+            <input
+              {...register('iva')}
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.iva ? 'border-error focus:border-error focus:ring-error' : ''}`}
+              placeholder="Ej. 19"
+            />
+            <ErrorMessage message={errors.iva?.message} />
           </div>
 
           {/* Precio de Venta al Público */}

@@ -97,7 +97,7 @@ export async function createProduct(formData: FormData) {
     // Calculate salePrice based on unitCost, profitPercentage, and iva
     const unitCost = validatedData.unitCost;
     const profitPercentage = validatedData.profitPercentage || 0;
-    const iva = validatedData.iva !== undefined ? validatedData.iva : 19;
+    const iva = validatedData.hasIva ? (validatedData.iva !== undefined ? validatedData.iva : 19) : 0;
     const computedSalePrice = (unitCost + (unitCost * profitPercentage / 100)) * (1 + iva / 100);
 
     // Insertar en la base de datos

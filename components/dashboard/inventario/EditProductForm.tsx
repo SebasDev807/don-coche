@@ -51,6 +51,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
       stock: product.stock,
       unitCost: new Intl.NumberFormat('es-CO').format(product.unitCost) as any,
       profitPercentage: product.profitPercentage || undefined as unknown as number,
+      hasIva: product.iva !== null && product.iva > 0,
       iva: product.iva || 19,
     },
   });
@@ -64,7 +65,8 @@ export function EditProductForm({ product }: EditProductFormProps) {
     : unitCostValue;
 
   const ivaValue = watch('iva');
-  const { formattedSellingPrice } = useSellingPrice(numericUnitCost as number, profitPercentageValue as number, ivaValue as number);
+  const hasIvaValue = watch('hasIva');
+  const { formattedSellingPrice } = useSellingPrice(numericUnitCost as number, profitPercentageValue as number, ivaValue as number, hasIvaValue);
 
   const fetchCategories = async () => {
     const cats = await getCategories();
@@ -87,7 +89,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
       stock: data.stock,
       unitCost: Number(data.unitCost),
       profitPercentage: data.profitPercentage ? Number(data.profitPercentage) : null,
-      iva: data.iva ? Number(data.iva) : null,
+      iva: data.hasIva ? (data.iva ? Number(data.iva) : 19) : 0,
     } as any);
 
     setIsSubmitting(false);
@@ -209,14 +211,25 @@ export function EditProductForm({ product }: EditProductFormProps) {
 
           {/* IVA */}
           <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">IVA [%]</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block font-label-bold text-label-bold text-on-surface-variant">IVA [%]</label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
+                <input
+                  type="checkbox"
+                  {...register('hasIva')}
+                  className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
+                />
+                Incluir IVA
+              </label>
+            </div>
             <input
               {...register('iva')}
               type="number"
               min="0"
               max="100"
               step="1"
-              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.iva ? 'border-error focus:border-error focus:ring-error' : ''}`}
+              disabled={!hasIvaValue}
+              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim disabled:bg-surface-container-highest disabled:text-secondary-fixed-dim ${errors.iva ? 'border-error focus:border-error focus:ring-error' : ''}`}
               placeholder="Ej. 19"
             />
             <ErrorMessage message={errors.iva?.message} />

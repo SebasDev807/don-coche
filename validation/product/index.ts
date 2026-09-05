@@ -24,6 +24,11 @@ export const createProductSchema = z.object({
     if (val === '') return undefined;
     return val;
   }, z.number({ message: 'Debes ingresar un valor numérico' }).min(0, 'El IVA no puede ser negativo').max(100, 'El IVA máximo es 100').optional()),
+  hasIva: z.preprocess((val) => {
+    if (val === 'true' || val === true) return true;
+    if (val === 'false' || val === false || val === undefined) return false;
+    return Boolean(val);
+  }, z.boolean().optional().default(true)),
 });
 
 export type CreateProductFormValues = z.infer<typeof createProductSchema>;

@@ -98,7 +98,11 @@ export async function createProduct(formData: FormData) {
     const unitCost = validatedData.unitCost;
     const profitPercentage = validatedData.profitPercentage || 0;
     const iva = validatedData.hasIva ? (validatedData.iva !== undefined ? validatedData.iva : 19) : 0;
-    const computedSalePrice = (unitCost + (unitCost * profitPercentage / 100)) * (1 + iva / 100);
+    let computedSalePrice = (unitCost + (unitCost * profitPercentage / 100)) * (1 + iva / 100);
+    
+    if (validatedData.autoRound) {
+      computedSalePrice = Math.round(computedSalePrice / 50) * 50;
+    }
 
     // Insertar en la base de datos
     await prisma.product.create({

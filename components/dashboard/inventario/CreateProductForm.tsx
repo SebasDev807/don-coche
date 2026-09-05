@@ -46,6 +46,7 @@ export function CreateProductForm() {
       profitPercentage: '' as unknown as number,
       hasIva: true,
       iva: 19,
+      autoRound: true,
     },
   });
 
@@ -53,7 +54,8 @@ export function CreateProductForm() {
   const profitPercentageValue = watch('profitPercentage');
   const ivaValue = watch('iva');
   const hasIvaValue = watch('hasIva');
-  const { formattedSellingPrice } = useSellingPrice(unitCostValue as number, profitPercentageValue as number, ivaValue as number, hasIvaValue);
+  const autoRoundValue = watch('autoRound');
+  const { formattedSellingPrice } = useSellingPrice(unitCostValue as number, profitPercentageValue as number, ivaValue as number, hasIvaValue, autoRoundValue);
 
 
 
@@ -240,7 +242,17 @@ export function CreateProductForm() {
 
           {/* Precio de Venta al Público */}
           <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Precio de Venta al publico)</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block font-label-bold text-label-bold text-on-surface-variant">Precio de Venta al publico)</label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
+                <input
+                  type="checkbox"
+                  {...register('autoRound')}
+                  className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
+                />
+                Redondear a $50
+              </label>
+            </div>
             <input
               type="text"
               value={formattedSellingPrice}

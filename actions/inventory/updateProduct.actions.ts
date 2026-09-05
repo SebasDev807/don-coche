@@ -19,6 +19,7 @@ export interface UpdateProductInput {
   salePrice?: number;
   profitPercentage?: number;
   iva?: number;
+  autoRound?: boolean;
   isActive?: boolean;
 }
 
@@ -44,7 +45,7 @@ export interface UpdateProductResponse {
  */
   export async function updateProduct(data: UpdateProductInput): Promise<UpdateProductResponse> {
     try {
-      const { id, name, description, categoryId, barCode, stock, unitCost, salePrice, profitPercentage, iva, isActive } = data;
+      const { id, name, description, categoryId, barCode, stock, unitCost, salePrice, profitPercentage, iva, autoRound, isActive } = data;
   
       if (!id) {
         return {
@@ -99,11 +100,18 @@ export interface UpdateProductResponse {
       }
   
       // Compute salePrice if unitCost, profitPercentage, or iva changed
-      if (unitCost !== undefined || profitPercentage !== undefined || iva !== undefined) {
+      if (unitCost !== undefined || profitPercentage !== undefined || iva !== undefined || autoRound !== undefined) {
         const finalUnitCost = unitCost !== undefined ? unitCost : Number(existing.unitCost);
         const finalProfitPercentage = profitPercentage !== undefined ? profitPercentage : (existing.profitPercentage ? Number(existing.profitPercentage) : 0);
         const finalIva = iva !== undefined ? iva : (existing.iva ? Number(existing.iva) : 19);
-        const computedSalePrice = (finalUnitCost + (finalUnitCost * finalProfitPercentage / 100)) * (1 + finalIva / 100);
+        let computedSalePrice = (finalUnitCost + (finalUnitCost * finalProfitPercentage / 100)) * (1 + finalIva / 100);
+        
+        // Use provided autoRound or default to true for existing logic
+        const shouldRound = autoRound !== undefined ? autoRound : true;
+        if (shouldRound) {
+          computedSalePrice = Math.round(computedSalePrice / 50) * 50;
+        }
+
         updateData.salePrice = new Prisma.Decimal(computedSalePrice);
       } else if (salePrice !== undefined) {
         updateData.salePrice = new Prisma.Decimal(salePrice);

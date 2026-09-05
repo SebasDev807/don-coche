@@ -53,6 +53,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
       profitPercentage: product.profitPercentage || undefined as unknown as number,
       hasIva: product.iva !== null && product.iva > 0,
       iva: product.iva || 19,
+      autoRound: true,
     },
   });
 
@@ -66,7 +67,8 @@ export function EditProductForm({ product }: EditProductFormProps) {
 
   const ivaValue = watch('iva');
   const hasIvaValue = watch('hasIva');
-  const { formattedSellingPrice } = useSellingPrice(numericUnitCost as number, profitPercentageValue as number, ivaValue as number, hasIvaValue);
+  const autoRoundValue = watch('autoRound');
+  const { formattedSellingPrice } = useSellingPrice(numericUnitCost as number, profitPercentageValue as number, ivaValue as number, hasIvaValue, autoRoundValue);
 
   const fetchCategories = async () => {
     const cats = await getCategories();
@@ -90,6 +92,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
       unitCost: Number(data.unitCost),
       profitPercentage: data.profitPercentage ? Number(data.profitPercentage) : null,
       iva: data.hasIva ? (data.iva ? Number(data.iva) : 19) : 0,
+      autoRound: data.autoRound,
     } as any);
 
     setIsSubmitting(false);
@@ -237,7 +240,17 @@ export function EditProductForm({ product }: EditProductFormProps) {
 
           {/* Precio de Venta al Público */}
           <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Precio de Venta (PVP)</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block font-label-bold text-label-bold text-on-surface-variant">Precio de Venta (PVP)</label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
+                <input
+                  type="checkbox"
+                  {...register('autoRound')}
+                  className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
+                />
+                Redondear a $50
+              </label>
+            </div>
             <input
               type="text"
               value={formattedSellingPrice}

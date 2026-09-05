@@ -8,10 +8,10 @@ export async function GET() {
   try {
     const now = new Date();
     
-    // Calculamos el tiempo límite: hace 30 días (1 mes)
-    const limitTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    // Calculamos el tiempo límite: hace 7 días (1 semana)
+    const limitTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Buscar usuarios (empleados) que estén inactivos desde hace más de un mes
+    // Buscar usuarios (empleados) que estén inactivos desde hace más de una semana
     const inactiveUsers = await prisma.user.findMany({
       where: {
         isActive: false,
@@ -25,7 +25,7 @@ export async function GET() {
       return NextResponse.json({
         success: true,
         deletedCount: 0,
-        message: 'No hay usuarios inactivos desde hace más de un mes para eliminar.',
+        message: 'No hay usuarios inactivos desde hace más de una semana para eliminar.',
       });
     }
 

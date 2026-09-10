@@ -61,7 +61,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
   // Cálculos dinámicos de KPIs
   const totalValue = products.reduce((acc, p) => acc + (Number(p.unitCost) * p.stock), 0);
   const totalProducts = products.length;
-  const lowStockAlerts = products.filter(p => p.stock <= 5).length;
+  const lowStockAlerts = products.filter(p => p.stock <= 3).length;
   
   // Encontrar la categoría líder
   const categoryCounts = products.reduce((acc, p) => {
@@ -99,10 +99,10 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     iva: p.iva ? Number(p.iva) : 19
   }));
 
-  // Ordenar los productos para mostrar primero los de stock bajo (<= 5)
+  // Ordenar los productos para mostrar primero los de stock bajo (<= 3)
   serializedProducts.sort((a, b) => {
-    const aLowStock = a.stock <= 5;
-    const bLowStock = b.stock <= 5;
+    const aLowStock = a.stock <= 3;
+    const bLowStock = b.stock <= 3;
 
     if (aLowStock && !bLowStock) return -1;
     if (!aLowStock && bLowStock) return 1;

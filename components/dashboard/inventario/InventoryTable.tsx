@@ -128,13 +128,13 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
                   <td className="py-4 px-6 text-secondary font-medium">{product.iva ?? 19}%</td>
                   <td className="py-4 px-6 font-semibold">{formatCurrency(product.salePrice)}</td>
                   <td className="py-4 px-6 text-center">
-                    <div className={`font-bold ${product.stock === 0 ? 'text-error' : product.stock <= 5 ? 'text-yellow-600' : 'text-on-surface'}`}>{product.stock}</div>
+                    <div className={`font-bold ${product.stock === 0 ? 'text-error' : product.stock <= 3 ? 'text-yellow-600' : 'text-on-surface'}`}>{product.stock}</div>
                     {product.stock === 0 ? (
                       <div className="text-[10px] uppercase font-bold text-error flex items-center justify-center gap-1 mt-1">
                         <span className="material-symbols-outlined text-[12px]">block</span>
                         Agotado
                       </div>
-                    ) : product.stock <= 5 ? (
+                    ) : product.stock <= 3 ? (
                       <div className="text-[10px] uppercase font-bold text-yellow-600 flex items-center justify-center gap-1 mt-1">
                         <span className="material-symbols-outlined text-[12px]">warning</span>
                         Stock Bajo

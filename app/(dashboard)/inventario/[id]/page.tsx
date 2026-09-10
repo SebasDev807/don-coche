@@ -88,10 +88,10 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                   Stock Actual
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className={`font-title-lg ${product.stock <= 10 ? 'text-error' : 'text-on-surface'}`}>
+                  <span className={`font-title-lg ${product.stock <= 3 ? 'text-error' : 'text-on-surface'}`}>
                     {product.stock} {product.stock === 1 ? 'unidad' : 'unidades'}
                   </span>
-                  {product.stock <= 10 && (
+                  {product.stock <= 3 && (
                     <span className="bg-error/10 text-error text-[10px] uppercase font-bold px-2 py-0.5 rounded">Stock Bajo</span>
                   )}
                 </div>

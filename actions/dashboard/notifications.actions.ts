@@ -17,7 +17,7 @@ export interface AppNotification {
 
 /**
  * Obtiene las notificaciones del sistema.
- * Por ahora solo obtiene notificaciones de productos con stock bajo (<= 5).
+ * Por ahora solo obtiene notificaciones de productos con stock bajo (<= 3).
  */
 export async function getNotificationsAction(): Promise<AppNotification[]> {
   // Solo superusuarios, gerentes o administradores
@@ -29,7 +29,7 @@ export async function getNotificationsAction(): Promise<AppNotification[]> {
   const lowStockProducts = await prisma.product.findMany({
     where: {
       stock: {
-        lte: 5,
+        lte: 3,
       },
       isActive: true,
     },

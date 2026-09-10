@@ -44,7 +44,7 @@ export function ServiceCard({ service }: { service: any }) {
     }
   };
 
-  const { formattedSellingPrice } = useSellingPrice(service.basePrice, service.profitPercentage);
+
 
   return (
     <div 
@@ -72,32 +72,12 @@ export function ServiceCard({ service }: { service: any }) {
       {/* Right: Details and Actions */}
       <div className="flex flex-wrap items-center gap-6 w-full md:w-auto mt-4 md:mt-0 pl-2 md:pl-0">
         
-        <div className="flex flex-col min-w-[100px]">
-          <span className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]">payments</span>
-            Precio Base
-          </span>
-          <span className="font-body-lg text-on-surface font-medium">${Number(service.basePrice).toLocaleString('es-CO')}</span>
-        </div>
-        
-        <div className="flex flex-col min-w-[80px]">
-          <span className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]">trending_up</span>
-            Margen
-          </span>
-          <div className="flex items-center gap-1">
-            <span className="font-body-lg text-tertiary font-bold bg-tertiary/10 px-2 py-0.5 rounded text-sm">
-              {service.profitPercentage ? `${service.profitPercentage}%` : '0%'}
-            </span>
-          </div>
-        </div>
-
         <div className="flex flex-col min-w-[120px]">
           <span className="text-label-sm text-primary uppercase tracking-wider mb-1 font-bold flex items-center gap-1">
             <span className="material-symbols-outlined text-[14px]">sell</span>
-            PVP
+            Precio
           </span>
-          <span className="font-title-lg text-primary font-black">{formattedSellingPrice}</span>
+          <span className="font-title-lg text-primary font-black">${Number(service.basePrice).toLocaleString('es-CO')}</span>
         </div>
 
         {/* Actions (stop propagation to prevent navigating when clicking buttons) */}

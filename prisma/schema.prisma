@@ -187,7 +187,6 @@ model ServiceCatalog {
   category         ItemCategory?
   categoryId       String?       @map("category_id") @db.Uuid
   basePrice        Decimal       @map("base_price") @db.Decimal(10, 2)
-  profitPercentage Float?        @map("profit_percentage")
   description      String?
   isActive         Boolean       @default(true) @map("is_active")
   createdAt        DateTime      @default(now()) @map("created_at")

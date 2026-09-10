@@ -83,39 +83,6 @@ export async function loginAction(cc: string, password: string): Promise<LoginRe
       role: user.role,
     });
 
-    // Registrar asistencia para roles que no sean gerencia/superusuario
-    if (user.role !== 'GERENTE' && user.role !== 'SUPERUSUARIO') {
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-
-      // Buscar si ya existe un registro de hoy
-      const existingToday = await prisma.attendanceRecord.findFirst({
-        where: {
-          userId: user.id,
-          date: { gte: todayStart },
-        },
-      });
-
-      if (existingToday) {
-        // Si ya ingresó hoy y vuelve a hacer login, reabrimos el turno
-        // borrando el clockOut anterior (mantiene su hora original de entrada).
-        await prisma.attendanceRecord.update({
-          where: { id: existingToday.id },
-          data: { clockOut: null },
-        });
-      } else {
-        // Si no hay registro hoy, primero cerramos sesiones de días anteriores
-        await prisma.attendanceRecord.updateMany({
-          where: { userId: user.id, clockOut: null },
-          data: { clockOut: new Date() },
-        });
-
-        // Y creamos un registro completamente nuevo
-        await prisma.attendanceRecord.create({
-          data: { userId: user.id },
-        });
-      }
-    }
 
     // Retornar datos mínimos para el feedback de bienvenida en el cliente
     return {
@@ -140,18 +107,7 @@ export async function loginAction(cc: string, password: string): Promise<LoginRe
  * Debe llamarse desde un Server Component o Server Action.
  */
 export async function logoutAction(): Promise<never> {
-  try {
-    const session = await getSession();
-    if (session && session.role !== 'GERENTE' && session.role !== 'SUPERUSUARIO') {
-      // Marcar la hora de salida
-      await prisma.attendanceRecord.updateMany({
-        where: { userId: session.userId, clockOut: null },
-        data: { clockOut: new Date() },
-      });
-    }
-  } catch (error) {
-    console.error('[logoutAction] Error registrando salida:', error);
-  }
+
 
   await deleteSession();
   redirect('/auth');

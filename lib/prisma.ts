@@ -27,6 +27,12 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+// Force a reload of the Prisma Client in dev to pick up schema changes
+if (process.env.NODE_ENV !== 'production') {
+  delete (globalThis as any).prisma;
+  globalForPrisma.prisma = undefined;
+}
+
 /**
  * Instancia singleton de PrismaClient.
  *

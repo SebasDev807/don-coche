@@ -31,19 +31,16 @@ export async function GET() {
       { header: 'Nombre del Servicio', key: 'name', width: 40 },
       { header: 'Categoría', key: 'category', width: 25 },
       { header: 'Precio Base', key: 'basePrice', width: 20, style: { numFmt: currencyFormat } },
-      { header: '% Ganancia', key: 'profitPercentage', width: 15, style: { numFmt: percentFormat } },
       { header: 'Descripción', key: 'description', width: 50 },
     ];
 
     const data = services.map((service) => {
       const basePrice = Number(service.basePrice) || 0;
-      const profitPercentage = service.profitPercentage ? Number(service.profitPercentage) / 100 : 0;
 
       return {
         name: service.name,
         category: service.category_rel?.name || service.category || 'Sin Categoría',
         basePrice: basePrice,
-        profitPercentage: profitPercentage,
         description: service.description || 'Sin descripción',
       };
     });

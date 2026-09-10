@@ -23,11 +23,7 @@ export default async function ServiceDetailPage(props: { params: Promise<{ id: s
   const service = response.data;
 
   const basePrice = Number(service.basePrice);
-  const profitPercentage = service.profitPercentage || 0;
-  const sellingPrice = basePrice + (basePrice * profitPercentage) / 100;
-
   const formattedBasePrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(basePrice);
-  const formattedSellingPrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(sellingPrice);
 
   const getIconForCategory = (category: string | null | undefined) => {
     if (category === 'SERVITECA') return 'settings';
@@ -70,31 +66,13 @@ export default async function ServiceDetailPage(props: { params: Promise<{ id: s
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 mb-8 bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/60">
+            <div className="mb-8 bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/60">
               <div className="flex flex-col">
-                <span className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[16px]">payments</span>
-                  Precio Base
-                </span>
-                <span className="font-title-md text-on-surface">{formattedBasePrice}</span>
-              </div>
-
-              <div className="flex flex-col">
-                <span className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[16px]">trending_up</span>
-                  Margen de Ganancia
-                </span>
-                <span className="font-title-md text-tertiary font-bold bg-tertiary/10 px-2 py-0.5 rounded w-fit">
-                  {profitPercentage}%
-                </span>
-              </div>
-
-              <div className="flex flex-col col-span-2 pt-4 border-t border-outline-variant/60 mt-2">
                 <span className="text-label-sm text-primary uppercase tracking-wider mb-1 font-bold flex items-center gap-1">
                   <span className="material-symbols-outlined text-[18px]">sell</span>
-                  Precio al Público (PVP)
+                  Precio del Servicio
                 </span>
-                <span className="font-display-sm text-primary font-black">{formattedSellingPrice}</span>
+                <span className="font-display-sm text-primary font-black">{formattedBasePrice}</span>
               </div>
             </div>
 

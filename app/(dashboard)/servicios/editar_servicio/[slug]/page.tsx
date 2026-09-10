@@ -27,7 +27,6 @@ export default async function EditServicePage({ params }: { params: Promise<{ sl
           name: service.name,
           category: service.category as any, // Cast ItemCategory
           basePrice: Number(service.basePrice),
-          profitPercentage: service.profitPercentage || undefined,
           description: service.description || undefined,
         }} 
       />

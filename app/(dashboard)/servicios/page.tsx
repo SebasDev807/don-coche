@@ -93,7 +93,6 @@ export default async function CatalogServicePage(props: {
                     name: service.name,
                     category: service.category,
                     basePrice: service.basePrice,
-                    profitPercentage: service.profitPercentage,
                     description: service.description,
                     isActive: service.isActive
                   }} 

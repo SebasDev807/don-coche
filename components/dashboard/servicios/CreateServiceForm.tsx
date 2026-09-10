@@ -38,12 +38,14 @@ export function CreateServiceForm() {
       profitPercentage: 0,
 
       description: '',
+      autoRound: true,
     },
   });
 
   const basePriceValue = watch('basePrice');
   const profitPercentageValue = watch('profitPercentage');
-  const { formattedSellingPrice } = useSellingPrice(basePriceValue as number, profitPercentageValue as number, 0, false, false);
+  const autoRoundValue = watch('autoRound') as boolean;
+  const { formattedSellingPrice } = useSellingPrice(basePriceValue as number, profitPercentageValue as number, 0, false, autoRoundValue);
 
 
   const onSubmit = async (data: CreateServiceFormValues) => {
@@ -157,7 +159,17 @@ export function CreateServiceForm() {
 
           {/* Precio de Venta al Público (Calculado) */}
           <div className="col-span-1 md:col-span-2">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Precio Final de Venta</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block font-label-bold text-label-bold text-on-surface-variant">Precio Final de Venta</label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
+                <input
+                  type="checkbox"
+                  {...register('autoRound')}
+                  className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
+                />
+                Redondear a $50
+              </label>
+            </div>
             <input
               type="text"
               value={formattedSellingPrice}

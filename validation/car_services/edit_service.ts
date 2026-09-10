@@ -10,6 +10,11 @@ export const editServiceSchema = z.object({
   }, z.number({ message: 'Debes ingresar un valor numérico' }).min(0, 'El precio no puede ser negativo')),
   profitPercentage: z.coerce.number().min(0, 'La ganancia no puede ser negativa').optional(),
   description: z.string().optional(),
+  autoRound: z.preprocess((val) => {
+    if (val === 'true' || val === true) return true;
+    if (val === 'false' || val === false || val === undefined) return false;
+    return Boolean(val);
+  }, z.boolean().optional().default(true)),
 });
 
 export type EditServiceFormValues = z.infer<typeof editServiceSchema>;

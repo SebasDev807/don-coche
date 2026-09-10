@@ -28,3 +28,4 @@
 * **Stack Tecnológico Exclusivo:** El desarrollo se construirá utilizando únicamente Next.js. El enfoque está en aprovechar todo el potencial del framework (Server Components, Server Actions) para mantener el código cohesivo, tomando el tiempo que sea necesario para estructurar una base inquebrantable.
 * **Control de dependencias:** No instales UI kits complejos, pesados o fuertemente pre-estilizados. Mantén la configuración minimalista y enfocada en construir un Producto Mínimo Viable (MVP) que sea excepcionalmente fácil e intuitivo de usar.
 * **Tono:** La interfaz y la comunicación del sistema deben ser directas, operativas y eficientes, sin elementos visuales superfluos que distraigan del flujo de trabajo de la serviteca.
+* **Verificación de Cambios:** Al finalizar cualquier conjunto de cambios, ejecuta siempre `pnpm build` para comprobar que todo está en orden, garantizando que no haya errores de tipado o compilación en el proyecto.

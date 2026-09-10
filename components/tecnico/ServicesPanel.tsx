@@ -26,7 +26,11 @@ export const ServicesPanel = ({
 
   const totalAmount = selectedServices.reduce((acc, id) => {
     const service = catalogServices.find(s => s.id === id);
-    return acc + (service ? Number(service.basePrice) : 0);
+    if (!service) return acc;
+    const basePrice = Number(service.basePrice) || 0;
+    const profitPercentage = Number(service.profitPercentage) || 0;
+    const pvp = basePrice + (basePrice * profitPercentage / 100);
+    return acc + pvp;
   }, 0);
 
   return (
@@ -53,17 +57,23 @@ export const ServicesPanel = ({
       <div className="p-6 flex-1 overflow-y-auto border-b border-surface-variant">
         <h2 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-4">Catálogo de Servicios</h2>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredServices.map(service => (
-            <ServiceCard 
-              key={service.id} 
-              id={service.id} 
-              name={service.name} 
-              category={service.category} 
-              price={Number(service.basePrice)}
-              isSelected={selectedServices.includes(service.id)}
-              onToggle={() => onToggleService(service.id)}
-            />
-          ))}
+          {filteredServices.map(service => {
+            const basePrice = Number(service.basePrice) || 0;
+            const profitPercentage = Number(service.profitPercentage) || 0;
+            const pvp = basePrice + (basePrice * profitPercentage / 100);
+
+            return (
+              <ServiceCard 
+                key={service.id} 
+                id={service.id} 
+                name={service.name} 
+                category={service.category} 
+                price={pvp}
+                isSelected={selectedServices.includes(service.id)}
+                onToggle={() => onToggleService(service.id)}
+              />
+            );
+          })}
           
           {filteredServices.length === 0 && (
             <p className="col-span-full text-center text-on-surface-variant py-8">No hay servicios que coincidan con la búsqueda.</p>

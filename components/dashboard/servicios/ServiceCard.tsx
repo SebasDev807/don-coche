@@ -19,6 +19,10 @@ const getIconForCategory = (category: string | null | undefined) => {
 
 export function ServiceCard({ service }: { service: any }) {
   const router = useRouter();
+  
+  const basePrice = Number(service.basePrice) || 0;
+  const profitPercentage = Number(service.profitPercentage) || 0;
+  const pvp = basePrice + (basePrice * profitPercentage / 100);
 
   const handleDelete = async () => {
     const result = await MySwal.fire({
@@ -72,12 +76,17 @@ export function ServiceCard({ service }: { service: any }) {
       {/* Right: Details and Actions */}
       <div className="flex flex-wrap items-center gap-6 w-full md:w-auto mt-4 md:mt-0 pl-2 md:pl-0">
         
-        <div className="flex flex-col min-w-[120px]">
-          <span className="text-label-sm text-primary uppercase tracking-wider mb-1 font-bold flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]">sell</span>
-            Precio
+        <div className="flex flex-col min-w-[120px] items-end md:items-start">
+          <span className="text-label-sm text-on-surface-variant tracking-wider mb-1 font-bold flex items-center gap-1">
+            Precio Base: ${basePrice.toLocaleString('es-CO')}
           </span>
-          <span className="font-title-lg text-primary font-black">${Number(service.basePrice).toLocaleString('es-CO')}</span>
+          <div className="flex flex-col">
+            <span className="text-label-sm text-primary uppercase tracking-wider mb-1 font-bold flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">sell</span>
+              PVP
+            </span>
+            <span className="font-title-lg text-primary font-black">${pvp.toLocaleString('es-CO')}</span>
+          </div>
         </div>
 
         {/* Actions (stop propagation to prevent navigating when clicking buttons) */}

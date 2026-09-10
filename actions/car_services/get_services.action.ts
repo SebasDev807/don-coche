@@ -34,6 +34,7 @@ export async function getServices({ page = 1, limit = 8, category, query }: { pa
       data: services.map(service => ({
         ...service,
         basePrice: Number(service.basePrice),
+        profitPercentage: Number(service.profitPercentage) || 0,
       })),
       pagination: {
         page,
@@ -73,6 +74,7 @@ export async function getServiceById(id: string) {
       data: {
         ...service,
         basePrice: Number(service.basePrice),
+        profitPercentage: Number(service.profitPercentage) || 0,
       },
     };
   } catch (error: any) {

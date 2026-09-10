@@ -35,6 +35,7 @@ export function CreateServiceForm() {
 
       category: undefined,
       basePrice: '',
+      profitPercentage: '',
 
       description: '',
     },
@@ -131,6 +132,24 @@ export function CreateServiceForm() {
             errors={errors}
             placeholder="0"
           />
+
+          {/* Porcentaje de Ganancia */}
+          <div className="col-span-1">
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">% de Ganancia (Opcional)</label>
+            <div className="relative">
+              <input
+                {...register('profitPercentage')}
+                className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 pr-8 text-on-surface placeholder:text-secondary-fixed-dim ${errors.profitPercentage ? 'border-error focus:border-error focus:ring-error' : ''}`}
+                placeholder="Ej. 20"
+                type="number"
+                step="0.01"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-secondary font-bold">
+                %
+              </div>
+            </div>
+            <ErrorMessage message={errors.profitPercentage?.message} />
+          </div>
 
 
           {/* Descripción */}

@@ -8,6 +8,7 @@ export const createServiceSchema = z.object({
     if (typeof val === 'string') return parseInt(val.replace(/\D/g, ''), 10) || 0;
     return val;
   }, z.number({ message: 'Debes ingresar un valor numérico' }).min(0, 'El precio no puede ser negativo')),
+  profitPercentage: z.coerce.number().min(0, 'La ganancia no puede ser negativa').optional(),
   description: z.string().optional(),
 });
 

@@ -23,7 +23,10 @@ export default async function ServiceDetailPage(props: { params: Promise<{ id: s
   const service = response.data;
 
   const basePrice = Number(service.basePrice);
+  const profitPercentage = Number(service.profitPercentage) || 0;
+  const pvp = basePrice + (basePrice * profitPercentage / 100);
   const formattedBasePrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(basePrice);
+  const formattedPvp = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(pvp);
 
   const getIconForCategory = (category: string | null | undefined) => {
     if (category === 'SERVITECA') return 'settings';
@@ -67,12 +70,21 @@ export default async function ServiceDetailPage(props: { params: Promise<{ id: s
             </div>
 
             <div className="mb-8 bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/60">
-              <div className="flex flex-col">
-                <span className="text-label-sm text-primary uppercase tracking-wider mb-1 font-bold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[18px]">sell</span>
-                  Precio del Servicio
-                </span>
-                <span className="font-display-sm text-primary font-black">{formattedBasePrice}</span>
+              <div className="flex flex-col md:flex-row gap-8">
+                <div className="flex flex-col">
+                  <span className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1 font-bold flex items-center gap-1">
+                    Precio Base
+                  </span>
+                  <span className="font-headline-lg text-on-surface-variant font-bold">{formattedBasePrice}</span>
+                </div>
+                <div className="hidden md:block w-px bg-outline-variant/60"></div>
+                <div className="flex flex-col">
+                  <span className="text-label-sm text-primary uppercase tracking-wider mb-1 font-bold flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[18px]">sell</span>
+                    PVP
+                  </span>
+                  <span className="font-display-sm text-primary font-black">{formattedPvp}</span>
+                </div>
               </div>
             </div>
 

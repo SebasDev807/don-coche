@@ -236,6 +236,7 @@ export const RescheduleForm = () => {
                   }
                 }}
                 minDate={new Date()}
+                filterDate={(date) => date.getDay() !== 0 && date.getDay() !== 6}
                 dateFormat="dd/MM/yyyy"
                 className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface focus:ring-primary focus:border-primary ${dateError ? 'border-error' : 'border-outline'}`}
               />
@@ -251,6 +252,7 @@ export const RescheduleForm = () => {
                   { value: '10:00', label: '10:00 AM' },
                   { value: '11:00', label: '11:00 AM' },
                   { value: '12:00', label: '12:00 PM' },
+                  { value: '13:00', label: '01:00 PM' },
                   { value: '14:00', label: '02:00 PM' },
                   { value: '15:00', label: '03:00 PM' },
                   { value: '16:00', label: '04:00 PM' },

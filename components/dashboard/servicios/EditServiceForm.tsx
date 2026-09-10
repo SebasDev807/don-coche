@@ -46,12 +46,14 @@ export function EditServiceForm({ id, defaultValues }: EditServiceFormProps) {
       name: defaultValues.name ?? '',
       category: defaultValues.category ?? undefined,
       basePrice: (defaultValues.basePrice ?? '') as unknown as number,
-      profitPercentage: (defaultValues.profitPercentage ?? '') as unknown as number,
+      profitPercentage: (defaultValues.profitPercentage ?? 0) as unknown as number,
       description: defaultValues.description ?? '',
     },
   });
 
   const basePriceValue = watch('basePrice');
+  const profitPercentageValue = watch('profitPercentage');
+  const { formattedSellingPrice } = useSellingPrice(basePriceValue as number, profitPercentageValue as number, 0, false, false);
 
 
   const onSubmit = async (data: EditServiceFormValues) => {
@@ -147,13 +149,27 @@ export function EditServiceForm({ id, defaultValues }: EditServiceFormProps) {
                 className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 pr-8 text-on-surface placeholder:text-secondary-fixed-dim ${errors.profitPercentage ? 'border-error focus:border-error focus:ring-error' : ''}`}
                 placeholder="Ej. 20"
                 type="number"
-                step="0.01"
+                min="0"
+                max="100"
+                step="1"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-secondary font-bold">
                 %
               </div>
             </div>
             <ErrorMessage message={errors.profitPercentage?.message} />
+          </div>
+
+          {/* Precio de Venta al Público (Calculado) */}
+          <div className="col-span-1 md:col-span-2">
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Precio Final de Venta</label>
+            <input
+              type="text"
+              value={formattedSellingPrice}
+              readOnly
+              className="h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface-container-highest px-4 text-on-surface-variant cursor-not-allowed"
+            />
+            <p className="text-secondary text-sm mt-1">Calculado automáticamente: Precio Base + (Precio Base * % Ganancia)</p>
           </div>
 
 

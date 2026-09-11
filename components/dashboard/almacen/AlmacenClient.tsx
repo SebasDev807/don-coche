@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { PaymentMethod } from '@prisma/client';
+import { PaymentMethod, ItemCategory } from '@prisma/client';
 import { AlmacenProduct, createProductSale } from '@/actions/almacen/almacen.actions';
 import { ProductGrid } from './ProductGrid';
 import { SaleCart } from './SaleCart';
 import { SaleReceiptModal } from './SaleReceiptModal';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { ServicioDirectoWizard } from './ServicioDirectoWizard';
 
 const MySwal = withReactContent(Swal);
 
@@ -15,7 +16,34 @@ interface AlmacenClientProps {
   initialProducts: AlmacenProduct[];
 }
 
+const SERVICE_CATEGORIES: {
+  category: ItemCategory;
+  label: string;
+  icon: string;
+  description: string;
+  color: string;
+  bg: string;
+}[] = [
+    {
+      category: 'SERVITECA',
+      label: 'Serviteca',
+      icon: 'settings',
+      description: 'Cambios de aceite, frenos, suspensión y más',
+      color: '#2563eb',
+      bg: '#eff6ff',
+    },
+    {
+      category: 'LAVADERO',
+      label: 'Lavadero',
+      icon: 'local_car_wash',
+      description: 'Lavado exterior, interior, encerado y detailing',
+      color: '#0891b2',
+      bg: '#ecfeff',
+    },
+  ];
+
 export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
+  const [activeTab, setActiveTab] = useState<'productos' | 'servicios'>('productos');
   const [products] = useState<AlmacenProduct[]>(initialProducts);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<Map<string, number>>(new Map());
@@ -24,14 +52,15 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSale, setCompletedSale] = useState<any>(null);
 
+  // Wizard de servicios
+  const [activeServiceCategory, setActiveServiceCategory] = useState<ItemCategory | null>(null);
+
   const addToCart = useCallback((product: AlmacenProduct) => {
     setCart((prev) => {
       const next = new Map(prev);
       if (next.has(product.id)) {
-        // Ya está en el carrito → deseleccionar
         next.delete(product.id);
       } else {
-        // No está → agregar con cantidad 1
         next.set(product.id, 1);
       }
       return next;
@@ -104,62 +133,149 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-full">
-      {/* Columna izquierda: Catálogo */}
-      <div className="flex-1 flex flex-col min-h-0">
-        {/* Header */}
-        <div className="mb-5 flex flex-col sm:flex-row sm:items-center gap-3">
-          <div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface">Almacén</h1>
-            <p className="font-body-md text-body-md text-on-surface-variant">
-              Venta directa de productos — selecciona ítems y factura al instante.
-            </p>
+    <div className="flex flex-col h-full gap-4">
+      {/* ── Tabs Navigation ── */}
+      <div className="flex bg-surface-container-low p-1 rounded-2xl w-full sm:w-96 mx-auto mb-2 border border-outline-variant shadow-sm">
+        <button
+          onClick={() => setActiveTab('productos')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${activeTab === 'productos'
+              ? 'bg-primary text-on-primary shadow-md'
+              : 'text-on-surface-variant hover:bg-surface-container-high'
+            }`}
+        >
+          <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
+          Productos
+        </button>
+        <button
+          onClick={() => setActiveTab('servicios')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${activeTab === 'servicios'
+              ? 'bg-primary text-on-primary shadow-md'
+              : 'text-on-surface-variant hover:bg-surface-container-high'
+            }`}
+        >
+          <span className="material-symbols-outlined text-[20px]">build_circle</span>
+          Servicios
+        </button>
+      </div>
+
+      {/* ── Contenido de la pestaña "Productos" ── */}
+      {activeTab === 'productos' && (
+        <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0 fade-in">
+          {/* Columna izquierda: Catálogo */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Header */}
+            <div className="mb-5 flex flex-col sm:flex-row sm:items-center gap-3">
+              <div>
+                <h1 className="font-headline-lg text-headline-lg text-on-surface leading-tight">Punto de Venta</h1>
+                <p className="font-body-md text-body-md text-on-surface-variant">
+                  Venta directa de productos e insumos
+                </p>
+              </div>
+              <div className="sm:ml-auto relative w-full sm:w-72">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
+                <input
+                  id="almacen-search"
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar producto o código..."
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm"
+                />
+              </div>
+            </div>
+
+            {/* Grid de productos */}
+            <div className="flex-1 overflow-y-auto pr-1 pb-4">
+              <ProductGrid
+                products={products}
+                search={search}
+                cart={cart}
+                onAdd={addToCart}
+              />
+            </div>
           </div>
-          <div className="sm:ml-auto relative w-full sm:w-72">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
-            <input
-              id="almacen-search"
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar producto o código..."
-              className="w-full h-11 pl-10 pr-4 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+
+          {/* Columna derecha: Carrito */}
+          <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 lg:h-full">
+            <SaleCart
+              cart={cart}
+              products={products}
+              paymentMethod={paymentMethod}
+              onPaymentChange={setPaymentMethod}
+              onChangeQty={changeQty}
+              onRemove={removeFromCart}
+              onSell={handleSell}
+              isSubmitting={isSubmitting}
+              customerName={customerName}
+              onCustomerNameChange={setCustomerName}
             />
           </div>
         </div>
+      )}
 
-        {/* Grid de productos */}
-        <div className="flex-1 overflow-y-auto pr-1 pb-4">
-          <ProductGrid
-            products={products}
-            search={search}
-            cart={cart}
-            onAdd={addToCart}
-          />
+      {/* ── Contenido de la pestaña "Servicios" ── */}
+      {activeTab === 'servicios' && (
+        <div className="flex-1 flex flex-col items-center justify-center fade-in">
+          <div className="max-w-2xl w-full">
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <span className="material-symbols-outlined text-primary text-[32px]">point_of_sale</span>
+              </div>
+              <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Facturar Servicios</h1>
+              <p className="text-on-surface-variant text-base">
+                Selecciona la categoría del servicio que deseas facturar directamente al cliente.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {SERVICE_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.category}
+                  onClick={() => setActiveServiceCategory(cat.category)}
+                  className="group flex flex-col items-center text-center gap-4 p-8 rounded-3xl border-2 border-outline-variant hover:border-primary transition-all duration-300 cursor-pointer active:scale-[0.98]"
+                  style={{ background: cat.bg, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)' }}
+                >
+                  <div
+                    className="w-20 h-20 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-2 group-hover:scale-110"
+                    style={{ background: cat.color + '15' }}
+                  >
+                    <span
+                      className="material-symbols-outlined text-[40px]"
+                      style={{ color: cat.color }}
+                    >
+                      {cat.icon}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xl text-on-surface mb-2">{cat.label}</h3>
+                    <p className="text-sm text-on-surface-variant leading-relaxed px-4">{cat.description}</p>
+                  </div>
+                  <div
+                    className="mt-4 px-6 py-2 rounded-full font-bold text-sm transition-colors"
+                    style={{ color: cat.color, background: cat.color + '10' }}
+                  >
+                    Seleccionar
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Columna derecha: Carrito */}
-      <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 lg:h-full">
-        <SaleCart
-          cart={cart}
-          products={products}
-          paymentMethod={paymentMethod}
-          onPaymentChange={setPaymentMethod}
-          onChangeQty={changeQty}
-          onRemove={removeFromCart}
-          onSell={handleSell}
-          isSubmitting={isSubmitting}
-          customerName={customerName}
-          onCustomerNameChange={setCustomerName}
-        />
-      </div>
-
-      {/* Modal de recibo post-venta */}
+      {/* Modal de recibo post-venta de productos */}
       {completedSale && (
         <SaleReceiptModal
           sale={completedSale}
           onClose={() => setCompletedSale(null)}
+        />
+      )}
+
+      {/* Wizard de facturación de servicios */}
+      {activeServiceCategory && (
+        <ServicioDirectoWizard
+          category={activeServiceCategory}
+          onClose={() => setActiveServiceCategory(null)}
         />
       )}
     </div>

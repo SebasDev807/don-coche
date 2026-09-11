@@ -17,6 +17,7 @@ import { verifySession } from '@/lib/dal';
 import { MOVEMENT_STATUS_STYLES } from '@/data/mocks';
 import { getDashboardKPIs, getWeeklyChartData, getRecentMovements } from '@/actions/dashboard/kpis.actions';
 import { WeeklyChart } from '@/components/dashboard/WeeklyChart';
+import { ExportKpiButton } from '@/components/dashboard/ExportKpiButton';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Don Coche',
@@ -53,11 +54,14 @@ export default async function DashboardPage() {
       <section>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* KPI 1: Ventas Totales */}
-          <div className="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant flex flex-col gap-2 relative overflow-hidden group">
+          <div className="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant flex flex-col gap-2 relative group">
             <div className="flex justify-between items-start mb-2">
-              <h3 className="font-label-bold text-xs text-on-surface-variant uppercase tracking-wider">
-                Ventas Totales del Día
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-label-bold text-xs text-on-surface-variant uppercase tracking-wider">
+                  Ventas Totales del Día
+                </h3>
+                <ExportKpiButton endpoint="/api/v1/export/dashboard/ventas" />
+              </div>
               <div className="w-8 h-8 rounded bg-surface-container-low flex items-center justify-center text-on-surface-variant">
                 <span className="material-symbols-outlined text-sm">payments</span>
               </div>
@@ -79,11 +83,14 @@ export default async function DashboardPage() {
           </div>
 
           {/* KPI 2: Rentabilidad Promedio */}
-          <div className="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant flex flex-col gap-2 relative overflow-hidden group">
+          <div className="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant flex flex-col gap-2 relative group">
             <div className="flex justify-between items-start mb-2">
-              <h3 className="font-label-bold text-xs text-on-surface-variant uppercase tracking-wider">
-                Rentabilidad Promedio
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-label-bold text-xs text-on-surface-variant uppercase tracking-wider">
+                  Rentabilidad Promedio
+                </h3>
+                <ExportKpiButton endpoint="/api/v1/export/dashboard/rentabilidad" showDateFilters />
+              </div>
               <div className="w-8 h-8 rounded bg-surface-container-low flex items-center justify-center text-on-surface-variant">
                 <span className="material-symbols-outlined text-sm">monitoring</span>
               </div>
@@ -105,7 +112,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* KPI 3: Valor Inventario Global */}
-          <div className="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant flex flex-col gap-2 relative overflow-hidden group">
+          <div className="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant flex flex-col gap-2 relative group">
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-label-bold text-xs text-on-surface-variant uppercase tracking-wider">
                 Valor Inventario Global

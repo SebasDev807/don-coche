@@ -31,12 +31,13 @@ const CATEGORY_META: Partial<Record<ItemCategory, { label: string; icon: string;
 };
 
 interface ServicioDirectoWizardProps {
-  category: ItemCategory;
-  onClose: () => void;
+  category?: ItemCategory;
+  onClose?: () => void;
+  inline?: boolean;
 }
 
-export function ServicioDirectoWizard({ category, onClose }: ServicioDirectoWizardProps) {
-  const meta = CATEGORY_META[category] || { label: 'Servicio', icon: 'build', color: '#6b7280' };
+export function ServicioDirectoWizard({ category, onClose, inline = false }: ServicioDirectoWizardProps) {
+  const meta = category ? (CATEGORY_META[category] || { label: 'Servicio', icon: 'build', color: '#6b7280' }) : { label: 'Todos los Servicios', icon: 'build', color: '#6b7280' };
 
   const [step, setStep] = useState<Step>('vehicle');
   const [isLoading, setIsLoading] = useState(false);
@@ -183,35 +184,34 @@ export function ServicioDirectoWizard({ category, onClose }: ServicioDirectoWiza
   const steps: Step[] = ['vehicle', 'services', 'payment'];
   const stepIndex = steps.indexOf(step);
 
-  return (
-    <>
-      <div
-        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-        style={{
-          position: 'fixed', inset: 0, zIndex: 9990,
-          background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          animation: 'fadeIn .2s ease-out',
-        }}
-      >
-        <div style={{
-          background: 'var(--color-surface, #fff)', borderRadius: '20px',
-          boxShadow: '0 25px 60px rgba(0,0,0,0.25)', width: '100%',
-          maxWidth: '560px', maxHeight: '90vh', display: 'flex',
-          flexDirection: 'column', overflow: 'hidden', animation: 'slideUp .3s ease-out',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '20px 24px', borderBottom: '1px solid var(--color-outline-variant, #e5e7eb)' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: meta.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span className="material-symbols-outlined" style={{ color: meta.color, fontSize: '22px' }}>{meta.icon}</span>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 800, fontSize: '16px' }}>Facturar {meta.label}</div>
-              <div style={{ fontSize: '12px', color: '#6b7280' }}>Venta directa de servicios</div>
-            </div>
-            <button onClick={onClose} style={{ width: '32px', height: '32px', borderRadius: '8px', border: 'none', background: '#f3f4f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#6b7280' }}>close</span>
-            </button>
-          </div>
+  const containerStyle = inline ? {
+    background: 'var(--color-surface, #fff)', borderRadius: '20px',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.1)', width: '100%',
+    maxWidth: '800px', margin: '0 auto', display: 'flex',
+    flexDirection: 'column' as const, overflow: 'hidden', animation: 'fadeIn .3s ease-out',
+  } : {
+    background: 'var(--color-surface, #fff)', borderRadius: '20px',
+    boxShadow: '0 25px 60px rgba(0,0,0,0.25)', width: '100%',
+    maxWidth: '560px', maxHeight: '90vh', display: 'flex',
+    flexDirection: 'column' as const, overflow: 'hidden', animation: 'slideUp .3s ease-out',
+  };
+
+  const content = (
+    <div style={containerStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '20px 24px', borderBottom: '1px solid var(--color-outline-variant, #e5e7eb)' }}>
+        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: meta.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span className="material-symbols-outlined" style={{ color: meta.color, fontSize: '22px' }}>{meta.icon}</span>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 800, fontSize: '16px' }}>Facturar {meta.label}</div>
+          <div style={{ fontSize: '12px', color: '#6b7280' }}>Venta directa de servicios</div>
+        </div>
+        {!inline && onClose && (
+          <button onClick={onClose} style={{ width: '32px', height: '32px', borderRadius: '8px', border: 'none', background: '#f3f4f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#6b7280' }}>close</span>
+          </button>
+        )}
+      </div>
 
           <div style={{ display: 'flex', gap: '8px', padding: '16px 24px 0' }}>
             {steps.map((s, i) => (
@@ -441,12 +441,32 @@ export function ServicioDirectoWizard({ category, onClose }: ServicioDirectoWiza
             </div>
           )}
         </div>
-      </div>
+    );
+
+  return (
+    <>
+      {inline ? (
+        <div style={{ display: 'flex', flex: 1, padding: '20px', width: '100%', justifyContent: 'center' }}>
+          {content}
+        </div>
+      ) : (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget && onClose) onClose(); }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9990,
+            background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            animation: 'fadeIn .2s ease-out',
+          }}
+        >
+          {content}
+        </div>
+      )}
 
       {completedOrder && (
         <ServiceOrderReceiptModal
           order={completedOrder}
-          onClose={() => { setCompletedOrder(null); onClose(); }}
+          onClose={() => { setCompletedOrder(null); if (onClose) onClose(); }}
         />
       )}
     </>

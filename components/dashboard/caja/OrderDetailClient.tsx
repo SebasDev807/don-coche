@@ -132,7 +132,7 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
           </div>
         </div>
 
-        <h3 className="font-bold text-lg mb-4 text-on-surface border-b border-outline-variant pb-2">Servicios Solicitados</h3>
+        <h3 className="font-bold text-lg mb-4 text-on-surface border-b border-outline-variant pb-2">Mano de Obra</h3>
         <table className="w-full text-sm mb-8">
           <tbody>
             {order.services.map((os: any) => (
@@ -154,7 +154,7 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
 
         {order.products.length > 0 && (
           <>
-            <h3 className="font-bold text-lg mb-4 text-on-surface border-b border-outline-variant pb-2">Repuestos / Insumos</h3>
+            <h3 className="font-bold text-lg mb-4 text-on-surface border-b border-outline-variant pb-2">Productos</h3>
             <table className="w-full text-sm mb-8">
               <thead className="text-xs text-on-surface-variant uppercase text-left">
                 <tr>
@@ -185,11 +185,11 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
         
         <div className="space-y-4 mb-auto font-body-lg text-body-lg">
           <div className="flex justify-between items-center text-on-surface-variant">
-            <span>Total Servicios</span>
+            <span>Total Mano de Obra</span>
             <span className="font-label-bold text-on-surface">${order.totalServices.toLocaleString()}</span>
           </div>
           <div className="flex justify-between items-center text-on-surface-variant">
-            <span>Total Repuestos</span>
+            <span>Total Producto</span>
             <span className="font-label-bold text-on-surface">${order.totalProducts.toLocaleString()}</span>
           </div>
           <div className="flex justify-between items-center text-on-surface-variant">

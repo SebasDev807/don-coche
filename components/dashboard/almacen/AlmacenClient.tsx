@@ -215,51 +215,8 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
 
       {/* ── Contenido de la pestaña "Servicios" ── */}
       {activeTab === 'servicios' && (
-        <div className="flex-1 flex flex-col items-center justify-center fade-in">
-          <div className="max-w-2xl w-full">
-            <div className="text-center mb-10">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <span className="material-symbols-outlined text-primary text-[32px]">point_of_sale</span>
-              </div>
-              <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Facturar Servicios</h1>
-              <p className="text-on-surface-variant text-base">
-                Selecciona la categoría del servicio que deseas facturar directamente al cliente.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {SERVICE_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.category}
-                  onClick={() => setActiveServiceCategory(cat.category)}
-                  className="group flex flex-col items-center text-center gap-4 p-8 rounded-3xl border-2 border-outline-variant hover:border-primary transition-all duration-300 cursor-pointer active:scale-[0.98]"
-                  style={{ background: cat.bg, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)' }}
-                >
-                  <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-2 group-hover:scale-110"
-                    style={{ background: cat.color + '15' }}
-                  >
-                    <span
-                      className="material-symbols-outlined text-[40px]"
-                      style={{ color: cat.color }}
-                    >
-                      {cat.icon}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-xl text-on-surface mb-2">{cat.label}</h3>
-                    <p className="text-sm text-on-surface-variant leading-relaxed px-4">{cat.description}</p>
-                  </div>
-                  <div
-                    className="mt-4 px-6 py-2 rounded-full font-bold text-sm transition-colors"
-                    style={{ color: cat.color, background: cat.color + '10' }}
-                  >
-                    Seleccionar
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className="flex-1 flex flex-col fade-in">
+          <ServicioDirectoWizard inline />
         </div>
       )}
 
@@ -268,14 +225,6 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
         <SaleReceiptModal
           sale={completedSale}
           onClose={() => setCompletedSale(null)}
-        />
-      )}
-
-      {/* Wizard de facturación de servicios */}
-      {activeServiceCategory && (
-        <ServicioDirectoWizard
-          category={activeServiceCategory}
-          onClose={() => setActiveServiceCategory(null)}
         />
       )}
     </div>

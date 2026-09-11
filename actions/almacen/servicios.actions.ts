@@ -34,12 +34,12 @@ export async function searchCustomerByCc(cc: string) {
   }
 }
 
-/** Obtener servicios activos filtrados por categoría */
-export async function getServicesByCategory(category: ItemCategory) {
+/** Obtener servicios activos filtrados por categoría (o todos si no se pasa categoría) */
+export async function getServicesByCategory(category?: ItemCategory) {
   try {
     await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
     const services = await prisma.serviceCatalog.findMany({
-      where: { isActive: true, category },
+      where: { isActive: true, ...(category ? { category } : {}) },
       orderBy: { name: 'asc' },
     });
     return {
@@ -47,6 +47,7 @@ export async function getServicesByCategory(category: ItemCategory) {
       data: services.map((s) => ({
         id: s.id,
         name: s.name,
+        category: s.category,
         basePrice: Number(s.basePrice),
         profitPercentage: s.profitPercentage ? Number(s.profitPercentage) : 0,
         pvp: Math.round(

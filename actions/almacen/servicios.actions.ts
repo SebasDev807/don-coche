@@ -373,6 +373,12 @@ export async function createAndBillServiceOrder(params: {
           chargedPrice: Number(s.chargedPrice),
           service: { name: s.service?.name || 'Servicio' },
         })),
+        products: o.products.map((p) => ({
+          id: p.productId,
+          quantity: p.quantity,
+          unitPrice: Number(p.unitPrice),
+          product: { name: p.product?.name || 'Producto', iva: p.product?.iva ? Number(p.product.iva) : null },
+        })),
       },
     };
   } catch (error: any) {

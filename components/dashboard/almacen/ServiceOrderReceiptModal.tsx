@@ -27,6 +27,12 @@ interface ServiceOrderReceiptModalProps {
       chargedPrice: number;
       service: { name: string };
     }[];
+    products?: {
+      id: string;
+      quantity: number;
+      unitPrice: number;
+      product: { name: string; iva: any };
+    }[];
   };
   onClose: () => void;
 }
@@ -141,17 +147,38 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
 
                 <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />
 
-                <div style={{ margin: '6px 0' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase' }}>Servicios</div>
-                  {order.services.map((s, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', padding: '1px 0' }}>
-                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px' }}>{s.service.name}</span>
-                      <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{formatCurrency(s.chargedPrice)}</span>
+                {order.services && order.services.length > 0 && (
+                  <>
+                    <div style={{ margin: '6px 0' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase' }}>Servicios</div>
+                      {order.services.map((s, i) => (
+                        <div key={`srv-${i}`} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', padding: '1px 0' }}>
+                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px' }}>{s.service.name}</span>
+                          <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{formatCurrency(s.chargedPrice)}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                    <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />
+                  </>
+                )}
 
-                <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />
+                {order.products && order.products.length > 0 && (
+                  <>
+                    <div style={{ margin: '6px 0' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase' }}>Productos</div>
+                      {order.products.map((p, i) => (
+                        <div key={`prod-${i}`} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', padding: '1px 0' }}>
+                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px' }}>
+                            {p.quantity}x {p.product.name}
+                            {p.product.iva ? ` (IVA ${Number(p.product.iva)}%)` : ''}
+                          </span>
+                          <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{formatCurrency(Number(p.unitPrice) * p.quantity)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />
+                  </>
+                )}
 
                 <div style={{ margin: '6px 0', fontSize: '11px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 800, padding: '4px 0' }}>

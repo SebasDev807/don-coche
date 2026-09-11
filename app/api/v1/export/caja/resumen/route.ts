@@ -90,10 +90,14 @@ export async function GET(req: NextRequest) {
     
     orders.forEach(order => {
       totalGlobal += Number(order.grandTotal);
+      const isFE = !!order.cufe;
+      const typeStr = isFE ? 'Factura Electrónica' : 'Recibo POS';
+      const docStr = isFE ? `FE (Ord. #${order.orderNumber})` : `POS-${String(order.orderNumber).padStart(4, '0')}`;
+
       sheet.addRow({
         tech: order.technician.name,
-        type: 'Orden de Servicio',
-        doc: order.orderNumber,
+        type: typeStr,
+        doc: docStr,
         vehicle: order.vehicle.plate,
         total: Number(order.grandTotal),
         payment: order.paymentMethod || 'No Especificado',
@@ -103,10 +107,14 @@ export async function GET(req: NextRequest) {
 
     productSales.forEach(sale => {
       totalGlobal += Number(sale.grandTotal);
+      const isFE = !!sale.cufe;
+      const typeStr = isFE ? 'Factura Electrónica' : 'Recibo POS';
+      const docStr = isFE && sale.aliaddoConsecutive ? sale.aliaddoConsecutive : `POS-${String(sale.saleNumber).padStart(4, '0')}`;
+
       sheet.addRow({
         tech: sale.admin.name,
-        type: 'Venta Directa Almacén',
-        doc: sale.saleNumber,
+        type: typeStr,
+        doc: docStr,
         vehicle: 'N/A',
         total: Number(sale.grandTotal),
         payment: sale.paymentMethod || 'No Especificado',

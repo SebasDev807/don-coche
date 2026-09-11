@@ -85,6 +85,7 @@ model User {
   attendance          AttendanceRecord[]
   createdAppointments Appointment[]       @relation("CreatedAppointments")
   cashClosures        CashClosure[]
+  productSales        ProductSale[]       @relation("AdminSales")
 
   @@index([cc]) // Índice para login rápido
   @@map("users")
@@ -176,6 +177,7 @@ model Product {
 
   category_rel  Category?           @relation(fields: [categoryId], references: [id])
   orderProducts OrderProduct[]
+  saleItems     ProductSaleItem[]   @relation("SaleItems")
   movements     InventoryMovement[]
 
   @@map("products")
@@ -235,8 +237,9 @@ model CashClosure {
   adminId       String   @map("admin_id") @db.Uuid
   createdAt     DateTime @default(now()) @map("created_at")
 
-  admin  User    @relation(fields: [adminId], references: [id])
-  orders Order[]
+  admin         User           @relation(fields: [adminId], references: [id])
+  orders        Order[]
+  productSales  ProductSale[]
 
   @@map("cash_closures")
 }
@@ -305,6 +308,55 @@ model OrderProduct {
   product Product @relation(fields: [productId], references: [id])
 
   @@map("order_products")
+}
+
+// -----------------------------------------------------------------------
+// MÓDULO ALMACÉN — Ventas directas de productos con IVA
+// -----------------------------------------------------------------------
+
+model ProductSale {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  saleNumber   Int           @unique @default(autoincrement()) @map("sale_number")
+  adminId      String        @map("admin_id") @db.Uuid
+
+  customerName String?       @map("customer_name") /// Consumidor final si es null
+  customerCc   String?       @map("customer_cc")
+
+  paymentMethod PaymentMethod @map("payment_method")
+  subtotal      Decimal       @db.Decimal(10, 2) /// Suma de (unitPrice * qty) antes de IVA
+  ivaAmount     Decimal       @map("iva_amount") @db.Decimal(10, 2) /// IVA total de la venta
+  grandTotal    Decimal       @map("grand_total") @db.Decimal(10, 2) /// subtotal + ivaAmount
+
+  aliaddoInvoiceId     String? @map("aliaddo_invoice_id")
+  cufe                 String?
+  aliaddoInvoiceStatus String? @map("aliaddo_invoice_status")
+  aliaddoConsecutive   String? @map("aliaddo_consecutive")
+
+  cashClosureId String? @map("cash_closure_id") @db.Uuid /// Para incluir en cierre de caja
+
+  soldAt DateTime @default(now()) @map("sold_at")
+
+  admin       User              @relation("AdminSales", fields: [adminId], references: [id])
+  items       ProductSaleItem[]
+  cashClosure CashClosure?      @relation(fields: [cashClosureId], references: [id])
+
+  @@index([soldAt])
+  @@map("product_sales")
+}
+
+model ProductSaleItem {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  saleId    String  @map("sale_id") @db.Uuid
+  productId String  @map("product_id") @db.Uuid
+  quantity  Int     @default(1)
+  unitPrice Decimal @map("unit_price") @db.Decimal(10, 2) /// salePrice inmutable al momento de venta
+  unitCost  Decimal @map("unit_cost") @db.Decimal(10, 2)  /// Costo inmutable para reportes de ganancia
+  ivaRate   Decimal @default(0) @map("iva_rate") @db.Decimal(5, 2) /// % IVA del producto en el momento de venta
+
+  sale    ProductSale @relation(fields: [saleId], references: [id])
+  product Product     @relation("SaleItems", fields: [productId], references: [id])
+
+  @@map("product_sale_items")
 }
 
 // -----------------------------------------------------------------------

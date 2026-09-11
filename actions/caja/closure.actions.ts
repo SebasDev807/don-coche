@@ -16,6 +16,11 @@ export async function getClosureSummary() {
       },
     });
 
+    // Find all product sales from almacén that haven't been closed yet
+    const pendingProductSales = await prisma.productSale.findMany({
+      where: { cashClosureId: null },
+    });
+
     let totalCash = 0;
     let totalCard = 0;
     let totalTransfer = 0;
@@ -27,6 +32,13 @@ export async function getClosureSummary() {
       else if (order.paymentMethod === 'TRANSFERENCIA') totalTransfer += amount;
     }
 
+    for (const sale of pendingProductSales) {
+      const amount = Number(sale.grandTotal);
+      if (sale.paymentMethod === 'EFECTIVO') totalCash += amount;
+      else if (sale.paymentMethod === 'TARJETA') totalCard += amount;
+      else if (sale.paymentMethod === 'TRANSFERENCIA') totalTransfer += amount;
+    }
+
     return {
       success: true,
       data: {
@@ -34,6 +46,7 @@ export async function getClosureSummary() {
         totalCard,
         totalTransfer,
         orderIds: pendingClosureOrders.map(o => o.id),
+        saleIds: pendingProductSales.map(s => s.id),
       },
     };
   } catch (error: any) {
@@ -49,12 +62,16 @@ export async function closeCashRegister(data: {
   totalTransfer: number;
   observations: string;
   orderIds: string[];
+  saleIds?: string[];
 }) {
   try {
     const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
-    
-    if (!data.orderIds || data.orderIds.length === 0) {
-      return { success: false, message: 'No hay órdenes pendientes por cerrar.' };
+
+    const hasOrders = data.orderIds && data.orderIds.length > 0;
+    const hasSales = data.saleIds && data.saleIds.length > 0;
+
+    if (!hasOrders && !hasSales) {
+      return { success: false, message: 'No hay movimientos pendientes por cerrar.' };
     }
 
     const discrepancy = data.reportedCash - data.totalCash;
@@ -74,20 +91,26 @@ export async function closeCashRegister(data: {
       });
 
       // Update orders
-      await tx.order.updateMany({
-        where: {
-          id: { in: data.orderIds },
-        },
-        data: {
-          cashClosureId: newClosure.id,
-        },
-      });
+      if (hasOrders) {
+        await tx.order.updateMany({
+          where: { id: { in: data.orderIds } },
+          data: { cashClosureId: newClosure.id },
+        });
+      }
+
+      // Update product sales from almacén
+      if (hasSales) {
+        await tx.productSale.updateMany({
+          where: { id: { in: data.saleIds! } },
+          data: { cashClosureId: newClosure.id },
+        });
+      }
 
       return newClosure;
     });
 
     revalidatePath('/caja');
-    revalidatePath('/'); // dashboard
+    revalidatePath('/');
 
     return { success: true, closureId: closure.id };
   } catch (error: any) {

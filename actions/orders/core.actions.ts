@@ -133,17 +133,19 @@ export async function createOrder(data: CreateOrderInput) {
 
       let totalServices = 0;
       const orderServicesData = catalogServices.map((s) => {
-        const price = Number(s.basePrice);
-        
-        totalServices += price;
+        const basePrice = Number(s.basePrice);
+        const profitPct = s.profitPercentage ? Number(s.profitPercentage) : 0;
+        // PVP = costo base + ganancia, redondeado al 50 más cercano (igual que en UI)
+        const pvp = Math.round((basePrice + (basePrice * profitPct / 100)) / 50) * 50;
+
+        totalServices += pvp;
         return {
           serviceId: s.id,
-          chargedPrice: price,
+          chargedPrice: pvp,
         };
       });
 
-      const ivaAmount = totalServices * 0.19;
-      const grandTotal = totalServices + ivaAmount;
+      const grandTotal = totalServices; // Los servicios no llevan IVA
 
       // 5. Create Order
       const newOrder = await tx.order.create({

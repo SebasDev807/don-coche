@@ -77,18 +77,12 @@ export async function GET(
     doc.text('------------------------------------------', { align: 'center' });
     doc.moveDown();
 
-    const subtotal = Number(order.totalServices) + Number(order.totalProducts);
-    const iva = Number(order.grandTotal) - subtotal;
-
-    doc.fontSize(10).font('Helvetica-Bold').text('SUBTOTAL: ', { continued: true }).text(`$${subtotal.toLocaleString('es-CO')}`, { align: 'right' });
-    doc.fontSize(10).font('Helvetica-Bold').text('IVA (19%): ', { continued: true }).text(`$${iva.toLocaleString('es-CO')}`, { align: 'right' });
-    doc.moveDown();
-
     doc.fontSize(12).font('Helvetica-Bold').text('TOTAL: ', { continued: true }).text(`$${Number(order.grandTotal).toLocaleString('es-CO')}`, { align: 'right' });
     doc.moveDown();
 
     doc.fontSize(10).font('Helvetica').text('Método de pago: ', { continued: true }).text(`${order.paymentMethod}`, { align: 'right' });
     doc.moveDown();
+
 
     doc.fontSize(10).font('Helvetica-Bold').text('¡Gracias por su visita!', { align: 'center' });
 

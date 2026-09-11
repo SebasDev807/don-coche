@@ -135,8 +135,8 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod, e
       }
 
       const subtotal = Number(order.totalServices) + Number(order.totalProducts);
-      const iva = subtotal * 0.19;
-      const expectedGrandTotal = subtotal + iva;
+      const expectedGrandTotal = subtotal; // Los servicios no llevan IVA
+
 
       // Actualizar Orden y devolver con relaciones para el recibo
       const updatedOrderTx = await tx.order.update({

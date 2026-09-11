@@ -34,12 +34,14 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/' },
   { icon: 'point_of_sale', label: 'Panel de Caja', href: '/caja' },
+  { icon: 'storefront', label: 'Punto de Venta', href: '/almacen' },
   { icon: 'group', label: 'Gestión de Personal', href: '/personal' },
   { icon: 'inventory_2', label: 'Inventario', href: '/inventario' },
   { icon: 'design_services', label: 'Catálogo de Servicios', href: '/servicios' },
   { icon: 'directions_car', label: 'Clientes y Vehículos', href: '/clientes' },
   { icon: 'calendar_month', label: 'Próximas Citas', href: '/citas' },
 ];
+
 
 /**
  * Props del componente Sidebar.

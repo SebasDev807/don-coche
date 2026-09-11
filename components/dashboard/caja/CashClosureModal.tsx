@@ -21,6 +21,7 @@ export function CashClosureModal({ isOpen, onClose }: CashClosureModalProps) {
     totalCard: number;
     totalTransfer: number;
     orderIds: string[];
+    saleIds: string[];
   } | null>(null);
 
   const [reportedCash, setReportedCash] = useState<string>('');
@@ -68,6 +69,7 @@ export function CashClosureModal({ isOpen, onClose }: CashClosureModalProps) {
       totalTransfer: summary.totalTransfer,
       observations,
       orderIds: summary.orderIds,
+      saleIds: summary.saleIds,
     });
 
     if (result.success && result.closureId) {
@@ -132,7 +134,7 @@ export function CashClosureModal({ isOpen, onClose }: CashClosureModalProps) {
             </div>
           ) : summary ? (
             <div className="space-y-6">
-              {summary.orderIds.length === 0 ? (
+              {summary.orderIds.length === 0 && summary.saleIds.length === 0 ? (
                 <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl border border-yellow-200 text-center">
                   <span className="material-symbols-outlined mb-2 text-3xl">warning</span>
                   <p>No hay órdenes pendientes por cerrar. Todas las órdenes facturadas ya han sido incluidas en un cierre.</p>
@@ -211,7 +213,7 @@ export function CashClosureModal({ isOpen, onClose }: CashClosureModalProps) {
           ) : null}
         </div>
 
-        {!closureId && summary && summary.orderIds.length > 0 && (
+        {!closureId && summary && (summary.orderIds.length > 0 || summary.saleIds.length > 0) && (
           <div className="p-4 border-t border-surface-variant bg-surface-container flex justify-end gap-3">
             <button
               onClick={onClose}

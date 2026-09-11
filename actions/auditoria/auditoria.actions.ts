@@ -1,3 +1,5 @@
+'use server';
+
 import { prisma } from '@/lib/prisma';
 import { verifyRole } from '@/lib/dal';
 import { revalidatePath } from 'next/cache';

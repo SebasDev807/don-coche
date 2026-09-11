@@ -225,13 +225,24 @@ export function OrderAuditModal({ orderId, onClose }: OrderAuditModalProps) {
               <span className="text-2xl font-black text-on-surface">${order.grandTotal.toLocaleString('es-CO')}</span>
             </div>
 
-            <a
-              href={`/auditoria/editar/${order.id}`}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-on-primary font-bold hover:bg-primary/90 transition-colors shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[18px]">edit</span>
-              Editar Movimiento
-            </a>
+            <div className="flex flex-col gap-2">
+              <a
+                href={`/api/v1/orders/${order.id}/receipt.pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary/10 transition-colors shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                Descargar Recibo PDF
+              </a>
+              <a
+                href={`/auditoria/editar/${order.id}`}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-on-primary font-bold hover:bg-primary/90 transition-colors shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[18px]">edit</span>
+                Editar Movimiento
+              </a>
+            </div>
           </div>
           );
         })()}

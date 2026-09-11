@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   getNotificationsAction,
   markNotificationAsReadAction,
+  markAllNotificationsAsReadAction,
   type AppNotification,
 } from '@/actions/dashboard/notifications.actions';
 
@@ -23,7 +24,10 @@ export function NotificationsMenu() {
       try {
         const data = await getNotificationsAction();
         if (mounted) {
-          setNotifications(data);
+          setNotifications(prev => {
+            const readIds = new Set(prev.filter(n => n.isRead).map(n => n.id));
+            return data.map(n => readIds.has(n.id) ? { ...n, isRead: true } : n);
+          });
         }
       } catch (error) {
         console.error('Error fetching notifications:', error);
@@ -57,26 +61,31 @@ export function NotificationsMenu() {
     };
   }, []);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const displayNotifications = notifications.filter((n) => !n.isRead);
+  const unreadCount = displayNotifications.length;
+
+  const handleMarkAsRead = async (notification: AppNotification) => {
+    setNotifications(prev => prev.map(n => 
+      n.id === notification.id ? { ...n, isRead: true } : n
+    ));
+    markNotificationAsReadAction(notification.id).catch(console.error);
+  };
 
   const handleNotificationClick = async (notification: AppNotification) => {
     setIsOpen(false);
     
     if (!notification.isRead) {
-      // Actualizar estado local inmediatamente
-      setNotifications(prev => prev.map(n => 
-        n.id === notification.id ? { ...n, isRead: true } : n
-      ));
-      
-      // Llamar al server action en background
-      markNotificationAsReadAction(notification.id).catch(err => {
-        console.error('Error marking as read:', err);
-      });
+      handleMarkAsRead(notification);
     }
 
     if (notification.link) {
       router.push(notification.link);
     }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    markAllNotificationsAsReadAction().catch(console.error);
   };
 
   return (
@@ -112,14 +121,14 @@ export function NotificationsMenu() {
             <div className="p-4 text-center text-on-surface-variant font-body-sm animate-pulse">
               Cargando...
             </div>
-          ) : notifications.length === 0 ? (
+          ) : displayNotifications.length === 0 ? (
             <div className="p-8 text-center flex flex-col items-center text-on-surface-variant">
               <span className="material-symbols-outlined text-4xl mb-2 opacity-50">done_all</span>
               <p className="font-body-md">No tienes notificaciones</p>
             </div>
           ) : (
             <div className="flex flex-col">
-              {notifications.map((notification) => (
+              {displayNotifications.map((notification) => (
                 <div
                   key={notification.id}
                   className="flex gap-4 p-4 border-b border-surface-variant last:border-0 hover:bg-surface-variant/50 transition-colors cursor-pointer group"
@@ -148,18 +157,30 @@ export function NotificationsMenu() {
                       {notification.message}
                     </p>
                   </div>
-                  {!notification.isRead && (
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                  )}
+                  <div className="flex flex-col items-center justify-center pl-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMarkAsRead(notification);
+                      }}
+                      className="p-1.5 rounded-full hover:bg-surface-variant text-on-surface-variant hover:text-primary transition-colors"
+                      title="Marcar como leída"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">check</span>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
         
-        {notifications.length > 0 && (
+        {displayNotifications.length > 0 && (
           <div className="p-3 border-t border-surface-variant bg-surface-container text-center">
-            <button className="text-primary font-label-md hover:underline transition-all">
+            <button 
+              onClick={handleMarkAllAsRead}
+              className="text-primary font-label-md hover:underline transition-all cursor-pointer"
+            >
               Marcar todas como leídas
             </button>
           </div>

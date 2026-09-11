@@ -113,3 +113,23 @@ export async function markNotificationAsReadAction(id: string): Promise<{ succes
     return { success: false, error: 'No se pudo marcar como leída' };
   }
 }
+
+/**
+ * Marca todas las notificaciones persistentes como leídas.
+ */
+export async function markAllNotificationsAsReadAction(): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    
+    await prisma.appNotification.updateMany({
+      where: { isRead: false },
+      data: { isRead: true },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    return { success: false, error: 'No se pudieron marcar como leídas' };
+  }
+}
+

@@ -36,7 +36,7 @@ export default async function DashboardLayout({
   return (
     <div className="fade-in bg-background text-on-background font-body-md antialiased overflow-hidden flex h-screen">
       {/* Sidebar (desktop fijo, mobile drawer) */}
-      <Sidebar logoutAction={logoutAction} />
+      <Sidebar logoutAction={logoutAction} role={user.role} />
 
       {/* Área de contenido principal */}
       <main className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative">

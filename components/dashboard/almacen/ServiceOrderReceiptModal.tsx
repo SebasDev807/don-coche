@@ -166,9 +166,15 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                     <div style={{ margin: '6px 0' }}>
                       <div style={{ fontSize: '11px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase' }}>Servicios</div>
                       {order.services.map((s, i) => (
-                        <div key={`srv-${i}`} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', padding: '1px 0' }}>
-                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px' }}>{s.service.name}</span>
-                          <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{formatCurrency(s.chargedPrice)}</span>
+                        <div key={`srv-${i}`} style={{ fontSize: '11px', padding: '3px 0' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <span style={{ flex: 1, paddingRight: '8px' }}>
+                              - {s.service.name}
+                            </span>
+                            <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+                              {formatCurrency(s.chargedPrice)}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>

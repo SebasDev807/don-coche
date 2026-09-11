@@ -49,6 +49,8 @@ const NAV_ITEMS: NavItem[] = [
 interface SidebarProps {
   /** Server Action de logout pasado desde el layout del servidor. */
   logoutAction: () => Promise<never>;
+  /** Rol del usuario logueado */
+  role?: string;
 }
 
 /**
@@ -60,7 +62,7 @@ interface SidebarProps {
  *
  * @param props - {@link SidebarProps}
  */
-export function Sidebar({ logoutAction }: SidebarProps) {
+export function Sidebar({ logoutAction, role }: SidebarProps) {
   const pathname = usePathname();
   const { isOpen, setIsOpen } = useSidebarStore();
   const [pendingCajaCount, setPendingCajaCount] = useState(0);
@@ -165,6 +167,18 @@ export function Sidebar({ logoutAction }: SidebarProps) {
 
         {/* Footer: acciones secundarias */}
         <div className="mt-auto px-6 border-t border-surface-variant pt-6 flex flex-col gap-4">
+          
+          {role === 'SUPERUSUARIO' && (
+            <Link
+              href="/dev"
+              className="flex items-center gap-4 text-error hover:text-error-container transition-colors cursor-pointer group"
+            >
+              <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform font-bold">
+                code
+              </span>
+              <span className="font-body-md text-sm font-bold">Opciones de Desarrollo</span>
+            </Link>
+          )}
 
 
           <Link

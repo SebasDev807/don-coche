@@ -3,6 +3,8 @@
 import { AlmacenProduct } from '@/actions/almacen/almacen.actions';
 import { PaymentMethod } from '@prisma/client';
 import { useState } from 'react';
+import { CustomerSearchBar, CustomerSuggestion, VehicleInfo } from '@/components/tecnico/CustomerSearchBar';
+import { VehicleSelector } from '@/components/tecnico/VehicleSelector';
 
 interface SaleCartProps {
   cart: Map<string, number>;
@@ -42,6 +44,35 @@ export function SaleCart({
   const [plate, setPlate] = useState('');
   const [customerCc, setCustomerCc] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [customerVehicles, setCustomerVehicles] = useState<VehicleInfo[]>([]);
+
+  const handleSelectCustomer = (customer: CustomerSuggestion) => {
+    onCustomerNameChange(customer.name || '');
+    setCustomerCc(customer.cc || '');
+    setCustomerPhone(customer.phone || '');
+    setCustomerVehicles(customer.vehicles);
+    if (customer.vehicles.length === 1) {
+      setPlate(customer.vehicles[0].plate);
+    } else {
+      setPlate('');
+    }
+  };
+
+  const handleClearCustomer = () => {
+    onCustomerNameChange('');
+    setCustomerCc('');
+    setCustomerPhone('');
+    setCustomerVehicles([]);
+    setPlate('');
+  };
+
+  const handleSelectVehicle = (vehicle: VehicleInfo) => {
+    setPlate(vehicle.plate);
+  };
+
+  const handleClearVehicle = () => {
+    setPlate('');
+  };
   const cartItems = Array.from(cart.entries()).map(([productId, qty]) => {
     const product = products.find((p) => p.id === productId)!;
     const lineSubtotal = product.salePrice * qty;
@@ -148,8 +179,19 @@ export function SaleCart({
         </div>
         {/* Footer: totales + acciones */}
         <div className="border-t border-outline-variant p-4 space-y-4 bg-surface-container-highest mt-auto">
+            {/* Buscador de clientes */}
+            <div className="space-y-3 p-3 bg-surface border border-outline-variant rounded-xl shadow-sm">
+              <CustomerSearchBar onSelectCustomer={handleSelectCustomer} onClear={handleClearCustomer} />
+              
+              {hasServices && customerVehicles.length > 0 && (
+                <div className="pt-2 border-t border-outline-variant">
+                  <VehicleSelector vehicles={customerVehicles} onSelectVehicle={handleSelectVehicle} onClear={handleClearVehicle} />
+                </div>
+              )}
+            </div>
+
             {/* Datos obligatorios si hay servicios */}
-            {hasServices && (
+            {hasServices && customerVehicles.length === 0 && (
               <div className="space-y-3 p-3 bg-error-container/20 border border-error-container/50 rounded-lg">
                 <p className="text-xs text-error font-bold flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">info</span>

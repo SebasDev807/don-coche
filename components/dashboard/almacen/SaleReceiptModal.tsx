@@ -21,7 +21,7 @@ interface SaleReceiptModalProps {
       id: string;
       quantity: number;
       unitPrice: number;
-      ivaRate: number;
+      ivaRate: any;
       product: { name: string };
     }[];
   };
@@ -183,13 +183,19 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
                     Productos
                   </div>
                   {sale.items.map((item, idx) => (
-                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', padding: '1px 0' }}>
-                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px' }}>
-                        {item.quantity}x {item.product.name}
-                      </span>
-                      <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
-                        {formatCurrency(item.quantity * item.unitPrice)}
-                      </span>
+                    <div key={idx} style={{ fontSize: '11px', padding: '3px 0' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <span style={{ flex: 1, paddingRight: '8px' }}>
+                          - {item.product.name}
+                        </span>
+                        <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          {formatCurrency(item.quantity * item.unitPrice)}
+                        </span>
+                      </div>
+                      <div style={{ color: '#555', paddingLeft: '8px', marginTop: '1px', fontSize: '10px' }}>
+                        {item.quantity} unds x {formatCurrency(item.unitPrice)}
+                        {item.ivaRate ? ` (Incl. IVA ${Number(item.ivaRate)}%)` : ''}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -202,10 +208,12 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
                     <span>Subtotal</span>
                     <span style={{ fontWeight: 600 }}>{formatCurrency(sale.subtotal)}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
-                    <span>IVA</span>
-                    <span style={{ fontWeight: 600 }}>{formatCurrency(sale.ivaAmount)}</span>
-                  </div>
+                  {sale.ivaAmount > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
+                      <span>IVA</span>
+                      <span style={{ fontWeight: 600 }}>{formatCurrency(sale.ivaAmount)}</span>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 800, marginTop: '6px', padding: '4px 0', borderTop: '1px dashed #000' }}>
                     <span>TOTAL</span>
                     <span>{formatCurrency(sale.grandTotal)}</span>

@@ -102,17 +102,24 @@ export async function createProductSale(params: {
     }
 
     // Calcular totales asumiendo que salePrice ya incluye IVA
-    let subtotal = 0;
-    const ivaAmount = 0; // El usuario indicó que no se sume IVA extra
+    let grandTotal = 0;
+    let ivaAmount = 0;
 
     const saleItemsData = items.map((item) => {
       const p = products.find((p) => p.id === item.productId)!;
       const unitPrice = Number(p.salePrice);
       const unitCost = Number(p.unitCost);
       const ivaRate = p.iva ? Number(p.iva) : 0;
-      const lineSubtotal = unitPrice * item.quantity;
+      
+      const lineTotal = unitPrice * item.quantity;
+      grandTotal += lineTotal;
 
-      subtotal += lineSubtotal;
+      let lineIvaAmount = 0;
+      if (ivaRate > 0) {
+        const basePrice = unitPrice / (1 + (ivaRate / 100));
+        lineIvaAmount = (unitPrice - basePrice) * item.quantity;
+      }
+      ivaAmount += lineIvaAmount;
 
       return {
         productId: item.productId,
@@ -120,11 +127,11 @@ export async function createProductSale(params: {
         unitPrice,
         unitCost,
         ivaRate,
-        lineSubtotal,
+        lineSubtotal: lineTotal,
       };
     });
 
-    const grandTotal = subtotal;
+    const subtotal = grandTotal - ivaAmount;
 
     // Transacción: crear venta + descontar inventario
     // timeout: 15s para conexiones Neon con latencia de red

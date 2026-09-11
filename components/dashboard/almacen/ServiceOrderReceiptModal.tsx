@@ -67,6 +67,20 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
   const isRejected = order.aliaddoInvoiceStatus === 'Rechazada';
   const isOmitted = order.aliaddoInvoiceStatus === 'OMITIDA';
 
+  let subtotal = Number(order.grandTotal);
+  let ivaAmount = 0;
+  if (order.products) {
+    for (const p of order.products) {
+      const unitPrice = Number(p.unitPrice);
+      const ivaRate = p.product.iva ? Number(p.product.iva) : 0;
+      if (ivaRate > 0) {
+        const basePrice = unitPrice / (1 + (ivaRate / 100));
+        ivaAmount += (unitPrice - basePrice) * p.quantity;
+      }
+    }
+  }
+  subtotal = Number(order.grandTotal) - ivaAmount;
+
   return (
     <>
       <style>{`
@@ -167,12 +181,19 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                     <div style={{ margin: '6px 0' }}>
                       <div style={{ fontSize: '11px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase' }}>Productos</div>
                       {order.products.map((p, i) => (
-                        <div key={`prod-${i}`} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', padding: '1px 0' }}>
-                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px' }}>
-                            {p.quantity}x {p.product.name}
-                            {p.product.iva ? ` (IVA ${Number(p.product.iva)}%)` : ''}
-                          </span>
-                          <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{formatCurrency(Number(p.unitPrice) * p.quantity)}</span>
+                        <div key={`prod-${i}`} style={{ fontSize: '11px', padding: '3px 0' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <span style={{ flex: 1, paddingRight: '8px' }}>
+                              - {p.product.name}
+                            </span>
+                            <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+                              {formatCurrency(Number(p.unitPrice) * p.quantity)}
+                            </span>
+                          </div>
+                          <div style={{ color: '#555', paddingLeft: '8px', marginTop: '1px', fontSize: '10px' }}>
+                            {p.quantity} unds x {formatCurrency(Number(p.unitPrice))}
+                            {p.product.iva ? ` (Incl. IVA ${Number(p.product.iva)}%)` : ''}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -181,7 +202,17 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                 )}
 
                 <div style={{ margin: '6px 0', fontSize: '11px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 800, padding: '4px 0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
+                    <span>Subtotal</span>
+                    <span style={{ fontWeight: 600 }}>{formatCurrency(subtotal)}</span>
+                  </div>
+                  {ivaAmount > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
+                      <span>IVA</span>
+                      <span style={{ fontWeight: 600 }}>{formatCurrency(ivaAmount)}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 800, padding: '4px 0', borderTop: '1px dashed #000', marginTop: '6px' }}>
                     <span>TOTAL</span>
                     <span>{formatCurrency(order.grandTotal)}</span>
                   </div>

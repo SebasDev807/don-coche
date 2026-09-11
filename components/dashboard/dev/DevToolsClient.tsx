@@ -68,7 +68,7 @@ export function DevToolsClient() {
           <div className="w-20 h-20 bg-error rounded-full flex items-center justify-center shadow-lg animate-pulse">
             <span className="material-symbols-outlined text-white text-5xl">warning</span>
           </div>
-          
+
           <div>
             <h2 className="text-3xl font-display-bold text-error uppercase tracking-widest mb-3">
               Zona Restringida
@@ -76,7 +76,7 @@ export function DevToolsClient() {
             <p className="text-on-surface text-lg font-bold uppercase mb-2">
               Modificación directa del núcleo
             </p>
-            <p className="text-on-surface-variant text-sm max-w-md mx-auto leading-relaxed">
+            <p className="text-on-surface-variant text-sm max-w-md mx-auto leading-relaxed text-justify">
               Está intentando acceder a las herramientas de desarrollo de la plataforma. Las opciones contenidas en esta sección tienen el poder de alterar y destruir irreversiblemente la base de datos de producción. Si usted no es parte del equipo de desarrollo, cierre esta ventana inmediatamente.
             </p>
           </div>
@@ -142,7 +142,7 @@ export function DevToolsClient() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
+
           {/* Tarjeta de Acción: Purgar Base de Datos */}
           <div className="bg-surface-container-lowest border border-error/40 rounded-xl p-5 hover:border-error hover:shadow-md transition-all flex flex-col h-full">
             <div className="flex items-start gap-3 mb-4">
@@ -152,7 +152,7 @@ export function DevToolsClient() {
                 <p className="text-xs text-on-surface-variant font-medium mt-1">Borrado en cascada (Órdenes, Ventas, Cuadres, Movimientos)</p>
               </div>
             </div>
-            
+
             <p className="text-sm text-on-surface-variant mb-6 flex-1">
               Ejecuta una transacción masiva que elimina todos los registros operativos. Los catálogos de productos, servicios, clientes, vehículos y personal <strong>NO</strong> serán afectados. Ideal para limpiar datos de prueba antes de producción.
             </p>

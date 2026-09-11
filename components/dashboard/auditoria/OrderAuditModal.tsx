@@ -164,15 +164,30 @@ export function OrderAuditModal({ orderId, onClose }: OrderAuditModalProps) {
                       Repuestos / Insumos
                     </h3>
                     <div className="space-y-2">
-                      {order.products.map((p: any) => (
-                        <div key={p.id} className="flex justify-between items-center py-2 border-b border-surface-variant last:border-0">
-                          <div>
-                            <span className="text-sm text-on-surface">{p.product.name}</span>
-                            <span className="text-xs text-on-surface-variant ml-2">x{p.quantity}</span>
+                      {order.products.map((p: any) => {
+                        const ivaRate = p.product?.iva ? Number(p.product.iva) / 100 : 0;
+                        const lineTotal = p.quantity * p.unitPrice;
+                        const basePriceUnit = ivaRate > 0 ? Math.round(p.unitPrice / (1 + ivaRate)) : p.unitPrice;
+                        const ivaAmountUnit = p.unitPrice - basePriceUnit;
+                        const ivaLineTotal = ivaAmountUnit * p.quantity;
+                        
+                        return (
+                          <div key={p.id} className="flex justify-between items-start py-3 border-b border-surface-variant last:border-0">
+                            <div>
+                              <div className="flex items-center">
+                                <span className="text-sm text-on-surface font-medium">{p.product.name}</span>
+                                <span className="text-xs text-on-surface-variant ml-2 bg-surface-container px-2 py-0.5 rounded-full">x{p.quantity}</span>
+                              </div>
+                              {ivaRate > 0 && (
+                                <p className="text-[11px] text-on-surface-variant mt-1">
+                                  Precio Base: ${(basePriceUnit * p.quantity).toLocaleString('es-CO')} | IVA ({(ivaRate * 100).toFixed(0)}%): ${ivaLineTotal.toLocaleString('es-CO')}
+                                </p>
+                              )}
+                            </div>
+                            <span className="text-sm font-bold text-on-surface mt-0.5">${lineTotal.toLocaleString('es-CO')}</span>
                           </div>
-                          <span className="text-sm font-bold text-on-surface">${(p.quantity * p.unitPrice).toLocaleString('es-CO')}</span>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -182,7 +197,16 @@ export function OrderAuditModal({ orderId, onClose }: OrderAuditModalProps) {
         </div>
 
         {/* Footer con totales */}
-        {!loading && order && (
+        {!loading && order && (() => {
+          let trueIvaTotal = 0;
+          order.products.forEach((p: any) => {
+            const ivaRate = p.product?.iva ? Number(p.product.iva) / 100 : 0;
+            const basePriceUnit = ivaRate > 0 ? Math.round(p.unitPrice / (1 + ivaRate)) : p.unitPrice;
+            const ivaAmountUnit = p.unitPrice - basePriceUnit;
+            trueIvaTotal += ivaAmountUnit * p.quantity;
+          });
+
+          return (
           <div className="p-6 border-t border-surface-variant bg-surface-container space-y-2">
             <div className="flex justify-between text-sm text-on-surface-variant">
               <span>Total Servicios</span>
@@ -193,15 +217,24 @@ export function OrderAuditModal({ orderId, onClose }: OrderAuditModalProps) {
               <span className="font-bold text-on-surface">${order.totalProducts.toLocaleString('es-CO')}</span>
             </div>
             <div className="flex justify-between text-sm text-on-surface-variant">
-              <span>IVA (19%)</span>
-              <span className="font-bold text-on-surface">${(order.grandTotal - (order.totalServices + order.totalProducts)).toLocaleString('es-CO')}</span>
+              <span>IVA de Repuestos</span>
+              <span className="font-bold text-on-surface">${trueIvaTotal.toLocaleString('es-CO')}</span>
             </div>
-            <div className="flex justify-between items-end pt-3 border-t border-surface-variant">
+            <div className="flex justify-between items-end pt-3 border-t border-surface-variant mb-4">
               <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Gran Total</span>
               <span className="text-2xl font-black text-on-surface">${order.grandTotal.toLocaleString('es-CO')}</span>
             </div>
+
+            <a
+              href={`/auditoria/editar/${order.id}`}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-on-primary font-bold hover:bg-primary/90 transition-colors shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[18px]">edit</span>
+              Editar Movimiento
+            </a>
           </div>
-        )}
+          );
+        })()}
       </div>
     </>
   );

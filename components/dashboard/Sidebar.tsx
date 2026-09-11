@@ -40,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: 'design_services', label: 'Catálogo de Servicios', href: '/servicios' },
   { icon: 'directions_car', label: 'Clientes y Vehículos', href: '/clientes' },
   { icon: 'calendar_month', label: 'Próximas Citas', href: '/citas' },
+  { icon: 'history_edu', label: 'Libro de Auditoría', href: '/auditoria' },
 ];
 
 

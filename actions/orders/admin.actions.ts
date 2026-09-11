@@ -374,18 +374,41 @@ export async function getTodayBilledOrders() {
       },
       include: {
         vehicle: true
-      },
-      orderBy: { billedAt: 'desc' }
+      }
     });
+
+    const productSales = await prisma.productSale.findMany({
+      where: {
+        soldAt: {
+          gte: startOfDay,
+          lte: endOfDay
+        }
+      }
+    });
+
+    const mappedOrders = orders.map(order => ({
+      id: order.id,
+      orderNumber: order.orderNumber,
+      paymentMethod: order.paymentMethod,
+      grandTotal: Number(order.grandTotal),
+      vehicle: { plate: order.vehicle.plate },
+      date: order.billedAt || new Date(0)
+    }));
+
+    const mappedSales = productSales.map(sale => ({
+      id: sale.id,
+      orderNumber: `V-${sale.saleNumber}`,
+      paymentMethod: sale.paymentMethod,
+      grandTotal: Number(sale.grandTotal),
+      vehicle: { plate: 'ALMACÉN' },
+      date: sale.soldAt
+    }));
+
+    const combined = [...mappedOrders, ...mappedSales].sort((a, b) => b.date.getTime() - a.date.getTime());
 
     return {
       success: true,
-      data: orders.map(order => ({
-        ...order,
-        totalServices: Number(order.totalServices),
-        totalProducts: Number(order.totalProducts),
-        grandTotal: Number(order.grandTotal),
-      }))
+      data: combined
     };
   } catch (error: any) {
     console.error(error);

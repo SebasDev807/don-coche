@@ -72,7 +72,7 @@ export const BookingForm = () => {
 
   // Observamos la fecha para cargar los slots ocupados
   const selectedDate = watch('scheduledAtDate');
-  
+
   React.useEffect(() => {
     if (selectedDate) {
       setLoadingSlots(true);
@@ -98,50 +98,50 @@ export const BookingForm = () => {
           <span className="material-symbols-outlined">person</span>
           Tus Datos Personales
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="customerCc">Cédula de Ciudadanía *</label>
-            <input 
+            <input
               {...register('customerCc')}
               className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface placeholder-on-surface-variant focus:ring-primary focus:border-primary ${errors.customerCc ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="customerCc" 
-              placeholder="Ej: 1700000000" 
+              id="customerCc"
+              placeholder="Ej: 1700000000"
             />
             <ErrorMessage message={errors.customerCc?.message} />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="customerName">Nombre Completo *</label>
-            <input 
+            <input
               {...register('customerName')}
               className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface placeholder-on-surface-variant focus:ring-primary focus:border-primary ${errors.customerName ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="customerName" 
-              placeholder="Ej: Juan Pérez" 
+              id="customerName"
+              placeholder="Ej: Juan Pérez"
             />
             <ErrorMessage message={errors.customerName?.message} />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="customerPhone">Celular *</label>
-            <input 
+            <input
               {...register('customerPhone')}
               type="tel"
               className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface placeholder-on-surface-variant focus:ring-primary focus:border-primary ${errors.customerPhone ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="customerPhone" 
-              placeholder="Ej: 300 000 0000" 
+              id="customerPhone"
+              placeholder="Ej: 300 000 0000"
             />
             <ErrorMessage message={errors.customerPhone?.message} />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="customerEmail">Correo Electrónico</label>
-            <input 
+            <input
               {...register('customerEmail')}
               type="email"
               className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface placeholder-on-surface-variant focus:ring-primary focus:border-primary ${errors.customerEmail ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="customerEmail" 
-              placeholder="correo@ejemplo.com (Opcional)" 
+              id="customerEmail"
+              placeholder="correo@ejemplo.com (Opcional)"
             />
             <ErrorMessage message={errors.customerEmail?.message} />
           </div>
@@ -154,48 +154,48 @@ export const BookingForm = () => {
           <span className="material-symbols-outlined">directions_car</span>
           Datos de tu Vehículo
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
-            <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="plate">Placa *</label>
-            <input 
+            <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="plate">Placa / Categoria *</label>
+            <input
               {...register('plate')}
               className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface placeholder-on-surface-variant focus:ring-primary focus:border-primary uppercase font-bold text-lg ${errors.plate ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="plate" 
-              placeholder="ABC-1234" 
+              id="plate"
+              placeholder="ABC-1234"
             />
             <ErrorMessage message={errors.plate?.message} />
           </div>
 
           <div className="lg:col-span-1">
             <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="carBrand">Marca *</label>
-            <input 
+            <input
               {...register('carBrand')}
               className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface placeholder-on-surface-variant focus:ring-primary focus:border-primary ${errors.carBrand ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="carBrand" 
-              placeholder="Ej: Mazda" 
+              id="carBrand"
+              placeholder="Ej: Mazda"
             />
             <ErrorMessage message={errors.carBrand?.message} />
           </div>
 
           <div className="lg:col-span-1">
             <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="carModel">Modelo *</label>
-            <input 
+            <input
               {...register('carModel')}
               className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface placeholder-on-surface-variant focus:ring-primary focus:border-primary ${errors.carModel ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="carModel" 
-              placeholder="Ej: 3 Touring" 
+              id="carModel"
+              placeholder="Ej: 3 Touring"
             />
             <ErrorMessage message={errors.carModel?.message} />
           </div>
 
           <div className="lg:col-span-1">
             <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="carColor">Color</label>
-            <input 
+            <input
               {...register('carColor')}
               className={`block w-full bg-surface-container rounded-lg border shadow-sm py-3 px-4 text-on-surface placeholder-on-surface-variant focus:ring-primary focus:border-primary ${errors.carColor ? 'border-error focus:ring-error' : 'border-outline'}`}
-              id="carColor" 
-              placeholder="Ej: Rojo (Opcional)" 
+              id="carColor"
+              placeholder="Ej: Rojo (Opcional)"
             />
             <ErrorMessage message={errors.carColor?.message} />
           </div>
@@ -208,7 +208,7 @@ export const BookingForm = () => {
           <span className="material-symbols-outlined">event_available</span>
           Detalles de la Cita
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-bold text-on-surface mb-2" htmlFor="scheduledAtDate">Fecha de la Cita *</label>
@@ -256,20 +256,19 @@ export const BookingForm = () => {
               ].map((time) => {
                 const hour = parseInt(time.value.split(':')[0]);
                 const isBooked = bookedSlots.includes(hour);
-                
+
                 return (
                   <button
                     key={time.value}
                     type="button"
                     disabled={isBooked || loadingSlots}
                     onClick={() => setValue('scheduledAtTime', time.value, { shouldValidate: true })}
-                    className={`py-2 px-1 text-center text-sm font-bold rounded-lg border transition-all ${
-                      isBooked
-                        ? 'bg-surface-variant text-on-surface-variant border-surface-variant opacity-50 cursor-not-allowed'
-                        : watch('scheduledAtTime') === time.value
+                    className={`py-2 px-1 text-center text-sm font-bold rounded-lg border transition-all ${isBooked
+                      ? 'bg-surface-variant text-on-surface-variant border-surface-variant opacity-50 cursor-not-allowed'
+                      : watch('scheduledAtTime') === time.value
                         ? 'bg-primary text-on-primary border-primary shadow-md transform scale-[1.02]'
                         : 'bg-surface-container text-on-surface border-outline-variant hover:border-primary hover:bg-surface-container-high'
-                    }`}
+                      }`}
                   >
                     {time.label} {isBooked && ' (Reservado)'}
                   </button>
@@ -296,11 +295,10 @@ export const BookingForm = () => {
                   key={motivo.value}
                   type="button"
                   onClick={() => setValue('description', motivo.value, { shouldValidate: true })}
-                  className={`py-3 px-2 flex flex-col items-center justify-center gap-1 text-center text-sm font-bold rounded-xl border transition-all ${
-                    watch('description') === motivo.value
-                      ? 'bg-primary text-on-primary border-primary shadow-md transform scale-[1.02]'
-                      : 'bg-surface-container text-on-surface border-outline-variant hover:border-primary hover:bg-surface-container-high'
-                  }`}
+                  className={`py-3 px-2 flex flex-col items-center justify-center gap-1 text-center text-sm font-bold rounded-xl border transition-all ${watch('description') === motivo.value
+                    ? 'bg-primary text-on-primary border-primary shadow-md transform scale-[1.02]'
+                    : 'bg-surface-container text-on-surface border-outline-variant hover:border-primary hover:bg-surface-container-high'
+                    }`}
                 >
                   <span className="material-symbols-outlined text-2xl">{motivo.icon}</span>
                   <span className="leading-tight">{motivo.value === 'Otro' ? 'Otro servicio' : motivo.value}</span>

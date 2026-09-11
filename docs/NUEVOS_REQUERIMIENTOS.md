@@ -5,7 +5,7 @@
 - [x] 2. **Rentabilidad:** Exportable a Excel, con filtros para vista diaria, semanal o por fecha específica.
 
 ## Panel de Caja
-- [ ] 3. **Descargar ventas del día:** Exportable a Excel, con corte de fecha y detallado por técnico o colaborador.
+- [x] 3. **Descargar ventas del día:** Exportable a Excel, con corte de fecha y detallado por técnico o colaborador.
 
 ## Facturación
 - [ ] 4. **Exportación general:** Todo el módulo de facturación debe contar con exportación a Excel.

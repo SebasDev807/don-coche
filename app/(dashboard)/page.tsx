@@ -89,7 +89,7 @@ export default async function DashboardPage() {
                 <h3 className="font-label-bold text-xs text-on-surface-variant uppercase tracking-wider">
                   Rentabilidad Promedio
                 </h3>
-                <ExportKpiButton endpoint="/api/v1/export/dashboard/rentabilidad" showDateFilters />
+                <ExportKpiButton endpoint="/api/v1/export/dashboard/rentabilidad" showDateFilters title="Exportar Rentabilidad" />
               </div>
               <div className="w-8 h-8 rounded bg-surface-container-low flex items-center justify-center text-on-surface-variant">
                 <span className="material-symbols-outlined text-sm">monitoring</span>

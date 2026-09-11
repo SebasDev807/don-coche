@@ -46,9 +46,12 @@ export async function GET(
     doc.fontSize(10).font('Helvetica').text(`Fecha: ${order.billedAt ? order.billedAt.toLocaleDateString('es-CO') : new Date().toLocaleDateString('es-CO')}`, { align: 'center' });
     doc.moveDown();
 
+    const rawPlate = order.vehicle?.plate;
+    const displayPlate = !rawPlate || rawPlate === 'GEN-000' ? 'N/A' : rawPlate;
+
     doc.fontSize(10).font('Helvetica-Bold').text('Cliente:', { continued: true }).font('Helvetica').text(` ${order.vehicle.customer?.name || 'Consumidor Final'}`);
     doc.font('Helvetica-Bold').text('CC:', { continued: true }).font('Helvetica').text(` ${order.vehicle.customer?.cc || 'N/A'}`);
-    doc.font('Helvetica-Bold').text('Placa:', { continued: true }).font('Helvetica').text(` ${order.vehicle.plate}`);
+    doc.font('Helvetica-Bold').text('Placa:', { continued: true }).font('Helvetica').text(` ${displayPlate}`);
     doc.font('Helvetica-Bold').text('Técnico:', { continued: true }).font('Helvetica').text(` ${order.technician?.name || 'N/A'}`);
     doc.font('Helvetica-Bold').text('Cajero:', { continued: true }).font('Helvetica').text(` ${order.admin?.name || 'N/A'}`);
     doc.moveDown();
@@ -58,24 +61,52 @@ export async function GET(
 
     if (order.services.length > 0) {
       doc.font('Helvetica-Bold').text('SERVICIOS:');
+      let totalServices = 0;
       order.services.forEach(os => {
-        doc.font('Helvetica').text(`${os.service?.name || 'Servicio'}`);
+        totalServices += Number(os.chargedPrice);
+        doc.font('Helvetica').text(`- ${os.service?.name || 'Servicio'}`);
         doc.text(`$${Number(os.chargedPrice).toLocaleString('es-CO')}`, { align: 'right' });
       });
       doc.moveDown(0.5);
     }
 
+    let trueIvaTotal = 0;
+    let productsSubtotal = 0;
+
     if (order.products.length > 0) {
       doc.font('Helvetica-Bold').text('REPUESTOS:');
       order.products.forEach(op => {
-        doc.font('Helvetica').text(`${op.quantity}x ${op.product?.name || 'Producto'} ($${Number(op.unitPrice).toLocaleString('es-CO')})`);
-        doc.text(`$${(Number(op.quantity) * Number(op.unitPrice)).toLocaleString('es-CO')}`, { align: 'right' });
+        const unitPrice = Number(op.unitPrice);
+        const quantity = Number(op.quantity);
+        const ivaRate = op.product?.iva ? Number(op.product.iva) / 100 : 0;
+        const basePriceUnit = ivaRate > 0 ? Math.round(unitPrice / (1 + ivaRate)) : unitPrice;
+        const ivaAmountUnit = unitPrice - basePriceUnit;
+        
+        trueIvaTotal += ivaAmountUnit * quantity;
+        productsSubtotal += basePriceUnit * quantity;
+
+        doc.font('Helvetica').text(`- ${quantity}x ${op.product?.name || 'Producto'}`);
+        if (ivaRate > 0) {
+          doc.fontSize(8).font('Helvetica').text(`  Base: $${basePriceUnit.toLocaleString('es-CO')} | IVA (${Number(op.product.iva)}%): $${ivaAmountUnit.toLocaleString('es-CO')}`);
+        } else {
+          doc.fontSize(8).font('Helvetica').text(`  Base: $${unitPrice.toLocaleString('es-CO')} | IVA (0%): $0`);
+        }
+        doc.fontSize(10).font('Helvetica').text(`$${(quantity * unitPrice).toLocaleString('es-CO')}`, { align: 'right' });
       });
       doc.moveDown(0.5);
     }
 
     doc.text('------------------------------------------', { align: 'center' });
     doc.moveDown();
+
+    const totalServices = Number(order.totalServices) || 0;
+    const subtotal = totalServices + productsSubtotal;
+
+    doc.fontSize(10).font('Helvetica-Bold').text('SUBTOTAL: ', { continued: true }).text(`$${subtotal.toLocaleString('es-CO')}`, { align: 'right' });
+    if (trueIvaTotal > 0) {
+      doc.font('Helvetica-Bold').text('IVA TOTAL: ', { continued: true }).text(`$${trueIvaTotal.toLocaleString('es-CO')}`, { align: 'right' });
+    }
+    doc.moveDown(0.5);
 
     doc.fontSize(12).font('Helvetica-Bold').text('TOTAL: ', { continued: true }).text(`$${Number(order.grandTotal).toLocaleString('es-CO')}`, { align: 'right' });
     doc.moveDown();

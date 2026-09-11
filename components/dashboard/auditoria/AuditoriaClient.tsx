@@ -86,7 +86,8 @@ export function AuditoriaClient({ movements, totals, pagination, filters }: Audi
     }, 400);
 
     return () => clearTimeout(timeoutId);
-  }, [plate, status, fechaDesde, fechaHasta, handleSearch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plate, status, fechaDesde, fechaHasta]);
 
   const handleClear = () => {
     setPlate('');

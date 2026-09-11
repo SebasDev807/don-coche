@@ -64,7 +64,7 @@ export function OrderAuditModal({ orderId, onClose }: OrderAuditModalProps) {
             </h2>
             {order && (
               <p className="text-sm text-on-surface-variant mt-0.5">
-                Placa: <span className="font-bold text-on-surface">{order.vehicle?.plate}</span>
+                Placa: <span className="font-bold text-on-surface">{!order.vehicle?.plate || order.vehicle.plate === 'GEN-000' ? 'N/A' : order.vehicle.plate}</span>
               </p>
             )}
           </div>

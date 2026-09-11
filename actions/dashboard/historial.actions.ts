@@ -108,14 +108,17 @@ export async function getPaginatedMovements(
         ? order.services[0].service.name + (order.services.length > 1 ? ` y ${order.services.length - 1} más` : '')
         : 'Sin servicios';
 
+      const rawPlate = order.vehicle?.plate;
+      const displayPlate = !rawPlate || rawPlate === 'GEN-000' ? 'N/A' : rawPlate;
+
       return {
         id: order.id,
         orderNumber: order.orderNumber,
         fecha: order.createdAt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }),
         hora: order.createdAt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true }),
-        placa: order.vehicle?.plate || 'Desconocida',
+        placa: displayPlate,
         concepto,
-        detalle: `Placa: ${order.vehicle?.plate || 'Desconocida'}`,
+        detalle: `Placa: ${displayPlate}`,
         monto: formatCurrency(Number(order.grandTotal)),
         montoRaw: Number(order.grandTotal),
         montoColor,

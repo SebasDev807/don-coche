@@ -151,12 +151,24 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                 <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />
 
                 <div style={{ margin: '6px 0', fontSize: '11px' }}>
-                  <div style={{ fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Vehículo</div>
-                  <div>Placa: <b>{order.vehicle.plate}</b></div>
-                  {(order.vehicle.brand || order.vehicle.model) && (
-                    <div>{[order.vehicle.brand, order.vehicle.model].filter(Boolean).join(' ')}{order.vehicle.color ? ` — ${order.vehicle.color}` : ''}</div>
+                  {order.vehicle.plate !== 'GEN-000' ? (
+                    <>
+                      <div style={{ fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Vehículo</div>
+                      <div>Placa: <b>{order.vehicle.plate}</b></div>
+                      {(order.vehicle.brand || order.vehicle.model) && (
+                        <div>{[order.vehicle.brand, order.vehicle.model].filter(Boolean).join(' ')}{order.vehicle.color ? ` — ${order.vehicle.color}` : ''}</div>
+                      )}
+                      {order.vehicle.customer?.name && <div>Cliente: {order.vehicle.customer.name}</div>}
+                    </>
+                  ) : (
+                    order.vehicle.customer?.name && (
+                      <>
+                        <div style={{ fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Cliente</div>
+                        <div>Nombre: {order.vehicle.customer.name}</div>
+                        {order.vehicle.customer.cc && <div>CC/NIT: {order.vehicle.customer.cc}</div>}
+                      </>
+                    )
                   )}
-                  {order.vehicle.customer?.name && <div>Cliente: {order.vehicle.customer.name}</div>}
                 </div>
 
                 <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />

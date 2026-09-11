@@ -112,8 +112,13 @@ export async function createAndBillServiceOrder(params: {
 
     const billedOrder = await prisma.$transaction(async (tx) => {
       // 1. Vehículo / Cliente
+      let finalPlate = (plate || '').toUpperCase().trim();
+      if (!finalPlate) {
+        finalPlate = 'GEN-000'; // Vehículo genérico cuando no se especifica placa
+      }
+
       let vehicle = await tx.vehicle.findUnique({
-        where: { plate: plate.toUpperCase().trim() },
+        where: { plate: finalPlate },
         include: { customer: true },
       });
 
@@ -156,7 +161,7 @@ export async function createAndBillServiceOrder(params: {
       if (!vehicle) {
         vehicle = await tx.vehicle.create({
           data: {
-            plate: plate.toUpperCase().trim(),
+            plate: finalPlate,
             customerId,
             brand: carBrand || null,
             model: carModel || null,

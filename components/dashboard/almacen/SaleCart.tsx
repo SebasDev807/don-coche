@@ -190,22 +190,22 @@ export function SaleCart({
               )}
             </div>
 
-            {/* Datos obligatorios si hay servicios */}
+            {/* Vehículo opcional para servicios (si no hay guardados) */}
             {hasServices && customerVehicles.length === 0 && (
-              <div className="space-y-3 p-3 bg-error-container/20 border border-error-container/50 rounded-lg">
-                <p className="text-xs text-error font-bold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[16px]">info</span>
-                  Vehículo requerido para servicios
+              <div className="space-y-3 p-3 bg-surface border border-outline-variant rounded-lg">
+                <p className="text-xs text-on-surface-variant font-bold flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[16px]">directions_car</span>
+                  Vehículo (Opcional)
                 </p>
                 <div>
                   <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
-                    Placa *
+                    Placa
                   </label>
                   <input
                     type="text"
                     value={plate}
                     onChange={(e) => setPlate(e.target.value.toUpperCase())}
-                    placeholder="ABC123"
+                    placeholder="Dejar en blanco si no aplica"
                     maxLength={7}
                     className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all uppercase"
                   />
@@ -302,7 +302,7 @@ export function SaleCart({
             <div className="space-y-2">
               <button
                 onClick={() => onSell(false, hasServices ? { plate, customerCc, customerPhone } : undefined)}
-                disabled={isSubmitting || isEmpty || (hasServices && !plate)}
+                disabled={isSubmitting || isEmpty}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container text-on-surface font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
               >
                 <span className="material-symbols-outlined text-[18px]">receipt</span>
@@ -310,7 +310,7 @@ export function SaleCart({
               </button>
               <button
                 onClick={() => onSell(true, hasServices ? { plate, customerCc, customerPhone } : undefined)}
-                disabled={isSubmitting || isEmpty || (hasServices && !plate)}
+                disabled={isSubmitting || isEmpty}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
               >
                 <span className="material-symbols-outlined text-[18px]">receipt_long</span>

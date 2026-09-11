@@ -35,13 +35,13 @@ export function NotificationsMenu() {
         if (mounted) setLoading(false);
       }
     }
-    
+
     // Carga inicial
     load();
-    
+
     // Polling cada 10 segundos
     const interval = setInterval(load, 10000);
-    
+
     return () => {
       mounted = false;
       clearInterval(interval);
@@ -65,7 +65,7 @@ export function NotificationsMenu() {
   const unreadCount = displayNotifications.length;
 
   const handleMarkAsRead = async (notification: AppNotification) => {
-    setNotifications(prev => prev.map(n => 
+    setNotifications(prev => prev.map(n =>
       n.id === notification.id ? { ...n, isRead: true } : n
     ));
     markNotificationAsReadAction(notification.id).catch(console.error);
@@ -73,7 +73,7 @@ export function NotificationsMenu() {
 
   const handleNotificationClick = async (notification: AppNotification) => {
     setIsOpen(false);
-    
+
     if (!notification.isRead) {
       handleMarkAsRead(notification);
     }
@@ -108,14 +108,13 @@ export function NotificationsMenu() {
 
       {/* Dropdown menu */}
       <div
-        className={`absolute right-0 mt-2 w-96 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-variant overflow-hidden z-50 transition-all duration-200 origin-top-right ${
-          isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
-        }`}
+        className={`absolute right-0 mt-2 w-96 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-variant overflow-hidden z-50 transition-all duration-200 origin-top-right ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+          }`}
       >
         <div className="p-4 border-b border-surface-variant bg-surface-container">
           <h3 className="font-label-lg font-bold text-on-surface">Notificaciones</h3>
         </div>
-        
+
         <div className="max-h-96 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center text-on-surface-variant font-body-sm animate-pulse">
@@ -134,19 +133,18 @@ export function NotificationsMenu() {
                   className="flex gap-4 p-4 border-b border-surface-variant last:border-0 hover:bg-surface-variant/50 transition-colors cursor-pointer group"
                   onClick={() => handleNotificationClick(notification)}
                 >
-                  <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                    notification.type === 'stock_out' ? 'bg-error-container text-on-error-container' : 
-                    notification.type === 'stock_low' ? 'bg-yellow-100 text-yellow-800' : 
-                    notification.type === 'appointment_rescheduled' ? 'bg-secondary-container text-on-secondary-container' :
-                    notification.type === 'appointment_created' ? 'bg-tertiary-container text-on-tertiary-container' :
-                    'bg-primary-container text-on-primary-container'
-                  }`}>
+                  <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${notification.type === 'stock_out' ? 'bg-error-container text-on-error-container' :
+                      notification.type === 'stock_low' ? 'bg-yellow-100 text-yellow-800' :
+                        notification.type === 'appointment_rescheduled' ? 'bg-secondary-container text-on-secondary-container' :
+                          notification.type === 'appointment_created' ? 'bg-tertiary-container text-on-tertiary-container' :
+                            'bg-primary-container text-on-primary-container'
+                    }`}>
                     <span className="material-symbols-outlined text-xl">
-                      {notification.type === 'stock_out' ? 'block' : 
-                       notification.type === 'stock_low' ? 'warning' : 
-                       notification.type === 'appointment_rescheduled' ? 'edit_calendar' :
-                       notification.type === 'appointment_created' ? 'event_available' :
-                       'notifications'}
+                      {notification.type === 'stock_out' ? 'block' :
+                        notification.type === 'stock_low' ? 'warning' :
+                          notification.type === 'appointment_rescheduled' ? 'edit_calendar' :
+                            notification.type === 'appointment_created' ? 'event_available' :
+                              'notifications'}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -163,7 +161,7 @@ export function NotificationsMenu() {
                         e.stopPropagation();
                         handleMarkAsRead(notification);
                       }}
-                      className="p-1.5 rounded-full hover:bg-surface-variant text-on-surface-variant hover:text-primary transition-colors"
+                      className="cursor-pointer p-1.5 rounded-full hover:bg-surface-variant text-on-surface-variant hover:text-primary transition-colors"
                       title="Marcar como leída"
                     >
                       <span className="material-symbols-outlined text-[20px]">check</span>
@@ -174,10 +172,10 @@ export function NotificationsMenu() {
             </div>
           )}
         </div>
-        
+
         {displayNotifications.length > 0 && (
           <div className="p-3 border-t border-surface-variant bg-surface-container text-center">
-            <button 
+            <button
               onClick={handleMarkAllAsRead}
               className="text-primary font-label-md hover:underline transition-all cursor-pointer"
             >

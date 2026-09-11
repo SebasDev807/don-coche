@@ -172,12 +172,10 @@ export function SaleCart({
               <span>Subtotal</span>
               <span className="font-medium">${subtotal.toLocaleString('es-CO')}</span>
             </div>
-            {ivaTotal > 0 && (
-              <div className="flex justify-between text-on-surface-variant">
-                <span>IVA</span>
-                <span className="font-medium">${ivaTotal.toLocaleString('es-CO')}</span>
-              </div>
-            )}
+            <div className="flex justify-between text-on-surface-variant">
+              <span>IVA</span>
+              <span className="font-medium">${ivaTotal.toLocaleString('es-CO')}</span>
+            </div>
             <div className="flex justify-between font-black text-base text-on-surface pt-2 border-t border-outline-variant">
               <span>TOTAL</span>
               <span className="text-primary">${grandTotal.toLocaleString('es-CO')}</span>

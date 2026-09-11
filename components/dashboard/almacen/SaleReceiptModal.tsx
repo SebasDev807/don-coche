@@ -202,12 +202,10 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
                     <span>Subtotal</span>
                     <span style={{ fontWeight: 600 }}>{formatCurrency(sale.subtotal)}</span>
                   </div>
-                  {sale.ivaAmount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
-                      <span>IVA</span>
-                      <span style={{ fontWeight: 600 }}>{formatCurrency(sale.ivaAmount)}</span>
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
+                    <span>IVA</span>
+                    <span style={{ fontWeight: 600 }}>{formatCurrency(sale.ivaAmount)}</span>
+                  </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 800, marginTop: '6px', padding: '4px 0', borderTop: '1px dashed #000' }}>
                     <span>TOTAL</span>
                     <span>{formatCurrency(sale.grandTotal)}</span>

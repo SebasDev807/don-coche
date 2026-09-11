@@ -75,6 +75,7 @@ export async function createAndBillServiceOrder(params: {
   carModel?: string;
   carColor?: string;
   serviceIds: string[];
+  productItems?: { productId: string; quantity: number }[];
   paymentMethod: PaymentMethod;
   emitirFactura: boolean;
 }) {
@@ -82,11 +83,31 @@ export async function createAndBillServiceOrder(params: {
     const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
     const {
       plate, customerName, customerCc, customerPhone, carBrand, carModel, carColor,
-      serviceIds, paymentMethod, emitirFactura,
+      serviceIds, productItems, paymentMethod, emitirFactura,
     } = params;
 
-    if (!serviceIds || serviceIds.length === 0) {
-      return { success: false, message: 'Selecciona al menos un servicio' };
+    if ((!serviceIds || serviceIds.length === 0) && (!productItems || productItems.length === 0)) {
+      return { success: false, message: 'Selecciona al menos un servicio o producto' };
+    }
+
+    // Pre-validar productos si hay alguno
+    let products: any[] = [];
+    if (productItems && productItems.length > 0) {
+      const productIds = productItems.map(p => p.productId);
+      products = await prisma.product.findMany({
+        where: { id: { in: productIds }, isActive: true }
+      });
+      
+      if (products.length !== productItems.length) {
+        return { success: false, message: 'Uno o más productos no son válidos' };
+      }
+
+      for (const item of productItems) {
+        const p = products.find(p => p.id === item.productId);
+        if (p && p.stock < item.quantity) {
+          return { success: false, message: `Stock insuficiente para "${p.name}" (disponible: ${p.stock})` };
+        }
+      }
     }
 
     const billedOrder = await prisma.$transaction(async (tx) => {
@@ -157,20 +178,47 @@ export async function createAndBillServiceOrder(params: {
       }
 
       // 2. Calcular precios de servicios
-      const catalogServices = await tx.serviceCatalog.findMany({
-        where: { id: { in: serviceIds } },
-      });
-
-      if (catalogServices.length === 0) throw new Error('Servicios seleccionados no son válidos');
-
       let totalServices = 0;
-      const orderServicesData = catalogServices.map((s) => {
-        const base = Number(s.basePrice);
-        const pct = s.profitPercentage ? Number(s.profitPercentage) : 0;
-        const pvp = Math.round((base + (base * pct) / 100) / 50) * 50;
-        totalServices += pvp;
-        return { serviceId: s.id, chargedPrice: pvp };
-      });
+      let orderServicesData: any[] = [];
+      let catalogServices: any[] = [];
+      
+      if (serviceIds && serviceIds.length > 0) {
+        catalogServices = await tx.serviceCatalog.findMany({
+          where: { id: { in: serviceIds } },
+        });
+
+        if (catalogServices.length !== serviceIds.length) throw new Error('Servicios seleccionados no son válidos');
+
+        orderServicesData = catalogServices.map((s) => {
+          const base = Number(s.basePrice);
+          const pct = s.profitPercentage ? Number(s.profitPercentage) : 0;
+          const pvp = Math.round((base + (base * pct) / 100) / 50) * 50;
+          totalServices += pvp;
+          return { serviceId: s.id, chargedPrice: pvp };
+        });
+      }
+
+      // Calcular precios de productos
+      let totalProducts = 0;
+      let orderProductsData: any[] = [];
+
+      if (productItems && productItems.length > 0) {
+        orderProductsData = productItems.map((item) => {
+          const p = products.find(prod => prod.id === item.productId);
+          const unitPrice = Number(p.salePrice);
+          const lineTotal = unitPrice * item.quantity;
+          totalProducts += lineTotal;
+          
+          return {
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice,
+            unitCost: Number(p.unitCost)
+          };
+        });
+      }
+
+      const expectedGrandTotal = totalServices + totalProducts;
 
       // 3. Crear orden ya FACTURADA
       const order = await tx.order.create({
@@ -182,9 +230,10 @@ export async function createAndBillServiceOrder(params: {
           paymentMethod,
           billedAt: new Date(),
           totalServices,
-          totalProducts: 0,
-          grandTotal: totalServices,
-          services: { create: orderServicesData },
+          totalProducts,
+          grandTotal: expectedGrandTotal,
+          services: orderServicesData.length > 0 ? { create: orderServicesData } : undefined,
+          products: orderProductsData.length > 0 ? { create: orderProductsData } : undefined,
         },
         include: {
           vehicle: { include: { customer: true } },
@@ -194,6 +243,31 @@ export async function createAndBillServiceOrder(params: {
           products: { include: { product: true } },
         },
       });
+
+      // Descontar inventario si hubo productos
+      if (orderProductsData.length > 0) {
+        for (const op of orderProductsData) {
+          const product = products.find(p => p.id === op.productId);
+          const newStock = product.stock - op.quantity;
+
+          await tx.product.update({
+            where: { id: op.productId },
+            data: { stock: newStock }
+          });
+
+          await tx.inventoryMovement.create({
+            data: {
+              productId: op.productId,
+              adminId: session.userId,
+              type: 'VENTA',
+              quantity: -op.quantity,
+              previousStock: product.stock,
+              newStock: newStock,
+              reason: `Venta Directa POS #${order.orderNumber}`
+            }
+          });
+        }
+      }
 
       return { order, catalogServices };
     }, { timeout: 15000 });
@@ -220,14 +294,32 @@ export async function createAndBillServiceOrder(params: {
           currencyCode: 'COP',
           personId: '1b117033-c258-4b88-b59c-f137fa3a316d',
           branchId: '8ffca1e5-8f58-11f1-8ea2-42010a26ccd5',
-          details: billedOrder.order.services.map((s) => ({
-            unitValueBeforeTax: Number(s.chargedPrice),
-            quantity: 1,
-            description: s.service?.name || 'Servicio',
-            itemCode: s.service?.aliaddoItemCode || FALLBACK_CODE,
-            discountAmount: 0,
-            discountIsPercent: true,
-          })),
+          details: [
+            ...billedOrder.order.services.map((s) => ({
+              unitValueBeforeTax: Number(s.chargedPrice),
+              quantity: 1,
+              description: s.service?.name || 'Servicio',
+              itemCode: s.service?.aliaddoItemCode || FALLBACK_CODE,
+              discountAmount: 0,
+              discountIsPercent: true,
+            })),
+            ...billedOrder.order.products.map((p) => {
+              // Si el producto tiene IVA, la DIAN requiere el valor ANTES de impuestos
+              // Dado que salePrice ya tiene el IVA incluido, calculamos el base
+              const ivaRate = p.product?.iva ? Number(p.product.iva) : 0;
+              const unitPrice = Number(p.unitPrice);
+              const basePrice = ivaRate > 0 ? unitPrice / (1 + (ivaRate / 100)) : unitPrice;
+
+              return {
+                unitValueBeforeTax: Number(basePrice.toFixed(2)),
+                quantity: p.quantity,
+                description: p.product?.name || 'Producto',
+                itemCode: p.product?.barCode || FALLBACK_CODE, // Usa código de barras si existe
+                discountAmount: 0,
+                discountIsPercent: true,
+              };
+            })
+          ],
         };
 
         const aliaddoRes = await AliaddoService.createInvoice(payload);

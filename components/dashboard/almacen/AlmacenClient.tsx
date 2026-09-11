@@ -8,7 +8,9 @@ import { SaleCart } from './SaleCart';
 import { SaleReceiptModal } from './SaleReceiptModal';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import { ServicioDirectoWizard } from './ServicioDirectoWizard';
+import { getServicesByCategory, createAndBillServiceOrder } from '@/actions/almacen/servicios.actions';
+import { ServiceOrderReceiptModal } from './ServiceOrderReceiptModal';
+import { useEffect } from 'react';
 
 const MySwal = withReactContent(Swal);
 
@@ -51,9 +53,27 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
   const [customerName, setCustomerName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSale, setCompletedSale] = useState<any>(null);
+  const [completedOrder, setCompletedOrder] = useState<any>(null);
 
-  // Wizard de servicios
-  const [activeServiceCategory, setActiveServiceCategory] = useState<ItemCategory | null>(null);
+  // Servicios
+  const [services, setServices] = useState<any[]>([]);
+  const [selectedServiceIds, setSelectedServiceIds] = useState<Set<string>>(new Set());
+  const [servicesSearch, setServicesSearch] = useState('');
+
+  useEffect(() => {
+    getServicesByCategory().then((res) => {
+      if (res.success) setServices(res.data);
+    });
+  }, []);
+
+  const toggleService = useCallback((id: string) => {
+    setSelectedServiceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
   const addToCart = useCallback((product: AlmacenProduct) => {
     setCart((prev) => {
@@ -84,17 +104,26 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
     });
   }, [products]);
 
-  const removeFromCart = useCallback((productId: string) => {
-    setCart((prev) => {
-      const next = new Map(prev);
-      next.delete(productId);
-      return next;
-    });
+  const removeFromCart = useCallback((id: string, type: 'PRODUCT' | 'SERVICE') => {
+    if (type === 'PRODUCT') {
+      setCart((prev) => {
+        const next = new Map(prev);
+        next.delete(id);
+        return next;
+      });
+    } else {
+      setSelectedServiceIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
   }, []);
 
-  const handleSell = async (emitirFactura: boolean) => {
-    if (cart.size === 0) return;
+  const handleSell = async (emitirFactura: boolean, vehicleData?: any) => {
+    if (cart.size === 0 && selectedServiceIds.size === 0) return;
 
+    const hasServices = selectedServiceIds.size > 0;
     const items = Array.from(cart.entries()).map(([productId, quantity]) => ({ productId, quantity }));
 
     const actionLabel = emitirFactura ? 'Factura Electrónica DIAN' : 'Recibo POS';
@@ -113,20 +142,40 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
     setIsSubmitting(true);
     MySwal.showLoading();
 
-    const res = await createProductSale({
-      items,
-      paymentMethod,
-      emitirFactura,
-      customerName: customerName.trim() || undefined,
-    });
+    let res: any;
+
+    if (hasServices) {
+      res = await createAndBillServiceOrder({
+        plate: vehicleData.plate,
+        customerName: customerName.trim() || undefined,
+        customerCc: vehicleData.customerCc?.trim() || undefined,
+        customerPhone: vehicleData.customerPhone?.trim() || undefined,
+        serviceIds: Array.from(selectedServiceIds),
+        productItems: items, // Necesitaremos actualizar createAndBillServiceOrder para que lo reciba
+        paymentMethod,
+        emitirFactura,
+      });
+    } else {
+      res = await createProductSale({
+        items,
+        paymentMethod,
+        emitirFactura,
+        customerName: customerName.trim() || undefined,
+      });
+    }
 
     setIsSubmitting(false);
     MySwal.close();
 
     if (res.success) {
       setCart(new Map());
+      setSelectedServiceIds(new Set());
       setCustomerName('');
-      setCompletedSale(res.data);
+      if (hasServices) {
+        setCompletedOrder(res.data);
+      } else {
+        setCompletedSale(res.data);
+      }
     } else {
       MySwal.fire('Error', res.message, 'error');
     }
@@ -200,6 +249,8 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
             <SaleCart
               cart={cart}
               products={products}
+              selectedServiceIds={selectedServiceIds}
+              services={services}
               paymentMethod={paymentMethod}
               onPaymentChange={setPaymentMethod}
               onChangeQty={changeQty}
@@ -215,12 +266,91 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
 
       {/* ── Contenido de la pestaña "Servicios" ── */}
       {activeTab === 'servicios' && (
-        <div className="flex-1 flex flex-col fade-in">
-          <ServicioDirectoWizard inline />
+        <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0 fade-in">
+          {/* Columna izquierda: Catálogo de Servicios */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Header */}
+            <div className="mb-5 flex flex-col sm:flex-row sm:items-center gap-3">
+              <div>
+                <h1 className="font-headline-lg text-headline-lg text-on-surface leading-tight">Servicios</h1>
+                <p className="font-body-md text-body-md text-on-surface-variant">
+                  Agrega servicios al carrito
+                </p>
+              </div>
+              <div className="sm:ml-auto relative w-full sm:w-72">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
+                <input
+                  type="text"
+                  value={servicesSearch}
+                  onChange={(e) => setServicesSearch(e.target.value)}
+                  placeholder="Buscar servicio..."
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm"
+                />
+              </div>
+            </div>
+
+            {/* Lista de servicios */}
+            <div className="flex-1 overflow-y-auto pr-1 pb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {services
+                .filter((s) => s.name.toLowerCase().includes(servicesSearch.toLowerCase()))
+                .map((s) => {
+                  const isSelected = selectedServiceIds.has(s.id);
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => toggleService(s.id)}
+                      className={`group flex flex-col items-start gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer text-left
+                        ${isSelected ? 'border-primary bg-primary/5 shadow-sm' : 'border-outline-variant bg-surface hover:border-primary/50'}`}
+                    >
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-surface-container">
+                        <span className="material-symbols-outlined text-primary text-[20px]">
+                          {s.category === 'LAVADERO' ? 'local_car_wash' : 'settings'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-h-0 w-full">
+                        <h3 className="font-bold text-sm text-on-surface leading-tight mb-1">{s.name}</h3>
+                        <p className="text-xs text-on-surface-variant font-medium">${s.pvp.toLocaleString('es-CO')}</p>
+                      </div>
+                      {isSelected && (
+                        <div className="absolute top-4 right-4 text-primary bg-surface rounded-full">
+                          <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+
+          {/* Columna derecha: Carrito (compartido) */}
+          <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 lg:h-full">
+            <SaleCart
+              cart={cart}
+              products={products}
+              selectedServiceIds={selectedServiceIds}
+              services={services}
+              paymentMethod={paymentMethod}
+              onPaymentChange={setPaymentMethod}
+              onChangeQty={changeQty}
+              onRemove={removeFromCart}
+              onSell={handleSell}
+              isSubmitting={isSubmitting}
+              customerName={customerName}
+              onCustomerNameChange={setCustomerName}
+            />
+          </div>
         </div>
       )}
 
-      {/* Modal de recibo post-venta de productos */}
+      {/* Modal de recibo post-venta combinada/servicios */}
+      {completedOrder && (
+        <ServiceOrderReceiptModal
+          order={completedOrder}
+          onClose={() => setCompletedOrder(null)}
+        />
+      )}
+
+      {/* Modal de recibo post-venta de solo productos */}
       {completedSale && (
         <SaleReceiptModal
           sale={completedSale}

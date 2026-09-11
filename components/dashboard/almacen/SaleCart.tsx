@@ -2,15 +2,18 @@
 
 import { AlmacenProduct } from '@/actions/almacen/almacen.actions';
 import { PaymentMethod } from '@prisma/client';
+import { useState } from 'react';
 
 interface SaleCartProps {
   cart: Map<string, number>;
   products: AlmacenProduct[];
+  selectedServiceIds: Set<string>;
+  services: any[];
   paymentMethod: PaymentMethod;
   onPaymentChange: (m: PaymentMethod) => void;
   onChangeQty: (productId: string, delta: number) => void;
-  onRemove: (productId: string) => void;
-  onSell: (emitirFactura: boolean) => void;
+  onRemove: (id: string, type: 'PRODUCT' | 'SERVICE') => void;
+  onSell: (emitirFactura: boolean, vehicleData?: any) => void;
   isSubmitting: boolean;
   customerName: string;
   onCustomerNameChange: (v: string) => void;
@@ -25,6 +28,8 @@ const PAYMENT_OPTIONS: { value: PaymentMethod; label: string; icon: string }[] =
 export function SaleCart({
   cart,
   products,
+  selectedServiceIds,
+  services,
   paymentMethod,
   onPaymentChange,
   onChangeQty,
@@ -34,18 +39,29 @@ export function SaleCart({
   customerName,
   onCustomerNameChange,
 }: SaleCartProps) {
+  const [plate, setPlate] = useState('');
+  const [customerCc, setCustomerCc] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const cartItems = Array.from(cart.entries()).map(([productId, qty]) => {
     const product = products.find((p) => p.id === productId)!;
     const lineSubtotal = product.salePrice * qty;
-    const lineIva = (lineSubtotal * product.iva) / 100;
-    return { product, qty, lineSubtotal, lineIva };
+    const lineIva = 0; // IVA ya incluido en el precio
+    return { id: product.id, name: product.name, qty, lineSubtotal, lineIva, type: 'PRODUCT' as const, product };
   });
 
-  const subtotal = cartItems.reduce((acc, i) => acc + i.lineSubtotal, 0);
-  const ivaTotal = cartItems.reduce((acc, i) => acc + i.lineIva, 0);
+  const serviceItems = Array.from(selectedServiceIds).map((serviceId) => {
+    const service = services.find((s) => s.id === serviceId)!;
+    return { id: service.id, name: service.name, qty: 1, lineSubtotal: service.pvp, lineIva: 0, type: 'SERVICE' as const, service };
+  });
+
+  const allItems = [...cartItems, ...serviceItems];
+
+  const subtotal = allItems.reduce((acc, i) => acc + i.lineSubtotal, 0);
+  const ivaTotal = allItems.reduce((acc, i) => acc + i.lineIva, 0);
   const grandTotal = subtotal + ivaTotal;
 
-  const isEmpty = cartItems.length === 0;
+  const isEmpty = allItems.length === 0;
+  const hasServices = serviceItems.length > 0;
 
   return (
     <div className="flex flex-col h-full bg-surface-container-lowest border border-surface-variant rounded-xl overflow-hidden">
@@ -55,7 +71,7 @@ export function SaleCart({
         <h2 className="font-bold text-on-surface">Carrito</h2>
         {!isEmpty && (
           <span className="ml-auto bg-primary text-on-primary text-xs font-bold px-2 py-0.5 rounded-full">
-            {cartItems.reduce((a, i) => a + i.qty, 0)} ítem(s)
+            {allItems.reduce((a, i) => a + i.qty, 0)} ítem(s)
           </span>
         )}
       </div>
@@ -65,59 +81,62 @@ export function SaleCart({
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-32 text-on-surface-variant">
             <span className="material-symbols-outlined text-3xl mb-2">shopping_cart</span>
-            <p className="text-sm text-center">Selecciona productos del catálogo</p>
+            <p className="text-sm text-center">Selecciona productos o servicios</p>
           </div>
         ) : (
-          cartItems.map(({ product, qty, lineSubtotal, lineIva }) => (
+          allItems.map((item) => (
             <div
-              key={product.id}
+              key={item.id}
               className="bg-surface p-3 rounded-lg border border-outline-variant"
             >
               <div className="flex justify-between items-start gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-on-surface truncate">{product.name}</p>
-                  <p className="text-xs text-on-surface-variant">
-                    ${product.salePrice.toLocaleString('es-CO')} c/u
-                    {product.iva > 0 && ` + IVA ${product.iva}%`}
-                  </p>
+                <div className="flex-1 min-w-0 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-on-surface-variant text-[18px]">
+                    {item.type === 'SERVICE' ? 'build' : 'shopping_bag'}
+                  </span>
+                  <div>
+                    <p className="font-medium text-sm text-on-surface truncate">{item.name}</p>
+                    <p className="text-xs text-on-surface-variant">
+                      ${item.type === 'PRODUCT' ? item.product.salePrice.toLocaleString('es-CO') : item.service.pvp.toLocaleString('es-CO')} c/u
+                    </p>
+                  </div>
                 </div>
                 <button
-                  onClick={() => onRemove(product.id)}
+                  onClick={() => onRemove(item.id, item.type)}
                   className="text-on-surface-variant hover:text-error transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px]">close</span>
                 </button>
               </div>
 
-              <div className="flex items-center justify-between mt-2">
-                {/* Qty controls */}
-                <div className="flex items-center gap-1 bg-surface-container rounded-lg overflow-hidden border border-outline-variant">
-                  <button
-                    onClick={() => onChangeQty(product.id, -1)}
-                    className="w-7 h-7 flex items-center justify-center hover:bg-surface-container-high text-on-surface transition-colors cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">remove</span>
-                  </button>
-                  <span className="w-6 text-center text-sm font-bold text-on-surface">{qty}</span>
-                  <button
-                    onClick={() => onChangeQty(product.id, 1)}
-                    disabled={qty >= product.stock}
-                    className="w-7 h-7 flex items-center justify-center hover:bg-surface-container-high text-on-surface transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">add</span>
-                  </button>
-                </div>
+              <div className="flex items-center justify-between mt-2 pl-7">
+                {/* Qty controls (solo para productos) */}
+                {item.type === 'PRODUCT' ? (
+                  <div className="flex items-center gap-1 bg-surface-container rounded-lg overflow-hidden border border-outline-variant">
+                    <button
+                      onClick={() => onChangeQty(item.id, -1)}
+                      className="w-7 h-7 flex items-center justify-center hover:bg-surface-container-high text-on-surface transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">remove</span>
+                    </button>
+                    <span className="w-6 text-center text-sm font-bold text-on-surface">{item.qty}</span>
+                    <button
+                      onClick={() => onChangeQty(item.id, 1)}
+                      disabled={item.qty >= item.product.stock}
+                      className="w-7 h-7 flex items-center justify-center hover:bg-surface-container-high text-on-surface transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">add</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-xs text-on-surface-variant">Cant: 1</div>
+                )}
 
                 {/* Line total */}
                 <div className="text-right">
                   <p className="font-bold text-sm text-on-surface">
-                    ${lineSubtotal.toLocaleString('es-CO')}
+                    ${item.lineSubtotal.toLocaleString('es-CO')}
                   </p>
-                  {lineIva > 0 && (
-                    <p className="text-[10px] text-on-surface-variant">
-                      + ${lineIva.toLocaleString('es-CO')} IVA
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
@@ -127,18 +146,71 @@ export function SaleCart({
 
       {/* Footer: totales + acciones */}
       <div className="border-t border-outline-variant p-4 space-y-4 bg-surface-container-highest">
+        {/* Datos obligatorios si hay servicios */}
+        {hasServices && (
+          <div className="space-y-3 p-3 bg-error-container/20 border border-error-container/50 rounded-lg">
+            <p className="text-xs text-error font-bold flex items-center gap-1">
+              <span className="material-symbols-outlined text-[16px]">info</span>
+              Vehículo requerido para servicios
+            </p>
+            <div>
+              <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
+                Placa *
+              </label>
+              <input
+                type="text"
+                value={plate}
+                onChange={(e) => setPlate(e.target.value.toUpperCase())}
+                placeholder="ABC123"
+                maxLength={7}
+                className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all uppercase"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Cliente opcional */}
-        <div>
-          <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
-            Cliente (Opcional)
-          </label>
-          <input
-            type="text"
-            value={customerName}
-            onChange={(e) => onCustomerNameChange(e.target.value)}
-            placeholder="Consumidor Final"
-            className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-          />
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
+              Nombre Cliente {hasServices ? '*' : '(Opcional)'}
+            </label>
+            <input
+              type="text"
+              value={customerName}
+              onChange={(e) => onCustomerNameChange(e.target.value)}
+              placeholder="Consumidor Final"
+              className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+            />
+          </div>
+          {hasServices && (
+            <>
+              <div>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
+                  CC Cliente
+                </label>
+                <input
+                  type="text"
+                  value={customerCc}
+                  onChange={(e) => setCustomerCc(e.target.value)}
+                  placeholder="1234567890"
+                  className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
+                  Teléfono Cliente
+                </label>
+                <input
+                  type="text"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="3001234567"
+                  className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Método de pago */}
@@ -186,16 +258,16 @@ export function SaleCart({
         {/* Botones de acción */}
         <div className="space-y-2">
           <button
-            onClick={() => onSell(false)}
-            disabled={isSubmitting || isEmpty}
+            onClick={() => onSell(false, hasServices ? { plate, customerCc, customerPhone } : undefined)}
+            disabled={isSubmitting || isEmpty || (hasServices && !plate)}
             className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container text-on-surface font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
           >
             <span className="material-symbols-outlined text-[18px]">receipt</span>
             Generar Recibo POS
           </button>
           <button
-            onClick={() => onSell(true)}
-            disabled={isSubmitting || isEmpty}
+            onClick={() => onSell(true, hasServices ? { plate, customerCc, customerPhone } : undefined)}
+            disabled={isSubmitting || isEmpty || (hasServices && !plate)}
             className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
           >
             <span className="material-symbols-outlined text-[18px]">receipt_long</span>

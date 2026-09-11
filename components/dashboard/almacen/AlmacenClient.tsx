@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { PaymentMethod, ItemCategory } from '@prisma/client';
 import { AlmacenProduct, createProductSale } from '@/actions/almacen/almacen.actions';
 import { ProductGrid } from './ProductGrid';
@@ -59,12 +59,44 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
   const [services, setServices] = useState<any[]>([]);
   const [selectedServiceIds, setSelectedServiceIds] = useState<Set<string>>(new Set());
   const [servicesSearch, setServicesSearch] = useState('');
+  const [visibleServicesCount, setVisibleServicesCount] = useState(24);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getServicesByCategory().then((res) => {
       if (res.success) setServices(res.data);
     });
   }, []);
+
+  const filteredServices = services.filter((s) =>
+    s.name.toLowerCase().includes(servicesSearch.toLowerCase())
+  );
+
+  useEffect(() => {
+    setVisibleServicesCount(24);
+  }, [servicesSearch]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleServicesCount((prev) => Math.min(prev + 24, filteredServices.length));
+        }
+      },
+      { rootMargin: '100px' }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    const currentTarget = observerTarget.current;
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [filteredServices.length]);
 
   const toggleService = useCallback((id: string) => {
     setSelectedServiceIds((prev) => {
@@ -188,8 +220,8 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
         <button
           onClick={() => setActiveTab('productos')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${activeTab === 'productos'
-              ? 'bg-primary text-on-primary shadow-md'
-              : 'text-on-surface-variant hover:bg-surface-container-high'
+            ? 'bg-primary text-on-primary shadow-md'
+            : 'text-on-surface-variant hover:bg-surface-container-high'
             }`}
         >
           <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
@@ -198,8 +230,8 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
         <button
           onClick={() => setActiveTab('servicios')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${activeTab === 'servicios'
-              ? 'bg-primary text-on-primary shadow-md'
-              : 'text-on-surface-variant hover:bg-surface-container-high'
+            ? 'bg-primary text-on-primary shadow-md'
+            : 'text-on-surface-variant hover:bg-surface-container-high'
             }`}
         >
           <span className="material-symbols-outlined text-[20px]">build_circle</span>
@@ -290,10 +322,9 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
             </div>
 
             {/* Lista de servicios */}
-            <div className="flex-1 overflow-y-auto pr-1 pb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {services
-                .filter((s) => s.name.toLowerCase().includes(servicesSearch.toLowerCase()))
-                .map((s) => {
+            <div className="flex-1 overflow-y-auto pr-1 pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredServices.slice(0, visibleServicesCount).map((s) => {
                   const isSelected = selectedServiceIds.has(s.id);
                   return (
                     <button
@@ -319,6 +350,14 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Observador para cargar más servicios */}
+              {visibleServicesCount < filteredServices.length && (
+                <div ref={observerTarget} className="h-10 w-full flex items-center justify-center mt-4">
+                  <span className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                </div>
+              )}
             </div>
           </div>
 

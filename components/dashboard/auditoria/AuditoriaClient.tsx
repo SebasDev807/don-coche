@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { OrderAuditModal } from './OrderAuditModal';
 import { MOVEMENT_STATUS_STYLES } from '@/data/mocks';
@@ -70,9 +70,23 @@ export function AuditoriaClient({ movements, totals, pagination, filters }: Audi
     return `${pathname}?${current.toString()}`;
   }, [pathname, searchParams]);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     router.push(buildUrl({ plate, status, fechaDesde, fechaHasta, page: '1' }));
-  };
+  }, [router, buildUrl, plate, status, fechaDesde, fechaHasta]);
+
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      handleSearch();
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [plate, status, fechaDesde, fechaHasta, handleSearch]);
 
   const handleClear = () => {
     setPlate('');
@@ -108,7 +122,6 @@ export function AuditoriaClient({ movements, totals, pagination, filters }: Audi
                 type="text"
                 value={plate}
                 onChange={(e) => setPlate(e.target.value.toUpperCase())}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="Ej: ABC123"
                 className="w-full pl-9 pr-3 py-2.5 text-sm bg-surface-container border border-surface-variant rounded-lg text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               />
@@ -156,13 +169,6 @@ export function AuditoriaClient({ movements, totals, pagination, filters }: Audi
         {/* Botones */}
         <div className="flex flex-wrap gap-2 justify-between items-center">
           <div className="flex gap-2">
-            <button
-              onClick={handleSearch}
-              className="flex items-center gap-2 px-4 py-2 bg-on-surface text-surface text-sm font-bold rounded-lg hover:opacity-90 transition-all cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">search</span>
-              Buscar
-            </button>
             {hasFilters && (
               <button
                 onClick={handleClear}

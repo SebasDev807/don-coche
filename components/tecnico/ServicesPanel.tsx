@@ -29,7 +29,7 @@ export const ServicesPanel = ({
     if (!service) return acc;
     const basePrice = Number(service.basePrice) || 0;
     const profitPercentage = Number(service.profitPercentage) || 0;
-    const pvp = basePrice + (basePrice * profitPercentage / 100);
+    const pvp = Math.round((basePrice + (basePrice * profitPercentage / 100)) / 50) * 50;
     return acc + pvp;
   }, 0);
 
@@ -60,7 +60,7 @@ export const ServicesPanel = ({
           {filteredServices.map(service => {
             const basePrice = Number(service.basePrice) || 0;
             const profitPercentage = Number(service.profitPercentage) || 0;
-            const pvp = basePrice + (basePrice * profitPercentage / 100);
+            const pvp = Math.round((basePrice + (basePrice * profitPercentage / 100)) / 50) * 50;
 
             return (
               <ServiceCard 

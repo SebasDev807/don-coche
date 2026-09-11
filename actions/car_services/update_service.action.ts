@@ -8,17 +8,11 @@ export async function updateService(id: string, data: { name: string; basePrice:
   try {
     await verifySession();
 
-    // Redondear a múltiplo de 50 si autoRound es true (por defecto true)
-    const shouldRound = data.autoRound !== undefined ? data.autoRound : true;
-    const roundedPrice = shouldRound 
-      ? Math.round(data.basePrice / 50) * 50 
-      : data.basePrice;
-
     await prisma.serviceCatalog.update({
       where: { id },
       data: {
         name: data.name,
-        basePrice: roundedPrice,
+        basePrice: data.basePrice,
         category: data.category as any, // Cast to ItemCategory enum
         profitPercentage: data.profitPercentage ?? null,
         description: data.description,

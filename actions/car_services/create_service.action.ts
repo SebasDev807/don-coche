@@ -18,17 +18,12 @@ export async function createService(formData: FormData) {
     const rawData = Object.fromEntries(formData.entries());
     const validatedData = createServiceSchema.parse(rawData);
 
-    // Redondear a múltiplo de 50 si autoRound es true
-    const roundedPrice = validatedData.autoRound 
-      ? Math.round(validatedData.basePrice / 50) * 50 
-      : validatedData.basePrice;
-
     await prisma.serviceCatalog.create({
       data: {
         name: validatedData.name,
         categoryId: validatedData.categoryId || null,
         category: validatedData.category || null,
-        basePrice: roundedPrice,
+        basePrice: validatedData.basePrice,
         profitPercentage: validatedData.profitPercentage || null,
         description: validatedData.description || null,
         isActive: true,

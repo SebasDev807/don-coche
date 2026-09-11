@@ -57,12 +57,10 @@ export function ProductGrid({ products, search, cart, onAdd }: ProductGridProps)
               {product.stock} uds
             </span>
 
-            {/* Badge IVA */}
-            {product.iva > 0 && (
-              <span className="absolute top-3 left-3 text-[10px] font-bold px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container">
-                IVA {product.iva}%
-              </span>
-            )}
+            {/* Badge IVA — siempre visible */}
+            <span className="absolute top-3 left-3 text-[10px] font-bold px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container">
+              IVA {product.iva}%
+            </span>
 
             <div className="mt-4">
               <p className="font-bold text-sm text-on-surface line-clamp-2 leading-snug mb-1">

@@ -21,7 +21,9 @@ export async function GET(req: NextRequest) {
 
     if (startDateParam && endDateParam) {
       startDate = new Date(startDateParam);
+      startDate.setHours(0, 0, 0, 0);
       endDate = new Date(endDateParam);
+      endDate.setHours(23, 59, 59, 999);
     } else {
       // Default to today
       startDate.setHours(0, 0, 0, 0);

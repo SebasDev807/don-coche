@@ -26,6 +26,8 @@ interface EditProductFormProps {
     unitCost: number;
     salePrice: number;
     profitPercentage: number | null;
+    // iva viene serializado desde page.tsx como number | null.
+    // No puede ser undefined; si lo fuera indicaría que page.tsx no lo pasó.
     iva: number | null;
   };
 }
@@ -51,8 +53,10 @@ export function EditProductForm({ product }: EditProductFormProps) {
       stock: product.stock,
       unitCost: new Intl.NumberFormat('es-CO').format(product.unitCost) as any,
       profitPercentage: product.profitPercentage || undefined as unknown as number,
-      hasIva: product.iva !== null && product.iva > 0,
-      iva: product.iva || 19,
+      // Comparación estricta para que iva=0 (producto exento) no sea falsy.
+      // product.iva puede ser 0, 5, 19 o null — nunca undefined tras el fix de page.tsx.
+      hasIva: product.iva !== null && product.iva !== undefined && product.iva > 0,
+      iva: product.iva !== null && product.iva !== undefined ? product.iva : 19,
       autoRound: true,
     },
   });
@@ -91,7 +95,9 @@ export function EditProductForm({ product }: EditProductFormProps) {
       stock: data.stock,
       unitCost: Number(data.unitCost),
       profitPercentage: data.profitPercentage ? Number(data.profitPercentage) : null,
-      iva: data.hasIva ? (data.iva ? Number(data.iva) : 19) : 0,
+      // data.iva != null (loose) cubre undefined y null sin tratar 0 como falsy.
+      // Esto preserva iva=0 (exento) correctamente.
+      iva: data.hasIva ? (data.iva != null ? Number(data.iva) : 19) : 0,
       autoRound: data.autoRound,
     } as any);
 

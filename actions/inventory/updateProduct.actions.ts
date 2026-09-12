@@ -43,79 +43,80 @@ export interface UpdateProductResponse {
  * @param {UpdateProductInput} data - Los datos a actualizar del producto.
  * @returns {Promise<UpdateProductResponse>} El resultado de la operación.
  */
-  export async function updateProduct(data: UpdateProductInput): Promise<UpdateProductResponse> {
-    try {
-      const { id, name, description, categoryId, barCode, stock, unitCost, salePrice, profitPercentage, iva, autoRound, isActive } = data;
-  
-      if (!id) {
-        return {
-          success: false,
-          message: 'El ID del producto es requerido.',
-        };
-      }
-  
-      // Verificar que el producto existe
-      const existing = await prisma.product.findUnique({ where: { id } });
-      if (!existing) {
-        return {
-          success: false,
-          message: 'El producto no fue encontrado.',
-        };
-      }
-  
-      // Construir el objeto de actualización solo con los campos provistos
-      const updateData: Prisma.ProductUpdateInput = {};
-  
-      if (name !== undefined) {
-        updateData.name = name;
-        updateData.slug = generateSlug(name);
-      }
-  
-      if (description !== undefined) {
-        updateData.description = description;
-      }
-  
-      if (barCode !== undefined) {
-        updateData.barCode = barCode;
-      }
-  
-      if (categoryId !== undefined) {
-        updateData.category_rel = { connect: { id: categoryId } };
-      }
-  
-      if (stock !== undefined) {
-        updateData.stock = stock;
-      }
-  
-      if (unitCost !== undefined) {
-        updateData.unitCost = new Prisma.Decimal(unitCost);
-      }
-  
-      if (profitPercentage !== undefined) {
-        updateData.profitPercentage = new Prisma.Decimal(profitPercentage);
-      }
-  
-      if (iva !== undefined) {
-        updateData.iva = new Prisma.Decimal(iva);
-      }
-  
-      // Compute salePrice if unitCost, profitPercentage, or iva changed
-      if (unitCost !== undefined || profitPercentage !== undefined || iva !== undefined || autoRound !== undefined) {
-        const finalUnitCost = unitCost !== undefined ? unitCost : Number(existing.unitCost);
-        const finalProfitPercentage = profitPercentage !== undefined ? profitPercentage : (existing.profitPercentage ? Number(existing.profitPercentage) : 0);
-        const finalIva = iva !== undefined ? iva : (existing.iva ? Number(existing.iva) : 19);
-        let computedSalePrice = (finalUnitCost + (finalUnitCost * finalProfitPercentage / 100)) * (1 + finalIva / 100);
-        
-        // Use provided autoRound or default to true for existing logic
-        const shouldRound = autoRound !== undefined ? autoRound : true;
-        if (shouldRound) {
-          computedSalePrice = Math.round(computedSalePrice / 50) * 50;
-        }
+export async function updateProduct(data: UpdateProductInput): Promise<UpdateProductResponse> {
+  try {
+    const { id, name, description, categoryId, barCode, stock, unitCost, salePrice, profitPercentage, iva, autoRound, isActive } = data;
 
-        updateData.salePrice = new Prisma.Decimal(computedSalePrice);
-      } else if (salePrice !== undefined) {
-        updateData.salePrice = new Prisma.Decimal(salePrice);
+    if (!id) {
+      return {
+        success: false,
+        message: 'El ID del producto es requerido.',
+      };
+    }
+
+    // Verificar que el producto existe
+    const existing = await prisma.product.findUnique({ where: { id } });
+
+    if (!existing) {
+      return {
+        success: false,
+        message: 'El producto no fue encontrado.',
+      };
+    }
+
+    // Construir el objeto de actualización solo con los campos provistos
+    const updateData: Prisma.ProductUpdateInput = {};
+
+    if (name !== undefined) {
+      updateData.name = name;
+      updateData.slug = generateSlug(name);
+    }
+
+    if (description !== undefined) {
+      updateData.description = description;
+    }
+
+    if (barCode !== undefined) {
+      updateData.barCode = barCode;
+    }
+
+    if (categoryId !== undefined) {
+      updateData.category_rel = { connect: { id: categoryId } };
+    }
+
+    if (stock !== undefined) {
+      updateData.stock = stock;
+    }
+
+    if (unitCost !== undefined) {
+      updateData.unitCost = new Prisma.Decimal(unitCost);
+    }
+
+    if (profitPercentage !== undefined) {
+      updateData.profitPercentage = new Prisma.Decimal(profitPercentage);
+    }
+
+    if (iva !== undefined) {
+      updateData.iva = new Prisma.Decimal(iva);
+    }
+
+    // Compute salePrice if unitCost, profitPercentage, or iva changed
+    if (unitCost !== undefined || profitPercentage !== undefined || iva !== undefined || autoRound !== undefined) {
+      const finalUnitCost = unitCost !== undefined ? unitCost : Number(existing.unitCost);
+      const finalProfitPercentage = profitPercentage !== undefined ? profitPercentage : (existing.profitPercentage ? Number(existing.profitPercentage) : 0);
+      const finalIva = iva !== undefined ? iva : (existing.iva ? Number(existing.iva) : 19);
+      let computedSalePrice = (finalUnitCost + (finalUnitCost * finalProfitPercentage / 100)) * (1 + finalIva / 100);
+
+      // Use provided autoRound or default to true for existing logic
+      const shouldRound = autoRound !== undefined ? autoRound : true;
+      if (shouldRound) {
+        computedSalePrice = Math.round(computedSalePrice / 50) * 50;
       }
+
+      updateData.salePrice = new Prisma.Decimal(computedSalePrice);
+    } else if (salePrice !== undefined) {
+      updateData.salePrice = new Prisma.Decimal(salePrice);
+    }
 
     if (isActive !== undefined) {
       updateData.isActive = isActive;
@@ -137,7 +138,7 @@ export interface UpdateProductResponse {
     };
   } catch (error) {
     console.error('[updateProduct] Error:', error);
-    
+
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
         return {

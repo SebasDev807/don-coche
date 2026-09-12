@@ -39,6 +39,9 @@ export default async function EditProductPage(props: EditProductPageProps) {
     unitCost: Number(product.unitCost),
     salePrice: Number(product.salePrice),
     profitPercentage: product.profitPercentage ? Number(product.profitPercentage) : null,
+    // iva es Decimal | null en Prisma; se convierte a number | null para que sea
+    // serializable como prop de un Client Component.
+    iva: product.iva !== null ? Number(product.iva) : null,
   };
 
   return (

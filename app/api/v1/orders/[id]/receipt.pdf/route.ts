@@ -9,7 +9,7 @@ export async function GET(
   const { id } = await params;
 
   try {
-    const order = await prisma.order.findUnique({
+    let order: any = await prisma.order.findUnique({
       where: { id },
       include: {
         vehicle: { include: { customer: true } },
@@ -21,7 +21,42 @@ export async function GET(
     });
 
     if (!order) {
-      return new NextResponse('Orden no encontrada', { status: 404 });
+      const sale = await prisma.productSale.findUnique({
+        where: { id },
+        include: {
+          admin: true,
+          items: { include: { product: true } }
+        }
+      });
+      
+      if (!sale) {
+        return new NextResponse('Orden o venta no encontrada', { status: 404 });
+      }
+
+      // Map sale to look like an order for the PDF generation
+      order = {
+        orderNumber: `V-${sale.saleNumber}`,
+        status: 'FACTURADA',
+        billedAt: sale.soldAt,
+        paymentMethod: sale.paymentMethod,
+        totalServices: 0,
+        grandTotal: sale.grandTotal,
+        vehicle: { 
+          plate: 'ALMACÉN', 
+          customer: { name: sale.customerName || 'Consumidor Final', cc: sale.customerCc }
+        },
+        technician: { name: sale.admin.name },
+        admin: { name: sale.admin.name },
+        services: [],
+        products: sale.items.map(i => ({
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+          product: {
+            name: i.product.name,
+            iva: Number(i.ivaRate) * 100
+          }
+        }))
+      };
     }
 
     if (order.status !== 'FACTURADA') {
@@ -62,7 +97,7 @@ export async function GET(
     if (order.services.length > 0) {
       doc.font('Helvetica-Bold').text('SERVICIOS:');
       let totalServices = 0;
-      order.services.forEach(os => {
+      order.services.forEach((os: any) => {
         totalServices += Number(os.chargedPrice);
         doc.font('Helvetica').text(`- ${os.service?.name || 'Servicio'}`);
         doc.text(`$${Number(os.chargedPrice).toLocaleString('es-CO')}`, { align: 'right' });
@@ -75,7 +110,7 @@ export async function GET(
 
     if (order.products.length > 0) {
       doc.font('Helvetica-Bold').text('REPUESTOS:');
-      order.products.forEach(op => {
+      order.products.forEach((op: any) => {
         const unitPrice = Number(op.unitPrice);
         const quantity = Number(op.quantity);
         const ivaRate = op.product?.iva ? Number(op.product.iva) / 100 : 0;

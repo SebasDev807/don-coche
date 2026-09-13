@@ -14,10 +14,9 @@ export interface MovementFilters {
   fechaHasta?: string;
 }
 
-function buildWhereClause(filters: MovementFilters) {
+function buildWhereOrder(filters: MovementFilters) {
   const where: any = {};
 
-  // Filtro por placa: busca vehículos cuya placa contenga el texto
   if (filters.plate && filters.plate.trim() !== '') {
     where.vehicle = {
       plate: {
@@ -26,12 +25,10 @@ function buildWhereClause(filters: MovementFilters) {
     };
   }
 
-  // Filtro por estado
   if (filters.status && filters.status !== 'TODOS') {
     where.status = filters.status;
   }
 
-  // Filtro por rango de fechas (sobre createdAt)
   if (filters.fechaDesde || filters.fechaHasta) {
     where.createdAt = {};
     if (filters.fechaDesde) {
@@ -49,6 +46,34 @@ function buildWhereClause(filters: MovementFilters) {
   return where;
 }
 
+function buildWhereSale(filters: MovementFilters) {
+  const where: any = {};
+
+  if (filters.plate && filters.plate.trim() !== '') {
+    return null;
+  }
+
+  if (filters.status && filters.status !== 'TODOS' && filters.status !== 'FACTURADA') {
+    return null;
+  }
+
+  if (filters.fechaDesde || filters.fechaHasta) {
+    where.soldAt = {};
+    if (filters.fechaDesde) {
+      const desde = new Date(filters.fechaDesde);
+      desde.setHours(0, 0, 0, 0);
+      where.soldAt.gte = desde;
+    }
+    if (filters.fechaHasta) {
+      const hasta = new Date(filters.fechaHasta);
+      hasta.setHours(23, 59, 59, 999);
+      where.soldAt.lte = hasta;
+    }
+  }
+
+  return where;
+}
+
 export async function getPaginatedMovements(
   page: number = 1,
   limit: number = 50,
@@ -58,73 +83,134 @@ export async function getPaginatedMovements(
     await verifySession();
 
     const skip = (page - 1) * limit;
-    const where = buildWhereClause(filters);
+    const whereOrder = buildWhereOrder(filters);
+    const whereSale = buildWhereSale(filters);
 
-    const [totalCount, orders, allFilteredOrders] = await Promise.all([
-      prisma.order.count({ where }),
+    const orderPromises = [
       prisma.order.findMany({
-        skip,
-        take: limit,
-        where,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          vehicle: true,
-          services: { include: { service: true } }
-        }
-      }),
-      // Para los totales del período completo (sin paginar)
-      prisma.order.findMany({
-        where,
-        select: {
-          grandTotal: true,
-          status: true,
-        }
+        where: whereOrder,
+        select: { id: true, createdAt: true, grandTotal: true, status: true },
       })
+    ];
+
+    if (whereSale !== null) {
+      orderPromises.push(
+        prisma.productSale.findMany({
+          where: whereSale,
+          select: { id: true, soldAt: true, grandTotal: true }
+        }) as any
+      );
+    }
+
+    const results = await Promise.all(orderPromises);
+    const allOrders = results[0] as any[];
+    const allSales = (results[1] || []) as any[];
+
+    const combined = [
+      ...allOrders.map(o => ({
+        type: 'ORDER',
+        id: o.id,
+        date: o.createdAt,
+        grandTotal: Number(o.grandTotal),
+        status: o.status,
+      })),
+      ...allSales.map(s => ({
+        type: 'SALE',
+        id: s.id,
+        date: s.soldAt,
+        grandTotal: Number(s.grandTotal),
+        status: 'FACTURADA',
+      }))
+    ];
+
+    combined.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+    const totalCount = combined.length;
+    const totalFacturado = combined
+      .filter(item => item.status === 'FACTURADA')
+      .reduce((sum, item) => sum + item.grandTotal, 0);
+
+    const countFacturadas = combined.filter(item => item.status === 'FACTURADA').length;
+    const countCanceladas = combined.filter(item => item.status === 'CANCELADA').length;
+    const countEnPista = combined.filter(item => item.status === 'EN_PISTA').length;
+
+    const paginatedItems = combined.slice(skip, skip + limit);
+    const orderIds = paginatedItems.filter(i => i.type === 'ORDER').map(i => i.id);
+    const saleIds = paginatedItems.filter(i => i.type === 'SALE').map(i => i.id);
+
+    const [fullOrders, fullSales] = await Promise.all([
+      orderIds.length > 0 ? prisma.order.findMany({
+        where: { id: { in: orderIds } },
+        include: { vehicle: true, services: { include: { service: true } } }
+      }) : Promise.resolve([]),
+      saleIds.length > 0 ? prisma.productSale.findMany({
+        where: { id: { in: saleIds } },
+        include: { items: { include: { product: true } }, admin: { select: { name: true } } }
+      }) : Promise.resolve([])
     ]);
 
-    // Calcular totales del período filtrado
-    const totalFacturado = allFilteredOrders
-      .filter(o => o.status === 'FACTURADA')
-      .reduce((sum, o) => sum + Number(o.grandTotal), 0);
-    const countFacturadas = allFilteredOrders.filter(o => o.status === 'FACTURADA').length;
-    const countCanceladas = allFilteredOrders.filter(o => o.status === 'CANCELADA').length;
-    const countEnPista = allFilteredOrders.filter(o => o.status === 'EN_PISTA').length;
+    const orderMap = new Map(fullOrders.map(o => [o.id, o]));
+    const saleMap = new Map(fullSales.map(s => [s.id, s]));
 
-    const movements = orders.map((order) => {
-      const isBilled = order.status === 'FACTURADA';
-      const isCanceled = order.status === 'CANCELADA';
+    const movements = paginatedItems.map(item => {
+      if (item.type === 'ORDER') {
+        const order = orderMap.get(item.id)!;
+        const isBilled = order.status === 'FACTURADA';
+        const isCanceled = order.status === 'CANCELADA';
 
-      let estado = 'EN PROCESO';
-      let montoColor = 'text-[#B06000]';
-      if (isBilled) {
-        estado = 'COMPLETADO';
-        montoColor = 'text-on-surface';
-      } else if (isCanceled) {
-        estado = 'AUDITADO';
-        montoColor = 'text-[#ba1a1a]';
+        let estado = 'EN PROCESO';
+        let montoColor = 'text-[#B06000]';
+        if (isBilled) {
+          estado = 'COMPLETADO';
+          montoColor = 'text-on-surface';
+        } else if (isCanceled) {
+          estado = 'AUDITADO';
+          montoColor = 'text-[#ba1a1a]';
+        }
+
+        const concepto = order.services.length > 0
+          ? order.services[0].service.name + (order.services.length > 1 ? ` y ${order.services.length - 1} más` : '')
+          : 'Sin servicios';
+
+        const rawPlate = order.vehicle?.plate;
+        const displayPlate = !rawPlate || rawPlate === 'GEN-000' ? 'N/A' : rawPlate;
+
+        return {
+          id: order.id,
+          orderNumber: order.orderNumber,
+          fecha: order.createdAt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }),
+          hora: order.createdAt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true }),
+          placa: displayPlate,
+          concepto,
+          detalle: `Placa: ${displayPlate}`,
+          monto: formatCurrency(Number(order.grandTotal)),
+          montoRaw: Number(order.grandTotal),
+          montoColor,
+          estado,
+          status: order.status,
+        };
+      } else {
+        const sale = saleMap.get(item.id)!;
+        
+        const concepto = sale.items.length > 0
+          ? sale.items[0].product.name + (sale.items.length > 1 ? ` y ${sale.items.length - 1} más` : '')
+          : 'Venta de productos';
+
+        return {
+          id: sale.id,
+          orderNumber: sale.saleNumber,
+          fecha: sale.soldAt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }),
+          hora: sale.soldAt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true }),
+          placa: 'ALMACÉN',
+          concepto,
+          detalle: sale.customerName ? `Venta a ${sale.customerName}` : 'Venta Directa',
+          monto: formatCurrency(Number(sale.grandTotal)),
+          montoRaw: Number(sale.grandTotal),
+          montoColor: 'text-on-surface',
+          estado: 'COMPLETADO',
+          status: 'FACTURADA',
+        };
       }
-
-      const concepto = order.services.length > 0
-        ? order.services[0].service.name + (order.services.length > 1 ? ` y ${order.services.length - 1} más` : '')
-        : 'Sin servicios';
-
-      const rawPlate = order.vehicle?.plate;
-      const displayPlate = !rawPlate || rawPlate === 'GEN-000' ? 'N/A' : rawPlate;
-
-      return {
-        id: order.id,
-        orderNumber: order.orderNumber,
-        fecha: order.createdAt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }),
-        hora: order.createdAt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true }),
-        placa: displayPlate,
-        concepto,
-        detalle: `Placa: ${displayPlate}`,
-        monto: formatCurrency(Number(order.grandTotal)),
-        montoRaw: Number(order.grandTotal),
-        montoColor,
-        estado,
-        status: order.status,
-      };
     });
 
     return {

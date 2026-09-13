@@ -55,7 +55,48 @@ export async function getOrderDetail(orderId: string) {
       }
     });
 
-    if (!order) return { success: false, message: 'Orden no encontrada' };
+    if (!order) {
+      // Intentar buscar como venta de producto (ProductSale)
+      const sale = await prisma.productSale.findUnique({
+        where: { id: orderId },
+        include: {
+          admin: { select: { name: true } },
+          items: { include: { product: true } }
+        }
+      });
+
+      if (!sale) return { success: false, message: 'Orden o venta no encontrada' };
+
+      return {
+        success: true,
+        data: {
+          id: sale.id,
+          orderNumber: `V-${sale.saleNumber}`,
+          status: 'FACTURADA',
+          paymentMethod: sale.paymentMethod,
+          totalServices: 0,
+          totalProducts: Number(sale.subtotal) || Number(sale.grandTotal) - Number(sale.ivaAmount),
+          grandTotal: Number(sale.grandTotal),
+          vehicle: { 
+            plate: 'ALMACÉN', 
+            customer: { name: sale.customerName || 'Consumidor Final', phone: sale.customerCc }
+          },
+          technician: { name: sale.admin.name },
+          admin: { name: sale.admin.name },
+          services: [],
+          products: sale.items.map(i => ({
+            id: i.id,
+            quantity: i.quantity,
+            unitPrice: Number(i.unitPrice),
+            unitCost: Number(i.unitCost),
+            product: {
+              name: i.product.name,
+              iva: Number(i.ivaRate) * 100
+            }
+          })),
+        }
+      };
+    }
 
     return {
       success: true,

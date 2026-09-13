@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 export default async function CajaPage() {
-  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
   const [pendingRes, billedRes] = await Promise.all([
     getPendingOrders(),

@@ -93,7 +93,7 @@ export async function getOrderDetail(orderId: string) {
 
 export async function billOrder(orderId: string, paymentMethod: PaymentMethod, emitirFactura: boolean = true) {
   try {
-    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
     const updatedOrder = await prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
@@ -355,7 +355,7 @@ export async function cancelOrder(orderId: string) {
 
 export async function getTodayBilledOrders() {
   try {
-    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
     // Get start and end of today
     const startOfDay = new Date();

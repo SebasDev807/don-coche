@@ -14,10 +14,7 @@ export async function getReleases() {
       author: {
         select: { name: true }
       },
-      features: true,
-      _count: {
-        select: { views: true }
-      }
+      features: true
     }
   });
 

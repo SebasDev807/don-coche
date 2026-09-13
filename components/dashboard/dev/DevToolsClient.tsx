@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { wipeDevData, verifyDevPassword } from '@/actions/dev/dev.actions';
 
 export function DevToolsClient() {
@@ -9,6 +10,19 @@ export function DevToolsClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  useEffect(() => {
+    if (!isUnlocked) {
+      const audio = new Audio('/advertencia.mp3');
+      // Loop the audio for continuous warning, or just play once
+      audio.play().catch((e) => console.warn('El navegador bloqueó la reproducción automática del audio.', e));
+
+      return () => {
+        audio.pause();
+        audio.currentTime = 0;
+      };
+    }
+  }, [isUnlocked]);
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,39 +77,48 @@ export function DevToolsClient() {
 
   if (!isUnlocked) {
     return (
-      <div className="bg-error-container/10 border-2 border-error rounded-2xl p-6 md:p-8 shadow-2xl max-w-2xl mx-auto mt-10">
-        <div className="flex flex-col items-center text-center space-y-6">
-          <div className="w-20 h-20 bg-error rounded-full flex items-center justify-center shadow-lg animate-pulse">
-            <span className="material-symbols-outlined text-white text-5xl">warning</span>
+      <div className="fixed inset-0 z-[100] bg-[#7f1d1d] overflow-y-auto flex flex-col items-center justify-center p-4 text-white font-serif">
+        <div className="flex flex-col items-center text-center space-y-6 w-full max-w-3xl py-10">
+          <div className="flex items-center justify-center mb-2">
+            <Image 
+              src="/images/caution.png" 
+              alt="Precaución" 
+              width={160} 
+              height={160} 
+              className="drop-shadow-2xl"
+              priority
+            />
           </div>
 
           <div>
-            <h2 className="text-3xl font-display-bold text-error uppercase tracking-widest mb-3">
+            <h2 className="text-4xl md:text-5xl font-bold uppercase tracking-[0.2em] mb-4 text-white drop-shadow-md">
               Zona Restringida
             </h2>
-            <p className="text-on-surface text-lg font-bold uppercase mb-2">
-              Modificación directa del núcleo
+            <p className="text-red-200 text-xl uppercase mb-4 tracking-[0.3em] font-bold">
+              Modificación Directa del Núcleo
             </p>
-            <p className="text-on-surface-variant text-sm max-w-md mx-auto leading-relaxed text-justify">
-              Está intentando acceder a las herramientas de desarrollo de la plataforma. Las opciones contenidas en esta sección tienen el poder de alterar y destruir irreversiblemente la base de datos de producción. Si usted no es parte del equipo de desarrollo, cierre esta ventana inmediatamente.
+            <p className="text-red-100/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed text-justify px-4">
+              Esta sección está destinada exclusivamente al equipo de desarrollo. Sus herramientas pueden modificar datos y procesos críticos de producción. El uso, acceso o manipulación no autorizada, especialmente con fines malintencionados, puede ser registrado, investigado y dar lugar a acciones administrativas o legales. Si usted no es del equipo de desarrollo o accedió accidentalmente a este sitio, abandone esta sección inmediatamente.
             </p>
           </div>
 
-          <form onSubmit={handleUnlock} className="w-full max-w-sm pt-6 space-y-4">
+          <form onSubmit={handleUnlock} className="w-full max-w-md pt-6 space-y-5">
             <div>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border-2 border-outline-variant bg-surface text-center text-xl tracking-widest text-on-surface focus:border-error focus:ring-1 focus:ring-error outline-none transition-all font-mono"
+                className="w-full h-14 px-4 rounded-none border-2 border-red-900 bg-black/50 text-center text-2xl tracking-[0.5em] text-white placeholder:text-red-900/50 focus:border-white focus:ring-1 focus:ring-white outline-none transition-all font-mono"
                 placeholder="••••••••"
-                autoComplete="current-password"
+                autoComplete="new-password"
+                autoCorrect="off"
+                spellCheck="false"
                 autoFocus
               />
             </div>
 
             {errorMsg && (
-              <div className="bg-error-container/30 border border-error/50 text-error text-sm p-3 rounded-lg animate-in fade-in zoom-in-95">
+              <div className="bg-black/50 border-l-4 border-white text-white text-sm p-4 text-left font-sans shadow-inner">
                 {errorMsg}
               </div>
             )}
@@ -103,14 +126,14 @@ export function DevToolsClient() {
             <button
               type="submit"
               disabled={isSubmitting || !password}
-              className="w-full bg-error text-white font-bold h-12 rounded-xl shadow-lg hover:bg-[#b91c1c] transition-all disabled:opacity-50 flex items-center justify-center gap-2 uppercase tracking-wider"
+              className="w-full bg-black hover:bg-black/80 text-white font-bold h-14 border-2 border-transparent hover:border-white transition-all disabled:opacity-50 flex items-center justify-center gap-3 uppercase tracking-[0.3em] shadow-2xl text-base"
             >
               {isSubmitting ? (
-                <span className="material-symbols-outlined animate-spin">refresh</span>
+                <span className="material-symbols-outlined animate-spin text-xl">refresh</span>
               ) : (
-                <span className="material-symbols-outlined">lock_open</span>
+                <span className="material-symbols-outlined text-xl">key</span>
               )}
-              {isSubmitting ? 'Verificando...' : 'Desbloquear Opciones'}
+              {isSubmitting ? 'Verificando...' : 'Desbloquear'}
             </button>
           </form>
         </div>

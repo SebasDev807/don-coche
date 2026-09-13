@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { markReleaseAsViewed } from '@/actions/releases/user.actions';
 import { FeatureType } from '@prisma/client';
 
 interface ReleaseData {
@@ -13,7 +12,7 @@ interface ReleaseData {
 }
 
 interface Props {
-  unreadReleases: ReleaseData[];
+  latestRelease: ReleaseData;
 }
 
 const TYPE_CONFIG = {
@@ -23,29 +22,22 @@ const TYPE_CONFIG = {
   CHANGE: { icon: '🔄', label: 'Cambio Interno', color: 'bg-tertiary-container text-on-tertiary-container' },
 };
 
-export function ReleaseModalClient({ unreadReleases }: Props) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export function ReleaseModalClient({ latestRelease }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (unreadReleases.length > 0) {
+    // Evitar desajustes de hidratación leyendo el localStorage solo en el cliente
+    const lastSeen = localStorage.getItem('last_seen_release_id');
+    if (lastSeen !== latestRelease.id) {
       setIsOpen(true);
     }
-  }, [unreadReleases]);
+  }, [latestRelease]);
 
-  if (!isOpen || unreadReleases.length === 0) return null;
+  if (!isOpen) return null;
 
-  const release = unreadReleases[currentIndex];
-
-  const handleClose = async () => {
-    // Mark current as read
-    await markReleaseAsViewed(release.id);
-
-    if (currentIndex < unreadReleases.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      setIsOpen(false);
-    }
+  const handleClose = () => {
+    localStorage.setItem('last_seen_release_id', latestRelease.id);
+    setIsOpen(false);
   };
 
   return (
@@ -61,26 +53,26 @@ export function ReleaseModalClient({ unreadReleases }: Props) {
           <div className="relative z-10 flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md">
-                Versión {release.version}
+                Versión {latestRelease.version}
               </span>
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md">
                 Novedades
               </span>
             </div>
-            <h2 className="text-3xl font-display font-bold mt-2">{release.title}</h2>
+            <h2 className="text-3xl font-display font-bold mt-2">{latestRelease.title}</h2>
           </div>
         </div>
 
         {/* Content */}
         <div className="p-8 overflow-y-auto flex-1 flex flex-col gap-6">
-          {release.summary && (
+          {latestRelease.summary && (
             <p className="text-on-surface text-lg leading-relaxed font-medium">
-              {release.summary}
+              {latestRelease.summary}
             </p>
           )}
 
           <div className="flex flex-col gap-4 mt-2">
-            {release.features.map(f => {
+            {latestRelease.features.map(f => {
               const config = TYPE_CONFIG[f.type];
               return (
                 <div key={f.id} className="flex gap-4 p-4 rounded-2xl bg-surface-container-low border border-surface-variant hover:shadow-md transition-shadow">
@@ -105,15 +97,12 @@ export function ReleaseModalClient({ unreadReleases }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-surface-variant flex justify-between items-center bg-surface-container-lowest shrink-0">
-          <div className="text-sm font-bold text-on-surface-variant">
-            {unreadReleases.length > 1 ? `Actualización ${currentIndex + 1} de ${unreadReleases.length}` : ''}
-          </div>
+        <div className="p-6 border-t border-surface-variant flex justify-end items-center bg-surface-container-lowest shrink-0">
           <button
             onClick={handleClose}
             className="px-8 py-3 rounded-full font-bold bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
           >
-            {currentIndex < unreadReleases.length - 1 ? 'Siguiente' : 'Entendido'}
+            Entendido
           </button>
         </div>
       </div>

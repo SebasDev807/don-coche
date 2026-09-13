@@ -3,6 +3,7 @@ import { verifyRole } from '@/lib/dal';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { PublishButton } from '@/components/dashboard/releases/PublishButton';
 
 export default async function ReleasesHistoryPage() {
   await verifyRole(['SUPERUSUARIO']);
@@ -33,14 +34,13 @@ export default async function ReleasesHistoryPage() {
                 <th className="px-6 py-4 font-semibold">Título</th>
                 <th className="px-6 py-4 font-semibold">Estado</th>
                 <th className="px-6 py-4 font-semibold">Fecha Publicación</th>
-                <th className="px-6 py-4 font-semibold text-center">Vistas</th>
                 <th className="px-6 py-4 font-semibold text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-variant">
               {releases.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-on-surface-variant">
+                  <td colSpan={5} className="px-6 py-8 text-center text-on-surface-variant">
                     No hay actualizaciones registradas.
                   </td>
                 </tr>
@@ -65,12 +65,10 @@ export default async function ReleasesHistoryPage() {
                         ? format(new Date(release.publishedAt), "dd MMM yyyy", { locale: es })
                         : '-'}
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center justify-center bg-tertiary-container text-on-tertiary-container rounded-full w-8 h-8 text-xs font-bold">
-                        {release._count.views}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 text-right flex justify-end items-center gap-3">
+                      {release.status === 'DRAFT' && (
+                        <PublishButton releaseId={release.id} />
+                      )}
                       <Link
                         href={`/releases/${release.id}`}
                         className="text-primary hover:text-primary-container font-medium"

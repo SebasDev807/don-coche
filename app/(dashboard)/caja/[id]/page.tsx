@@ -13,7 +13,7 @@ interface PageProps {
 
 export default async function OrderDetailPage({ params }: PageProps) {
   const { id } = await params;
-  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
   const res = await getOrderDetail(id);
 

@@ -35,7 +35,7 @@ interface NavItem {
 /** Ítems principales del menú de navegación. */
 const NAV_ITEMS: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
-  { icon: 'point_of_sale', label: 'Panel de Caja', href: '/caja', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'] },
+  { icon: 'point_of_sale', label: 'Panel de Caja', href: '/caja', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
   { icon: 'storefront', label: 'Punto de Venta', href: '/almacen', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
   { icon: 'group', label: 'Gestión de Personal', href: '/personal', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'] },
   { icon: 'inventory_2', label: 'Inventario', href: '/inventario', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },

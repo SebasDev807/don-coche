@@ -100,7 +100,6 @@ model User {
   cashClosures        CashClosure[]
   productSales        ProductSale[]       @relation("AdminSales")
   releasesAuthored    AppRelease[]        @relation("AuthorReleases")
-  releaseViews        ReleaseView[]
 
   @@index([cc]) // Índice para login rápido
   @@map("users")
@@ -453,7 +452,6 @@ model AppRelease {
 
   author   User             @relation("AuthorReleases", fields: [authorId], references: [id])
   features ReleaseFeature[]
-  views    ReleaseView[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -475,15 +473,3 @@ model ReleaseFeature {
   @@map("release_features")
 }
 
-model ReleaseView {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  releaseId String   @map("release_id") @db.Uuid
-  viewedAt  DateTime @default(now()) @map("viewed_at")
-
-  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  release AppRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, releaseId])
-  @@map("release_views")
-}

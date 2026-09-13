@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 export default async function AlmacenPage() {
-  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
   const productsRes = await getAlmacenProducts();
 

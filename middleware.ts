@@ -21,7 +21,7 @@ import { decrypt, updateSession } from '@/lib/session';
 const PUBLIC_ROUTES = ['/auth', '/agendar', '/privacidad', '/terminos-de-uso', '/soporte'];
 
 /** Roles que acceden al dashboard de gestión. */
-const DASHBOARD_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
+const DASHBOARD_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'];
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 

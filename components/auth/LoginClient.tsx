@@ -25,7 +25,7 @@ type LoginFormInputs = {
 };
 
 /** Roles que redirigen al dashboard de gestión. */
-const DASHBOARD_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
+const DASHBOARD_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'];
 
 /**
  * Mapea el rol del usuario a una etiqueta legible para SweetAlert2.
@@ -38,6 +38,7 @@ function getRoleLabel(role: string): string {
     SUPERUSUARIO: 'Superusuario',
     GERENTE: 'Gerente',
     ADMINISTRADOR: 'Administrador',
+    AUXILIAR_ADMINISTRATIVO: 'Auxiliar Administrativo',
     TECNICO: 'Técnico',
   };
   return labels[role] ?? role;

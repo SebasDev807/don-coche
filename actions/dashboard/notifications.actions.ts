@@ -20,8 +20,8 @@ export interface AppNotification {
  * Por ahora solo obtiene notificaciones de productos con stock bajo (<= 3).
  */
 export async function getNotificationsAction(): Promise<AppNotification[]> {
-  // Solo superusuarios, gerentes o administradores
-  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+  // Permitir a AUXILIAR_ADMINISTRATIVO ver notificaciones
+  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
   const notifications: AppNotification[] = [];
 
@@ -95,8 +95,8 @@ export async function getNotificationsAction(): Promise<AppNotification[]> {
  */
 export async function markNotificationAsReadAction(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
-    
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+
     // Ignorar si es una notificación generada dinámicamente (stock)
     if (id.startsWith('stock-')) {
       return { success: true };
@@ -119,8 +119,8 @@ export async function markNotificationAsReadAction(id: string): Promise<{ succes
  */
 export async function markAllNotificationsAsReadAction(): Promise<{ success: boolean; error?: string }> {
   try {
-    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
-    
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+
     await prisma.appNotification.updateMany({
       where: { isRead: false },
       data: { isRead: true },

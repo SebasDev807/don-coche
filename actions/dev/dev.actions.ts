@@ -87,3 +87,59 @@ export async function wipeDevData(password: string): Promise<{ success: boolean;
     return { success: false, message: 'Error interno del servidor durante la purga de datos.' };
   }
 }
+
+/**
+ * Función EXCLUSIVA para SUPERUSUARIOS en entorno de desarrollo.
+ * Elimina permanentemente a los usuarios inactivos (isActive: false).
+ * Requiere confirmación de contraseña.
+ * 
+ * @param password - Contraseña en texto plano del superusuario para validar la acción.
+ * @returns Resultado de la operación.
+ */
+export async function deleteInactiveUsers(password: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const session = await verifyRole(['SUPERUSUARIO']);
+    
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { passwordHash: true },
+    });
+    
+    if (!user) {
+      return { success: false, message: 'Usuario no encontrado.' };
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      return { success: false, message: 'Contraseña incorrecta. Operación denegada por seguridad.' };
+    }
+
+    const inactiveUsers = await prisma.user.findMany({
+      where: { isActive: false },
+      select: { id: true }
+    });
+
+    if (inactiveUsers.length === 0) {
+      return { success: true, message: 'No hay usuarios inactivos para eliminar.' };
+    }
+
+    const inactiveUserIds = inactiveUsers.map(u => u.id);
+
+    await prisma.$transaction(async (tx) => {
+      // Eliminar registros de asistencia que no afectan contabilidad
+      await tx.attendanceRecord.deleteMany({
+        where: { userId: { in: inactiveUserIds } }
+      });
+
+      // Eliminar los usuarios
+      await tx.user.deleteMany({
+        where: { id: { in: inactiveUserIds } }
+      });
+    });
+
+    return { success: true, message: `Se han eliminado permanentemente ${inactiveUsers.length} usuarios inactivos.` };
+  } catch (error) {
+    console.error('[deleteInactiveUsers] Error:', error);
+    return { success: false, message: 'Error al eliminar. Es posible que los usuarios tengan registros operativos (debes purgar la BD primero).' };
+  }
+}

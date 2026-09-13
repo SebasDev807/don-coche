@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
     if (!session || !session.userId) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
@@ -144,7 +144,8 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers,
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.message === 'NEXT_REDIRECT') throw error;
     console.error('[Export Caja Resumen Error]:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }

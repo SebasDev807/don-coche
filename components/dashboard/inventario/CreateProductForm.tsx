@@ -57,7 +57,9 @@ export function CreateProductForm() {
   const autoRoundValue = watch('autoRound') as boolean;
   const { formattedSellingPrice } = useSellingPrice(unitCostValue as number, profitPercentageValue as number, ivaValue as number, hasIvaValue, autoRoundValue);
 
-
+  const categoryIdValue = watch('category');
+  const selectedCategory = categories.find(c => c.id === categoryIdValue);
+  const isInsumos = selectedCategory?.name.toLowerCase() === 'insumos';
 
   const fetchCategories = async () => {
     const cats = await getCategories();
@@ -79,8 +81,17 @@ export function CreateProductForm() {
     // Transformar los datos a FormData para que sean procesados por el Server Action
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
+      if (isInsumos && (key === 'profitPercentage' || key === 'iva' || key === 'hasIva' || key === 'autoRound')) {
+        return;
+      }
       formData.append(key, value !== undefined && value !== null ? value.toString() : '');
     });
+
+    if (isInsumos) {
+      formData.set('profitPercentage', '');
+      formData.set('iva', '0');
+      formData.set('hasIva', 'false');
+    }
 
     const result = await createProduct(formData);
 
@@ -200,67 +211,73 @@ export function CreateProductForm() {
           />
 
           {/* Porcentaje de Ganancia */}
-          <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Porcentaje de Ganancia [%]</label>
-            <input
-              {...register('profitPercentage')}
-              type="number"
-              min="0"
-              max="100"
-              step="5"
-              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.profitPercentage ? 'border-error focus:border-error focus:ring-error' : ''}`}
-              placeholder="Ej. 15"
-            />
-            <ErrorMessage message={errors.profitPercentage?.message} />
-          </div>
+          {!isInsumos && (
+            <div className="col-span-1">
+              <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Porcentaje de Ganancia [%]</label>
+              <input
+                {...register('profitPercentage')}
+                type="number"
+                min="0"
+                max="100"
+                step="5"
+                className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.profitPercentage ? 'border-error focus:border-error focus:ring-error' : ''}`}
+                placeholder="Ej. 15"
+              />
+              <ErrorMessage message={errors.profitPercentage?.message} />
+            </div>
+          )}
 
           {/* IVA */}
-          <div className="col-span-1">
-            <div className="flex items-center justify-between mb-2">
-              <label className="block font-label-bold text-label-bold text-on-surface-variant">IVA [%]</label>
-              <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
-                <input
-                  type="checkbox"
-                  {...register('hasIva')}
-                  className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
-                />
-                Incluir IVA
-              </label>
+          {!isInsumos && (
+            <div className="col-span-1">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block font-label-bold text-label-bold text-on-surface-variant">IVA [%]</label>
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
+                  <input
+                    type="checkbox"
+                    {...register('hasIva')}
+                    className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
+                  />
+                  Incluir IVA
+                </label>
+              </div>
+              <input
+                {...register('iva')}
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                disabled={!hasIvaValue}
+                className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim disabled:bg-surface-container-highest disabled:text-secondary-fixed-dim ${errors.iva ? 'border-error focus:border-error focus:ring-error' : ''}`}
+                placeholder="Ej. 19"
+              />
+              <ErrorMessage message={errors.iva?.message} />
             </div>
-            <input
-              {...register('iva')}
-              type="number"
-              min="0"
-              max="100"
-              step="1"
-              disabled={!hasIvaValue}
-              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim disabled:bg-surface-container-highest disabled:text-secondary-fixed-dim ${errors.iva ? 'border-error focus:border-error focus:ring-error' : ''}`}
-              placeholder="Ej. 19"
-            />
-            <ErrorMessage message={errors.iva?.message} />
-          </div>
+          )}
 
           {/* Precio de Venta al Público */}
-          <div className="col-span-1">
-            <div className="flex items-center justify-between mb-2">
-              <label className="block font-label-bold text-label-bold text-on-surface-variant">Precio de Venta al publico)</label>
-              <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
-                <input
-                  type="checkbox"
-                  {...register('autoRound')}
-                  className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
-                />
-                Redondear a $50
-              </label>
+          {!isInsumos && (
+            <div className="col-span-1">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block font-label-bold text-label-bold text-on-surface-variant">Precio de Venta al publico)</label>
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
+                  <input
+                    type="checkbox"
+                    {...register('autoRound')}
+                    className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
+                  />
+                  Redondear a $50
+                </label>
+              </div>
+              <input
+                type="text"
+                value={formattedSellingPrice}
+                readOnly
+                className="h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface-container-highest px-4 text-on-surface-variant cursor-not-allowed"
+              />
+              <p className="text-secondary text-sm mt-1">Calculado automáticamente: Costo + (Costo * % Ganancia)</p>
             </div>
-            <input
-              type="text"
-              value={formattedSellingPrice}
-              readOnly
-              className="h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface-container-highest px-4 text-on-surface-variant cursor-not-allowed"
-            />
-            <p className="text-secondary text-sm mt-1">Calculado automáticamente: Costo + (Costo * % Ganancia)</p>
-          </div>
+          )}
 
           {/* Descripción del Producto */}
           <div className="col-span-1 md:col-span-2">

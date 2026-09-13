@@ -6,7 +6,8 @@ import { revalidatePath } from 'next/cache';
 
 export async function getClosureSummary() {
   try {
-    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    console.log('[getClosureSummary] Verifying role for', ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
     // Find all billed orders that haven't been closed yet
     const pendingClosureOrders = await prisma.order.findMany({
@@ -50,6 +51,7 @@ export async function getClosureSummary() {
       },
     };
   } catch (error: any) {
+    if (error?.message === 'NEXT_REDIRECT') throw error;
     console.error('[getClosureSummary] Error:', error);
     return { success: false, message: error.message };
   }
@@ -65,7 +67,8 @@ export async function closeCashRegister(data: {
   saleIds?: string[];
 }) {
   try {
-    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    console.log('[closeCashRegister] Verifying role...');
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
     const hasOrders = data.orderIds && data.orderIds.length > 0;
     const hasSales = data.saleIds && data.saleIds.length > 0;
@@ -114,7 +117,40 @@ export async function closeCashRegister(data: {
 
     return { success: true, closureId: closure.id };
   } catch (error: any) {
+    if (error?.message === 'NEXT_REDIRECT') throw error;
     console.error('[closeCashRegister] Error:', error);
     return { success: false, message: error.message };
+  }
+}
+
+export async function getHistoricalClosures() {
+  try {
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+
+    const closures = await prisma.cashClosure.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: {
+        admin: {
+          select: { name: true }
+        }
+      }
+    });
+
+    return {
+      success: true,
+      data: closures.map(c => ({
+        ...c,
+        totalCash: Number(c.totalCash),
+        totalCard: Number(c.totalCard),
+        totalTransfer: Number(c.totalTransfer),
+        reportedCash: Number(c.reportedCash),
+        discrepancy: Number(c.discrepancy),
+      }))
+    };
+  } catch (error: any) {
+    if (error?.message === 'NEXT_REDIRECT') throw error;
+    console.error('[getHistoricalClosures] Error:', error);
+    return { success: false, message: error.message, data: [] };
   }
 }

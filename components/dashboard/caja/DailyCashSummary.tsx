@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CashClosureModal } from './CashClosureModal';
+import { CashClosureHistoryModal } from './CashClosureHistoryModal';
 import { ExportKpiButton } from '../ExportKpiButton';
 
 interface DailyCashSummaryProps {
@@ -10,6 +11,7 @@ interface DailyCashSummaryProps {
 
 export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
   const totalEfectivo = orders.filter(o => o.paymentMethod === 'EFECTIVO').reduce((acc, o) => acc + o.grandTotal, 0);
   const totalTarjeta = orders.filter(o => o.paymentMethod === 'TARJETA').reduce((acc, o) => acc + o.grandTotal, 0);
@@ -25,7 +27,14 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
             <span className="material-symbols-outlined text-green-600">point_of_sale</span>
             Cuadre de Caja (Hoy)
           </h2>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsHistoryModalOpen(true)}
+              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest p-2 rounded-full transition-colors flex items-center justify-center cursor-pointer"
+              title="Ver Historial de Cierres"
+            >
+              <span className="material-symbols-outlined">history</span>
+            </button>
             <ExportKpiButton endpoint="/api/v1/export/caja/resumen" showDateFilters align="right" title="Resumen de Ventas" />
             <button
               onClick={() => setIsModalOpen(true)}
@@ -98,6 +107,11 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
       <CashClosureModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      <CashClosureHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
       />
     </>
   );

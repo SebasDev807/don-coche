@@ -36,12 +36,17 @@ export async function getAlmacenProducts() {
 
     const products = await prisma.product.findMany({
       where: { isActive: true, stock: { gt: 0 } },
+      include: { category_rel: true },
       orderBy: { name: 'asc' },
     });
 
+    const filteredProducts = products.filter(
+      (p) => p.category_rel?.name.toLowerCase() !== 'insumos'
+    );
+
     return {
       success: true,
-      data: products.map((p) => ({
+      data: filteredProducts.map((p) => ({
         id: p.id,
         name: p.name,
         barCode: p.barCode,

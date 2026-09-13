@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { wipeDevData, verifyDevPassword } from '@/actions/dev/dev.actions';
+import { wipeDevData, verifyDevPassword, deleteInactiveUsers } from '@/actions/dev/dev.actions';
 
 export function DevToolsClient() {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -62,6 +62,30 @@ export function DevToolsClient() {
 
     try {
       const res = await wipeDevData(password); // Usamos el password guardado en el state
+      if (res.success) {
+        setSuccessMsg(res.message);
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (error) {
+      console.error(error);
+      setErrorMsg('Error de red al intentar ejecutar la acción.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteInactiveUsers = async () => {
+    if (!confirm('¿ESTÁ COMPLETAMENTE SEGURO? Esta acción borrará permanentemente a los usuarios inactivos.')) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const res = await deleteInactiveUsers(password);
       if (res.success) {
         setSuccessMsg(res.message);
       } else {
@@ -190,11 +214,28 @@ export function DevToolsClient() {
             </button>
           </div>
 
-          {/* Placeholder para futuras opciones */}
-          <div className="bg-surface-container border border-dashed border-outline-variant rounded-xl p-5 flex flex-col items-center justify-center text-center opacity-50 h-full min-h-[220px]">
-            <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-2">add_box</span>
-            <p className="text-sm font-bold text-on-surface-variant">Próximas Herramientas</p>
-            <p className="text-xs text-on-surface-variant mt-1">El espacio está listo para añadir más opciones de desarrollo según sea necesario.</p>
+          {/* Tarjeta de Acción: Eliminar Usuarios Inactivos */}
+          <div className="bg-surface-container-lowest border border-error/40 rounded-xl p-5 hover:border-error hover:shadow-md transition-all flex flex-col h-full">
+            <div className="flex items-start gap-3 mb-4">
+              <span className="material-symbols-outlined text-error text-3xl">person_remove</span>
+              <div>
+                <h3 className="font-bold text-on-surface text-lg">Limpiar Usuarios</h3>
+                <p className="text-xs text-on-surface-variant font-medium mt-1">Elimina usuarios inactivos</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-on-surface-variant mb-6 flex-1">
+              Elimina permanentemente de la base de datos a los usuarios que estén marcados como <strong>inactivos</strong>. Esta acción fallará de forma segura si los usuarios tienen registros operativos y no se ha purgado la base de datos previamente.
+            </p>
+
+            <button
+              onClick={handleDeleteInactiveUsers}
+              disabled={isSubmitting || !!successMsg}
+              className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">person_remove</span>
+              Eliminar Usuarios Inactivos
+            </button>
           </div>
 
         </div>

@@ -11,14 +11,13 @@ export interface DeleteProductResponse {
 }
 
 /**
- * Server Action que elimina (soft delete) un producto del inventario
- * marcándolo como inactivo en lugar de borrarlo físicamente.
+ * Server Action que elimina (hard delete) un producto físicamente del inventario.
  *
  * @param {string} id - El ID del producto a eliminar.
  * @returns {Promise<DeleteProductResponse>} El resultado de la operación.
  */
 export async function deleteProduct(id: string): Promise<DeleteProductResponse> {
-  // Solo SuperUsuario, Gerente, Administrador y Auxiliar Administrativo pueden eliminar (soft delete) productos
+  // Solo SuperUsuario, Gerente, Administrador y Auxiliar Administrativo pueden eliminar productos
   const { verifyRole } = await import('@/lib/dal');
   await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
@@ -39,28 +38,30 @@ export async function deleteProduct(id: string): Promise<DeleteProductResponse> 
       };
     }
 
-    if (!existing.isActive) {
-      return {
-        success: false,
-        message: 'El producto ya se encuentra inactivo.',
-      };
-    }
 
-    // Soft delete: marcar como inactivo en lugar de borrar el registro
-    await prisma.product.update({
+    // Hard delete: borrar físicamente de la base de datos
+    await prisma.product.delete({
       where: { id },
-      data: { isActive: false },
     });
 
     return {
       success: true,
-      message: 'Producto eliminado exitosamente.',
+      message: 'Producto eliminado físicamente exitosamente.',
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('[deleteProduct] Error:', error);
+    
+    // P2003 es el código de Prisma para violaciones de llaves foráneas
+    if (error.code === 'P2003') {
+      return {
+        success: false,
+        message: 'No se puede eliminar el producto porque tiene historial operativo (ventas, movimientos u órdenes asociadas). Si ya no se usa, considere modificarlo o dejar su stock en 0.',
+      };
+    }
+
     return {
       success: false,
-      message: 'Ocurrió un error al intentar eliminar el producto.',
+      message: 'Ocurrió un error al intentar eliminar el producto físicamente.',
     };
   }
 }

@@ -84,18 +84,13 @@ export async function getDashboardKPIs() {
     const totalProfit = totalSales - totalCost;
     const averageMargin = totalSales > 0 ? (totalProfit / totalSales) * 100 : 0;
 
-    // Valor Inventario Global (sólo para GERENTE o SUPERUSUARIO)
-    let inventoryValueFormatted = 'Acceso Restringido';
-    let inventoryNote = 'Requiere permisos de gerencia';
-
-    if (user.role === 'GERENTE' || user.role === 'SUPERUSUARIO') {
-      const activeProducts = await prisma.product.findMany({
-        where: { isActive: true }
-      });
-      const inventoryTotal = activeProducts.reduce((sum, p) => sum + (p.stock * Number(p.unitCost)), 0);
-      inventoryValueFormatted = formatCurrency(inventoryTotal);
-      inventoryNote = 'Sujeto a auditoria de cierres';
-    }
+    // Valor Inventario Global
+    const activeProducts = await prisma.product.findMany({
+      where: { isActive: true }
+    });
+    const inventoryTotal = activeProducts.reduce((sum, p) => sum + (p.stock * Number(p.unitCost)), 0);
+    const inventoryValueFormatted = formatCurrency(inventoryTotal);
+    const inventoryNote = 'Sujeto a auditoria de cierres';
 
     return {
       success: true,

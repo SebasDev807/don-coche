@@ -20,7 +20,10 @@ export const metadata: Metadata = {
  * 
  * @returns {Promise<JSX.Element>} La estructura completa de la página de Personal.
  */
+import { verifyRole } from '@/lib/dal';
+
 export default async function PersonalPage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
   const searchParams = await props.searchParams;
   const query = typeof searchParams.q === 'string' ? searchParams.q : undefined;
   const role = typeof searchParams.role === 'string' ? searchParams.role : undefined;

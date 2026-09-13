@@ -43,8 +43,11 @@ export interface UpdateProductResponse {
  * @param {UpdateProductInput} data - Los datos a actualizar del producto.
  * @returns {Promise<UpdateProductResponse>} El resultado de la operación.
  */
+import { verifyRole } from '@/lib/dal';
+
 export async function updateProduct(data: UpdateProductInput): Promise<UpdateProductResponse> {
   try {
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
     const { id, name, description, categoryId, barCode, stock, unitCost, salePrice, profitPercentage, iva, autoRound, isActive } = data;
 
     if (!id) {

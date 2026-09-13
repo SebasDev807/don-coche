@@ -9,7 +9,7 @@ import { AliaddoService, AliaddoInvoicePayload } from '@/lib/services/aliaddo';
 /** Buscar vehículo por placa (accesible para admin/gerente en punto de venta) */
 export async function searchVehicleByPlate(plate: string) {
   try {
-    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
     const vehicle = await prisma.vehicle.findUnique({
       where: { plate: plate.toUpperCase().trim() },
       include: { customer: true },
@@ -23,7 +23,7 @@ export async function searchVehicleByPlate(plate: string) {
 /** Buscar cliente por cédula (accesible para admin/gerente en punto de venta) */
 export async function searchCustomerByCc(cc: string) {
   try {
-    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
     const customer = await prisma.customer.findUnique({
       where: { cc: cc.trim() },
       include: { vehicles: true },
@@ -37,7 +37,7 @@ export async function searchCustomerByCc(cc: string) {
 /** Obtener servicios activos filtrados por categoría (o todos si no se pasa categoría) */
 export async function getServicesByCategory(category?: ItemCategory) {
   try {
-    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
     const services = await prisma.serviceCatalog.findMany({
       where: { isActive: true, ...(category ? { category } : {}) },
       orderBy: { name: 'asc' },
@@ -80,7 +80,7 @@ export async function createAndBillServiceOrder(params: {
   emitirFactura: boolean;
 }) {
   try {
-    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
     const {
       plate, customerName, customerCc, customerPhone, carBrand, carModel, carColor,
       serviceIds, productItems, paymentMethod, emitirFactura,

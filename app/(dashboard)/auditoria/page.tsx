@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getPaginatedMovements } from '@/actions/dashboard/historial.actions';
-import { verifySession } from '@/lib/dal';
+import { verifyRole } from '@/lib/dal';
 import Link from 'next/link';
 import { AuditoriaClient } from '@/components/dashboard/auditoria/AuditoriaClient';
 
@@ -20,7 +20,7 @@ interface PageProps {
 }
 
 export default async function AuditoriaPage({ searchParams }: PageProps) {
-  await verifySession();
+  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
 
   const params = await searchParams;
 

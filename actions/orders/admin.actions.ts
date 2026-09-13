@@ -11,7 +11,7 @@ import { sendReceiptNotification, sendNextAppointmentNotification, sendServiceRe
 import { AliaddoService, AliaddoInvoicePayload } from '@/lib/services/aliaddo';
 export async function getPendingOrders() {
   try {
-    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
     const orders = await prisma.order.findMany({
       where: { status: 'EN_PISTA' },
@@ -39,7 +39,7 @@ export async function getPendingOrders() {
 
 export async function getOrderDetail(orderId: string) {
   try {
-    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -336,7 +336,7 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod, e
 
 export async function cancelOrder(orderId: string) {
   try {
-    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
     await prisma.order.update({
       where: { id: orderId },
@@ -419,7 +419,7 @@ export async function getTodayBilledOrders() {
 export async function getPendingOrdersCount() {
   try {
     // Only check if they have access to avoid throwing for unauthenticated sidebar checks, or just use verifyRole
-    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
     const count = await prisma.order.count({
       where: { status: 'EN_PISTA' }

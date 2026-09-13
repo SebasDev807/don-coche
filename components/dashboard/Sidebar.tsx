@@ -28,19 +28,21 @@ interface NavItem {
   label: string;
   /** Ruta de destino */
   href: string;
+  /** Roles permitidos para ver este ítem */
+  allowedRoles: string[];
 }
 
 /** Ítems principales del menú de navegación. */
 const NAV_ITEMS: NavItem[] = [
-  { icon: 'dashboard', label: 'Dashboard', href: '/' },
-  { icon: 'point_of_sale', label: 'Panel de Caja', href: '/caja' },
-  { icon: 'storefront', label: 'Punto de Venta', href: '/almacen' },
-  { icon: 'group', label: 'Gestión de Personal', href: '/personal' },
-  { icon: 'inventory_2', label: 'Inventario', href: '/inventario' },
-  { icon: 'design_services', label: 'Catálogo de Servicios', href: '/servicios' },
-  { icon: 'directions_car', label: 'Clientes y Vehículos', href: '/clientes' },
-  { icon: 'calendar_month', label: 'Próximas Citas', href: '/citas' },
-  { icon: 'history_edu', label: 'Libro de Auditoría', href: '/auditoria' },
+  { icon: 'dashboard', label: 'Dashboard', href: '/', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
+  { icon: 'point_of_sale', label: 'Panel de Caja', href: '/caja', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'] },
+  { icon: 'storefront', label: 'Punto de Venta', href: '/almacen', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
+  { icon: 'group', label: 'Gestión de Personal', href: '/personal', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'] },
+  { icon: 'inventory_2', label: 'Inventario', href: '/inventario', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
+  { icon: 'design_services', label: 'Catálogo de Servicios', href: '/servicios', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
+  { icon: 'directions_car', label: 'Clientes y Vehículos', href: '/clientes', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
+  { icon: 'calendar_month', label: 'Próximas Citas', href: '/citas', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
+  { icon: 'history_edu', label: 'Libro de Auditoría', href: '/auditoria', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'] },
 ];
 
 
@@ -131,7 +133,7 @@ export function Sidebar({ logoutAction, role }: SidebarProps) {
 
         {/* Navegación principal */}
         <nav className="flex-1 flex flex-col overflow-y-auto">
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.filter(item => !role || item.allowedRoles.includes(role)).map((item) => {
             const isActive = pathname === item.href;
 
             return (

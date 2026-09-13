@@ -15,7 +15,7 @@ import { Sidebar, Navbar } from '@/components/dashboard';
 import { GlobalReleaseModal } from '@/components/dashboard/releases/GlobalReleaseModal';
 
 /** Roles que tienen acceso al área de gestión. */
-const ALLOWED_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
+const ALLOWED_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'];
 
 /**
  * Layout principal del dashboard.

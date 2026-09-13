@@ -5,7 +5,7 @@ export const createUserSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   email: z.string().email('Debe ser un correo electrónico válido'),
   celular: z.string().min(1, 'El número de celular es requerido'),
-  role: z.enum(['GERENTE', 'ADMINISTRADOR', 'TECNICO'], {
+  role: z.enum(['GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO', 'TECNICO'], {
     message: 'Debes seleccionar un rol válido',
   }),
   department: z.enum(['LAVADERO', 'SERVITECA', '']).nullable().optional(),

@@ -152,6 +152,7 @@ export function UpdateStaffForm({ user }: UpdateStaffFormProps) {
               >
                 <option disabled value="">Seleccione un rol...</option>
                 <option value="TECNICO">Técnico</option>
+                <option value="AUXILIAR_ADMINISTRATIVO">Auxiliar Administrativo</option>
                 <option value="ADMINISTRADOR">Administrador</option>
                 <option value="GERENTE">Gerente</option>
               </select>

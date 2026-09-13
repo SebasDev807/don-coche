@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { createProductSchema, createCategorySchema } from '@/validation';
 import { generateEAN13 } from '@/lib/utils/barcode';
 import { generateSlug } from '@/lib/utils/slug';
-import { verifySession } from '@/lib/dal';
+import { verifySession, verifyRole } from '@/lib/dal';
 import { ItemCategory, Prisma } from '@prisma/client';
 
 /**
@@ -35,7 +35,7 @@ export async function getCategories() {
  */
 export async function createCategory(formData: FormData) {
   try {
-    await verifySession();
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
     const rawData = Object.fromEntries(formData.entries());
     const validatedData = createCategorySchema.parse(rawData);
@@ -78,8 +78,8 @@ export async function createCategory(formData: FormData) {
  */
 export async function createProduct(formData: FormData) {
   try {
-    // Verificar que el usuario tiene una sesión válida
-    await verifySession();
+    // Verificar que el usuario tiene una sesión válida y el rol adecuado
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
     // Extraer y formatear los datos del FormData
     const rawData = Object.fromEntries(formData.entries());

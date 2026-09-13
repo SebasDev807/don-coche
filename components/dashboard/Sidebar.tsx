@@ -170,15 +170,26 @@ export function Sidebar({ logoutAction, role }: SidebarProps) {
         <div className="mt-auto px-6 border-t border-surface-variant pt-6 flex flex-col gap-4">
           
           {role === 'SUPERUSUARIO' && (
-            <Link
-              href="/dev"
-              className="flex items-center gap-4 text-error hover:text-error-container transition-colors cursor-pointer group"
-            >
-              <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform font-bold">
-                code
-              </span>
-              <span className="font-body-md text-sm font-bold">Opciones de Desarrollo</span>
-            </Link>
+            <>
+              <Link
+                href="/releases"
+                className="flex items-center gap-4 text-primary hover:text-primary-container transition-colors cursor-pointer group"
+              >
+                <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform font-bold">
+                  new_releases
+                </span>
+                <span className="font-body-md text-sm font-bold">Novedades</span>
+              </Link>
+              <Link
+                href="/dev"
+                className="flex items-center gap-4 text-error hover:text-error-container transition-colors cursor-pointer group"
+              >
+                <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform font-bold">
+                  code
+                </span>
+                <span className="font-body-md text-sm font-bold">Opciones de Desarrollo</span>
+              </Link>
+            </>
           )}
 
 

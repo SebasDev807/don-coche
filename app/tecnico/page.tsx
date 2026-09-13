@@ -14,6 +14,7 @@ import { Header } from '../../components/tecnico/Header';
 import { TecnicoWorkspace } from '../../components/tecnico/TecnicoWorkspace';
 import { getServices } from '@/actions/car_services';
 import { Metadata } from 'next';
+import { GlobalReleaseModal } from '@/components/dashboard/releases/GlobalReleaseModal';
 
 export const metadata: Metadata = {
   title: 'Don Coche | Técnico',
@@ -41,6 +42,7 @@ export default async function TecnicoScreen() {
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
         <TecnicoWorkspace catalogServices={services || []} userDepartment={dbUser?.department} />
       </main>
+      <GlobalReleaseModal />
     </div>
   );
 }

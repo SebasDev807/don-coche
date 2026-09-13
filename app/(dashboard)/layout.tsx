@@ -12,6 +12,7 @@
 import { verifyRole } from '@/lib/dal';
 import { logoutAction } from '@/actions/auth.actions';
 import { Sidebar, Navbar } from '@/components/dashboard';
+import { GlobalReleaseModal } from '@/components/dashboard/releases/GlobalReleaseModal';
 
 /** Roles que tienen acceso al área de gestión. */
 const ALLOWED_ROLES = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'];
@@ -47,6 +48,7 @@ export default async function DashboardLayout({
         <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth pb-8">
           {children}
         </div>
+        <GlobalReleaseModal />
       </main>
     </div>
   );

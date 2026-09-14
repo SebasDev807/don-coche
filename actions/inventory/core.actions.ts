@@ -101,7 +101,7 @@ export async function createProduct(formData: FormData) {
     let computedSalePrice = (unitCost + (unitCost * profitPercentage / 100)) * (1 + iva / 100);
     
     if (validatedData.autoRound) {
-      computedSalePrice = Math.round(computedSalePrice / 50) * 50;
+      computedSalePrice = Math.round(computedSalePrice);
     }
 
     // Insertar en la base de datos

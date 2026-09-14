@@ -22,7 +22,7 @@ export function ServiceCard({ service }: { service: any }) {
   
   const basePrice = Number(service.basePrice) || 0;
   const profitPercentage = Number(service.profitPercentage) || 0;
-  const pvp = Math.round((basePrice + (basePrice * profitPercentage / 100)) / 50) * 50;
+  const pvp = Math.round(basePrice + (basePrice * profitPercentage / 100));
 
   const handleDelete = async () => {
     const result = await MySwal.fire({

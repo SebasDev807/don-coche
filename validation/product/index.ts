@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { parseLocalizedNumber } from '@/lib/utils/parseLocalizedNumber';
 
 export const createProductSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -7,17 +8,11 @@ export const createProductSchema = z.object({
   category: z.string().min(2, 'La categoría debe tener al menos 2 caracteres'),
   stock: z.coerce.number({ message: 'Debes ingresar un valor numérico' }).min(0, 'El stock no puede ser negativo'),
   unitCost: z.preprocess((val) => {
-    if (typeof val === 'string') {
-      const clean = val.replace(/\./g, '').replace(',', '.');
-      return parseFloat(clean) || 0;
-    }
+    if (typeof val === 'string') return parseLocalizedNumber(val);
     return val;
   }, z.number({ message: 'Debes ingresar un valor numérico' }).min(0.01, 'El costo debe ser mayor a 0')),
   salePrice: z.preprocess((val) => {
-    if (typeof val === 'string') {
-      const clean = val.replace(/\./g, '').replace(',', '.');
-      return parseFloat(clean) || 0;
-    }
+    if (typeof val === 'string') return parseLocalizedNumber(val);
     return val;
   }, z.number({ message: 'Debes ingresar un valor numérico' }).min(0.01, 'El precio debe ser mayor a 0').optional()),
   profitPercentage: z.preprocess((val) => {

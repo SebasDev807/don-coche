@@ -24,7 +24,7 @@ export default async function ServiceDetailPage(props: { params: Promise<{ id: s
 
   const basePrice = Number(service.basePrice);
   const profitPercentage = Number(service.profitPercentage) || 0;
-  const pvp = Math.round((basePrice + (basePrice * profitPercentage / 100)) / 50) * 50;
+  const pvp = Math.round(basePrice + (basePrice * profitPercentage / 100));
   const formattedBasePrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(basePrice);
   const formattedPvp = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(pvp);
 

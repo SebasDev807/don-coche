@@ -44,12 +44,13 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
   const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
   const paginatedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const formatCurrency = (val: number, maxDigits: number = 0) => new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: maxDigits
-  }).format(val);
+  const formatCurrency = (val: number, maxDigits: number = 0) => {
+    const numStr = new Intl.NumberFormat('de-DE', {
+      minimumFractionDigits: maxDigits,
+      maximumFractionDigits: maxDigits
+    }).format(val);
+    return `$ ${numStr}`;
+  };
 
   const handleDelete = async (id: string) => {
     const result = await MySwal.fire({

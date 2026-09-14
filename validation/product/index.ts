@@ -7,18 +7,24 @@ export const createProductSchema = z.object({
   category: z.string().min(2, 'La categoría debe tener al menos 2 caracteres'),
   stock: z.coerce.number({ message: 'Debes ingresar un valor numérico' }).min(0, 'El stock no puede ser negativo'),
   unitCost: z.preprocess((val) => {
-    if (typeof val === 'string') return parseInt(val.replace(/\D/g, ''), 10) || 0;
+    if (typeof val === 'string') {
+      const clean = val.replace(/\./g, '').replace(',', '.');
+      return parseFloat(clean) || 0;
+    }
     return val;
-  }, z.number({ message: 'Debes ingresar un valor numérico' }).min(1, 'El costo debe ser al menos 1')),
+  }, z.number({ message: 'Debes ingresar un valor numérico' }).min(0.01, 'El costo debe ser mayor a 0')),
   salePrice: z.preprocess((val) => {
-    if (typeof val === 'string') return parseInt(val.replace(/\D/g, ''), 10) || 0;
+    if (typeof val === 'string') {
+      const clean = val.replace(/\./g, '').replace(',', '.');
+      return parseFloat(clean) || 0;
+    }
     return val;
-  }, z.number({ message: 'Debes ingresar un valor numérico' }).min(1, 'El precio debe ser al menos 1').optional()),
+  }, z.number({ message: 'Debes ingresar un valor numérico' }).min(0.01, 'El precio debe ser mayor a 0').optional()),
   profitPercentage: z.preprocess((val) => {
-    if (typeof val === 'string' && val !== '') return parseFloat(val);
+    if (typeof val === 'string' && val !== '') return parseFloat(val.replace(',', '.'));
     if (val === '') return undefined;
     return val;
-  }, z.number({ message: 'Debes ingresar un valor numérico' }).min(0, 'El porcentaje no puede ser negativo').max(100, 'El porcentaje máximo es 100').optional()),
+  }, z.number({ message: 'Debes ingresar un valor numérico' }).min(0, 'El porcentaje no puede ser negativo').optional()),
   iva: z.preprocess((val) => {
     if (typeof val === 'string' && val !== '') return parseFloat(val);
     if (val === '') return undefined;

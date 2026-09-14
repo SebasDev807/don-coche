@@ -22,9 +22,33 @@ export function PriceInput({
 }: PriceInputProps) {
   
   const formatCurrencyValue = (val: string) => {
-    const rawValue = val.replace(/\D/g, '');
-    if (!rawValue) return '';
-    return new Intl.NumberFormat('es-CO').format(parseInt(rawValue, 10));
+    let clean = val.replace(/[^\d.,]/g, '');
+    clean = clean.replace(/\./g, ''); // Remover puntos de miles
+    clean = clean.replace(',', '.');  // Cambiar coma por punto para parsear
+    
+    const parts = clean.split('.');
+    if (parts.length > 2) {
+      clean = parts[0] + '.' + parts.slice(1).join('');
+    }
+    if (!clean) return '';
+    
+    if (clean.endsWith('.')) {
+      const whole = clean.slice(0, -1);
+      return new Intl.NumberFormat('es-CO').format(parseInt(whole || '0', 10)) + ',';
+    }
+
+    const numberValue = parseFloat(clean);
+    if (isNaN(numberValue)) return '';
+    
+    let fractionDigits = 0;
+    if (clean.includes('.')) {
+      fractionDigits = Math.min(clean.split('.')[1].length, 2);
+    }
+    
+    return new Intl.NumberFormat('es-CO', { 
+      maximumFractionDigits: 2,
+      minimumFractionDigits: fractionDigits
+    }).format(numberValue);
   };
 
   const errorMessage = errors[name]?.message as string | undefined;

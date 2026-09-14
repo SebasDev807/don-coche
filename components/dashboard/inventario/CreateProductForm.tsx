@@ -218,8 +218,7 @@ export function CreateProductForm() {
                 {...register('profitPercentage')}
                 type="number"
                 min="0"
-                max="100"
-                step="5"
+                step="any"
                 className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim ${errors.profitPercentage ? 'border-error focus:border-error focus:ring-error' : ''}`}
                 placeholder="Ej. 15"
               />

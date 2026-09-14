@@ -145,3 +145,45 @@ export async function extendSessionAction(): Promise<boolean> {
   }
   return false;
 }
+
+/**
+ * Cambia la sesión activa a otro usuario autenticado previamente en este dispositivo.
+ * Solo funciona si el targetUserId está en la lista de `users` del payload actual.
+ */
+export async function switchSessionAction(targetUserId: string): Promise<boolean> {
+  try {
+    const payload = await getSession();
+    if (!payload || !payload.users) return false;
+
+    const targetUser = payload.users.find(u => u.userId === targetUserId);
+    if (!targetUser) return false;
+
+    // Crear un nuevo token con targetUser como activo, manteniendo el array de users
+    const { encrypt } = await import('@/lib/session');
+    const { cookies } = await import('next/headers');
+    
+    // Asumimos 8 horas igual que createSession
+    const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
+    const token = await encrypt({
+      userId: targetUser.userId,
+      name: targetUser.name,
+      role: targetUser.role,
+      users: payload.users,
+      expiresAt,
+    });
+    
+    const cookieStore = await cookies();
+    cookieStore.set('session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires: expiresAt,
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return true;
+  } catch (error) {
+    console.error('[switchSessionAction] Error:', error);
+    return false;
+  }
+}

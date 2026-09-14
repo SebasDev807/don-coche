@@ -15,10 +15,6 @@ import { cookies } from 'next/headers';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
-/**
- * Datos mínimos del usuario que se almacenan en el payload del JWT.
- * No incluir información sensible como contraseñas o datos personales.
- */
 export interface SessionPayload {
   /** UUID del usuario en la base de datos. */
   userId: string;
@@ -28,6 +24,12 @@ export interface SessionPayload {
   role: string;
   /** Fecha de expiración de la sesión. */
   expiresAt: Date;
+  /** Múltiples cuentas autenticadas en el dispositivo */
+  users?: Array<{
+    userId: string;
+    name: string;
+    role: string;
+  }>;
 }
 
 // ─── Configuración ─────────────────────────────────────────────────────────────
@@ -84,20 +86,26 @@ export async function decrypt(
 
 // ─── Gestión de Cookies ────────────────────────────────────────────────────────
 
-/**
- * Crea una nueva sesión y la almacena en una cookie HttpOnly.
- *
- * Debe llamarse desde un Server Action tras una autenticación exitosa.
- *
- * @param user - Datos del usuario autenticado.
- */
 export async function createSession(
   user: Pick<SessionPayload, 'userId' | 'name' | 'role'>
 ): Promise<void> {
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
 
+  // Preserve existing users to support multi-account switcher
+  const existingPayload = await getSession();
+  let users = existingPayload?.users || [];
+
+  if (existingPayload && users.length === 0) {
+    users.push({ userId: existingPayload.userId, name: existingPayload.name, role: existingPayload.role });
+  }
+
+  // Remove the incoming user if already exists to update its role/name just in case, then add it
+  users = users.filter(u => u.userId !== user.userId);
+  users.push({ userId: user.userId, name: user.name, role: user.role });
+
   const token = await encrypt({
     ...user,
+    users,
     expiresAt,
   });
 
@@ -137,9 +145,7 @@ export async function updateSession(): Promise<void> {
 }
 
 /**
- * Elimina la cookie de sesión, cerrando la sesión del usuario.
- *
- * Debe llamarse desde un Server Action de logout.
+ * Elimina la cookie de sesión, cerrando todas las cuentas de usuario activas.
  */
 export async function deleteSession(): Promise<void> {
   const cookieStore = await cookies();

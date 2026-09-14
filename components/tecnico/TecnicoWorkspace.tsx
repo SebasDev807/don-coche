@@ -8,15 +8,17 @@ import withReactContent from 'sweetalert2-react-content';
 import { searchByPlate, createOrder } from '@/actions/orders';
 import { useRouter } from 'next/navigation';
 import { NextAppointmentModal } from './NextAppointmentModal';
+import { InsumosPanel } from './InsumosPanel';
 
 const MySwal = withReactContent(Swal);
 
 interface TecnicoWorkspaceProps {
   catalogServices: any[];
   userDepartment?: string | null;
+  insumos?: { id: string; name: string; stock: number }[];
 }
 
-export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWorkspaceProps) {
+export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: TecnicoWorkspaceProps) {
   const router = useRouter();
 
   const [plate, setPlate] = useState('');
@@ -35,6 +37,9 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Right panel tabs
+  const [activeRightTab, setActiveRightTab] = useState<'servicios' | 'insumos'>('servicios');
   const [nextMaintenanceDate, setNextMaintenanceDate] = useState('');
   const [nextMaintenanceReason, setNextMaintenanceReason] = useState('');
 
@@ -242,17 +247,56 @@ export function TecnicoWorkspace({ catalogServices, userDepartment }: TecnicoWor
           />
         </div>
 
-        {/* Panel Servicios — visible en lg siempre; en tablet según tab activa */}
+        {/* Panel Servicios / Insumos — visible en lg siempre; en tablet según tab activa */}
         <div className={`flex-1 lg:flex lg:w-3/5 flex-col overflow-hidden ${
           activeTab === 'servicios' ? 'flex' : 'hidden lg:flex'
         }`}>
-          <ServicesPanel
-            catalogServices={userDepartment ? catalogServices.filter(s => s.category === userDepartment) : catalogServices}
-            selectedServices={selectedServices}
-            onToggleService={handleToggleService}
-            onSubmit={handleCreateOrder}
-            isSubmitting={isSubmitting}
-          />
+          {/* Tabs for right panel */}
+          <div className="flex border-b border-surface-variant bg-surface-container-lowest shrink-0">
+            <button
+              type="button"
+              onClick={() => setActiveRightTab('servicios')}
+              className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border-b-2 relative ${
+                activeRightTab === 'servicios'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">build</span>
+              Catálogo de Servicios
+              {selectedServices.length > 0 && (
+                <span className="absolute top-2 right-4 bg-primary text-on-primary text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+                  {selectedServices.length}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveRightTab('insumos')}
+              className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border-b-2 ${
+                activeRightTab === 'insumos'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">inventory_2</span>
+              Stock de Insumos
+            </button>
+          </div>
+
+          <div className={`flex-1 flex-col overflow-hidden ${activeRightTab === 'servicios' ? 'flex' : 'hidden'}`}>
+            <ServicesPanel
+              catalogServices={userDepartment ? catalogServices.filter(s => s.category === userDepartment) : catalogServices}
+              selectedServices={selectedServices}
+              onToggleService={handleToggleService}
+              onSubmit={handleCreateOrder}
+              isSubmitting={isSubmitting}
+            />
+          </div>
+          
+          <div className={`flex-1 flex-col overflow-hidden ${activeRightTab === 'insumos' ? 'flex' : 'hidden'}`}>
+            <InsumosPanel insumos={insumos || []} />
+          </div>
         </div>
       </div>
 

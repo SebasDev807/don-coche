@@ -11,6 +11,7 @@ export const useSellingPrice = (basePrice: string | number | undefined, profitPe
   const formattedSellingPrice = new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
+    minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(sellingPrice);
 

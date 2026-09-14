@@ -44,11 +44,11 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
   const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
   const paginatedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const formatCurrency = (val: number) => new Intl.NumberFormat('es-CO', {
+  const formatCurrency = (val: number, maxDigits: number = 0) => new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    maximumFractionDigits: maxDigits
   }).format(val);
 
   const handleDelete = async (id: string) => {
@@ -123,10 +123,10 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
                       {product.category.charAt(0).toUpperCase() + product.category.slice(1).toLowerCase()}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-secondary">{formatCurrency(product.unitCost)}</td>
+                  <td className="py-4 px-6 text-secondary">{formatCurrency(product.unitCost, 2)}</td>
                   <td className="py-4 px-6 text-tertiary font-medium">{product.profitPercentage}%</td>
                   <td className="py-4 px-6 text-secondary font-medium">{product.iva ?? 19}%</td>
-                  <td className="py-4 px-6 font-semibold">{formatCurrency(product.salePrice)}</td>
+                  <td className="py-4 px-6 font-semibold">{formatCurrency(product.salePrice, 0)}</td>
                   <td className="py-4 px-6 text-center">
                     <div className={`font-bold ${product.stock === 0 ? 'text-error' : product.stock <= 3 ? 'text-yellow-600' : 'text-on-surface'}`}>{product.stock}</div>
                     {product.stock === 0 ? (

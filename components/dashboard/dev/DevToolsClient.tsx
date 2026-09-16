@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { wipeDevData, verifyDevPassword, deleteInactiveUsers } from '@/actions/dev/dev.actions';
-
+import { wipeDevData, verifyDevPassword, deleteInactiveUsers, getDevCustomers, deleteCustomerCascade, deleteAllCustomersCascade, seedMockCustomers } from '@/actions/dev/dev.actions';
 export function DevToolsClient() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
 
   useEffect(() => {
     if (!isUnlocked) {
@@ -23,6 +25,20 @@ export function DevToolsClient() {
       };
     }
   }, [isUnlocked]);
+
+  useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => setErrorMsg(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
+
+  useEffect(() => {
+    if (successMsg) {
+      const timer = setTimeout(() => setSuccessMsg(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMsg]);
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,6 +115,79 @@ export function DevToolsClient() {
     }
   };
 
+  const handleOpenCustomerModal = async () => {
+    setIsCustomerModalOpen(true);
+    setIsLoadingCustomers(true);
+    try {
+      const res = await getDevCustomers(password);
+      if (res.success) {
+        setCustomers(res.data);
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (e) {
+      setErrorMsg('Error al cargar clientes');
+    } finally {
+      setIsLoadingCustomers(false);
+    }
+  };
+
+  const handleDeleteCustomer = async (id: string) => {
+    if (!confirm('¿Seguro que deseas eliminar este cliente y todos sus vehículos y citas?')) return;
+    setIsSubmitting(true);
+    try {
+      const res = await deleteCustomerCascade(password, id);
+      if (res.success) {
+        setCustomers(prev => prev.filter(c => c.id !== id));
+        setSuccessMsg(res.message);
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (e) {
+      setErrorMsg('Error al eliminar cliente');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteAllCustomers = async () => {
+    if (!confirm('¿ESTÁ COMPLETAMENTE SEGURO? Se borrarán TODOS los clientes, vehículos y citas.')) return;
+    setIsSubmitting(true);
+    try {
+      const res = await deleteAllCustomersCascade(password);
+      if (res.success) {
+        setCustomers([]);
+        setSuccessMsg(res.message);
+        setIsCustomerModalOpen(false);
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (e) {
+      setErrorMsg('Error al eliminar todos los clientes');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSeedMockCustomers = async () => {
+    if (!confirm('¿Seguro que deseas inyectar 10 clientes mock en la base de datos?')) return;
+    setIsSubmitting(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const res = await seedMockCustomers(password, 10);
+      if (res.success) {
+        setSuccessMsg(res.message);
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (e) {
+      setErrorMsg('Error al ejecutar la semilla de clientes.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (!isUnlocked) {
     return (
       <div className="fixed inset-0 z-[100] bg-[#7f1d1d] overflow-y-auto flex flex-col items-center justify-center p-4 text-white font-serif">
@@ -150,7 +239,7 @@ export function DevToolsClient() {
             <button
               type="submit"
               disabled={isSubmitting || !password}
-              className="w-full bg-black hover:bg-black/80 text-white font-bold h-14 border-2 border-transparent hover:border-white transition-all disabled:opacity-50 flex items-center justify-center gap-3 uppercase tracking-[0.3em] shadow-2xl text-base"
+              className="w-full bg-black hover:bg-black/80 text-white font-bold h-14 border-2 border-transparent hover:border-white transition-all disabled:opacity-50 flex items-center justify-center gap-3 uppercase tracking-[0.3em] shadow-2xl text-base cursor-pointer disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <span className="material-symbols-outlined animate-spin text-xl">refresh</span>
@@ -207,7 +296,7 @@ export function DevToolsClient() {
             <button
               onClick={handleWipe}
               disabled={isSubmitting || !!successMsg}
-              className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-[18px]">skull</span>
               Ejecutar Purga
@@ -231,15 +320,133 @@ export function DevToolsClient() {
             <button
               onClick={handleDeleteInactiveUsers}
               disabled={isSubmitting || !!successMsg}
-              className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-[18px]">person_remove</span>
               Eliminar Usuarios Inactivos
             </button>
           </div>
 
+          {/* Tarjeta de Acción: Eliminar Clientes */}
+          <div className="bg-surface-container-lowest border border-error/40 rounded-xl p-5 hover:border-error hover:shadow-md transition-all flex flex-col h-full">
+            <div className="flex items-start gap-3 mb-4">
+              <span className="material-symbols-outlined text-error text-3xl">group_remove</span>
+              <div>
+                <h3 className="font-bold text-on-surface text-lg">Eliminar Clientes</h3>
+                <p className="text-xs text-on-surface-variant font-medium mt-1">Borrado en cascada de Mocks</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-on-surface-variant mb-6 flex-1">
+              Despliega una lista para eliminar clientes de prueba (Mocks). Eliminar un cliente <strong>borrará también sus vehículos y citas</strong>. Esta acción fallará si el cliente tiene registros operativos.
+            </p>
+
+            <button
+              onClick={handleOpenCustomerModal}
+              disabled={isSubmitting || !!successMsg}
+              className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-[18px]">group_remove</span>
+              Ver Clientes a Eliminar
+            </button>
+          </div>
+
+          {/* Tarjeta de Acción: Seed Clientes Mock */}
+          <div className="bg-surface-container-lowest border border-[#10b981]/40 rounded-xl p-5 hover:border-[#10b981] hover:shadow-md transition-all flex flex-col h-full">
+            <div className="flex items-start gap-3 mb-4">
+              <span className="material-symbols-outlined text-[#10b981] text-3xl">add_reaction</span>
+              <div>
+                <h3 className="font-bold text-on-surface text-lg">Semilla de Clientes</h3>
+                <p className="text-xs text-on-surface-variant font-medium mt-1">Generar 10 Clientes Mock</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-on-surface-variant mb-6 flex-1">
+              Inyecta 10 clientes falsos a la base de datos, cada uno con 1 o 2 vehículos asociados aleatoriamente. Útil para hacer pruebas en el entorno de desarrollo y llenar los selectores.
+            </p>
+
+            <button
+              onClick={handleSeedMockCustomers}
+              disabled={isSubmitting || !!successMsg}
+              className="w-full bg-[#ecfdf5] text-[#065f46] border border-[#10b981]/50 hover:bg-[#10b981] hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-[18px]">add_reaction</span>
+              Inyectar Clientes
+            </button>
+          </div>
+
         </div>
       </div>
+
+      {isCustomerModalOpen && (
+        <div className="fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+              <div>
+                <h3 className="text-xl font-bold text-error flex items-center gap-2">
+                  <span className="material-symbols-outlined">group_remove</span>
+                  Gestión de Clientes (Desarrollo)
+                </h3>
+                <p className="text-sm text-on-surface-variant mt-1">Borrado en cascada (Cliente -{'>'} Vehículo -{'>'} Cita)</p>
+              </div>
+              <button onClick={() => setIsCustomerModalOpen(false)} className="text-on-surface-variant hover:text-on-surface cursor-pointer">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 bg-surface">
+              {isLoadingCustomers ? (
+                <div className="flex justify-center py-10">
+                  <span className="material-symbols-outlined animate-spin text-4xl text-primary">refresh</span>
+                </div>
+              ) : customers.length === 0 ? (
+                <div className="text-center py-10 text-on-surface-variant">
+                  No hay clientes en la base de datos.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {customers.map((c: any) => (
+                    <div key={c.id} className="flex items-center justify-between p-4 border border-outline-variant rounded-xl hover:bg-surface-container-lowest transition-colors">
+                      <div>
+                        <div className="font-bold text-on-surface">{c.name || 'Sin Nombre'} <span className="text-sm font-normal text-on-surface-variant ml-2">{c.cc ? `CC: ${c.cc}` : ''}</span></div>
+                        <div className="text-sm text-on-surface-variant flex gap-4 mt-1">
+                          <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">directions_car</span> {c._count?.vehicles || 0} Vehículos</span>
+                          <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">event</span> {c._count?.appointments || 0} Citas</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteCustomer(c.id)}
+                        disabled={isSubmitting}
+                        className="p-2 text-error hover:bg-error/10 rounded-lg transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                        title="Eliminar este cliente"
+                      >
+                        <span className="material-symbols-outlined">delete</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-outline-variant bg-surface-container-lowest flex justify-between items-center">
+              <button
+                onClick={() => setIsCustomerModalOpen(false)}
+                className="px-6 py-2 rounded-lg font-bold border border-outline-variant hover:bg-surface-container transition-colors cursor-pointer"
+              >
+                Cerrar
+              </button>
+              <button
+                onClick={handleDeleteAllCustomers}
+                disabled={isSubmitting || isLoadingCustomers || customers.length === 0}
+                className="px-6 py-2 rounded-lg font-bold bg-error text-white hover:bg-error/90 transition-colors disabled:opacity-50 flex items-center gap-2 shadow-sm cursor-pointer disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+                Eliminar Todos los Clientes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

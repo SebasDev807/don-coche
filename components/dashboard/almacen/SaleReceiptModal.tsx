@@ -98,8 +98,13 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
           #almacen-receipt-root {
             position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0;
           }
+          #almacen-receipt-root > div > div {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
           .receipt-no-print { display: none !important; }
-          @page { size: 80mm auto; margin: 4mm; }
+          @page { size: 80mm auto; margin: 0; }
         }
       `}</style>
 

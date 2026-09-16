@@ -49,6 +49,12 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
             margin: 0;
             padding: 0;
           }
+          #receipt-print-root > div > div,
+          #pos-receipt {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
           .receipt-no-print {
             display: none !important;
           }

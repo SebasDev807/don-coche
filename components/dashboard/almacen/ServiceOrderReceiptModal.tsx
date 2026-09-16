@@ -121,8 +121,13 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
           body * { visibility: hidden; }
           #svc-receipt-root, #svc-receipt-root * { visibility: visible; }
           #svc-receipt-root { position: absolute; left: 0; top: 0; width: 100%; }
+          #svc-receipt-root > div > div {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
           .receipt-no-print { display: none !important; }
-          @page { size: 80mm auto; margin: 4mm; }
+          @page { size: 80mm auto; margin: 0; }
         }
         @keyframes srFadeIn { from { opacity: 0 } to { opacity: 1 } }
         @keyframes srSlideUp { from { opacity: 0; transform: translateY(14px) scale(.97) } to { opacity: 1; transform: none } }

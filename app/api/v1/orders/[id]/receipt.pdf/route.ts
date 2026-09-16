@@ -77,14 +77,14 @@ export async function GET(
       return new NextResponse('La orden aún no ha sido facturada', { status: 400 });
     }
 
-    // Dimensiones 80mm: 226.77pt (a 72dpi). Usamos margen estrecho.
-    const doc = new PDFDocument({ margin: 14, size: [226.77, 800] });
+    // Dimensiones 80mm: 226.77pt (a 72dpi). Usamos margen mínimo.
+    const doc = new PDFDocument({ margin: 8, size: [226.77, 800] });
 
     const chunks: Uint8Array[] = [];
     doc.on('data', chunk => chunks.push(chunk));
 
-    const W = 226.77 - 14 * 2; // ancho útil
-    const x0 = 14;
+    const W = 226.77 - 8 * 2; // ancho útil
+    const x0 = 8;
 
     // ─── HEADER ───
     doc

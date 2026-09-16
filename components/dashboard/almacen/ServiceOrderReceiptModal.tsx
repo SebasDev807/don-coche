@@ -59,7 +59,7 @@ const BASE_TICKET: React.CSSProperties = {
   maxWidth: '100%',
   boxSizing: 'border-box',
   fontFamily: "'Courier New', Courier, monospace",
-  fontSize: '13px',
+  fontSize: '11px',
   lineHeight: '1.5',
   color: '#000',
   background: '#fff',
@@ -158,7 +158,7 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
               <span className="material-symbols-outlined" style={{ color: '#16a34a', fontSize: '24px' }}>check_circle</span>
               <div>
                 <div style={{ fontWeight: 700, fontSize: '16px' }}>¡Servicio Facturado!</div>
-                <div style={{ fontSize: '13px', color: '#6b7280' }}>Orden #{String(order.orderNumber).padStart(4, '0')}</div>
+                <div style={{ fontSize: '9.5px', color: '#6b7280' }}>Orden #{String(order.orderNumber).padStart(4, '0')}</div>
               </div>
             </div>
             <button onClick={onClose} style={{ width: '32px', height: '32px', borderRadius: '8px', border: 'none', background: '#f3f4f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -172,8 +172,8 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
               <div style={BASE_TICKET}>
                 {/* Header negocio */}
                 <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-                  <div style={{ fontSize: '19px', fontWeight: 900, letterSpacing: '1px' }}>{BUSINESS_INFO.name.toUpperCase()}</div>
-                  <div style={{ fontSize: '12px', marginTop: '2px', fontWeight: 700 }}>{BUSINESS_INFO.legalName}</div>
+                  <div style={{ fontSize: '16px', fontWeight: 900, letterSpacing: '1px' }}>{BUSINESS_INFO.name.toUpperCase()}</div>
+                  <div style={{ fontSize: '10px', marginTop: '2px', fontWeight: 700 }}>{BUSINESS_INFO.legalName}</div>
                   <div style={{ fontSize: '11px', marginTop: '2px', fontWeight: 700 }}>NIT: {BUSINESS_INFO.nit}</div>
                   <div style={{ fontSize: '11px', fontWeight: 700 }}>{BUSINESS_INFO.address}</div>
                   <div style={{ fontSize: '11px', fontWeight: 700 }}>Tel: {BUSINESS_INFO.phone} — {BUSINESS_INFO.city}</div>
@@ -183,14 +183,14 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
 
                 {/* Número y fecha */}
                 <div style={{ textAlign: 'center', margin: '6px 0' }}>
-                  <div style={{ fontSize: '15px', fontWeight: 900 }}>ORDEN #{String(order.orderNumber).padStart(4, '0')}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 900 }}>ORDEN #{String(order.orderNumber).padStart(4, '0')}</div>
                   <div style={{ fontSize: '11px', marginTop: '2px', fontWeight: 700 }}>{formatDate(order.billedAt!)}</div>
                 </div>
 
                 <Divider />
 
                 {/* Datos vehículo */}
-                <div style={{ margin: '6px 0', fontSize: '12px' }}>
+                <div style={{ margin: '6px 0', fontSize: '10px' }}>
                   {order.vehicle.plate !== 'GEN-000' ? (
                     <>
                       <Row label="Placa" value={order.vehicle.plate} />
@@ -209,9 +209,9 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                 {order.services && order.services.length > 0 && (
                   <>
                     <div style={{ margin: '6px 0' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>Servicios</div>
+                      <div style={{ fontSize: '10px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>Servicios</div>
                       {order.services.map((s, i) => (
-                        <div key={`srv-${i}`} style={{ fontSize: '12px', padding: '2px 0' }}>
+                        <div key={`srv-${i}`} style={{ fontSize: '10px', padding: '2px 0' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px' }}>
                             <span style={{ flex: 1, fontWeight: 700, wordBreak: 'break-word' }}>- {s.service.name}</span>
                             <span style={{ fontWeight: 900, flexShrink: 0 }}>{formatCurrency(s.chargedPrice)}</span>
@@ -227,7 +227,7 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                 {order.products && order.products.length > 0 && (
                   <>
                     <div style={{ margin: '6px 0' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>Repuestos / Productos</div>
+                      <div style={{ fontSize: '10px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>Repuestos / Productos</div>
                       {order.products.map((p, i) => {
                         const unitPrice = Number(p.unitPrice);
                         const qty = Number(p.quantity);
@@ -235,7 +235,7 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                         const base = ivaRate > 0 ? unitPrice / (1 + ivaRate) : unitPrice;
                         const ivaUnitAmt = unitPrice - base;
                         return (
-                          <div key={`prod-${i}`} style={{ fontSize: '12px', padding: '2px 0', marginBottom: '2px' }}>
+                          <div key={`prod-${i}`} style={{ fontSize: '10px', padding: '2px 0', marginBottom: '2px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px' }}>
                               <span style={{ flex: 1, fontWeight: 700, wordBreak: 'break-word' }}>- {p.product?.name}</span>
                               <span style={{ fontWeight: 900, flexShrink: 0 }}>{formatCurrency(qty * unitPrice)}</span>
@@ -255,7 +255,7 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                 )}
 
                 {/* Totales */}
-                <div style={{ margin: '6px 0', fontSize: '12px' }}>
+                <div style={{ margin: '6px 0', fontSize: '10px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0', fontWeight: 700 }}>
                     <span>Subtotal</span>
                     <span>{formatCurrency(subtotal)}</span>
@@ -266,11 +266,11 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                       <span>{formatCurrency(ivaTotal)}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '17px', fontWeight: 900, padding: '4px 0', borderTop: '2px solid #000', marginTop: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 900, padding: '4px 0', borderTop: '2px solid #000', marginTop: '6px' }}>
                     <span>TOTAL</span>
                     <span>{formatCurrency(order.grandTotal)}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '2px', fontWeight: 700 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginTop: '2px', fontWeight: 700 }}>
                     <span>Pago</span>
                     <span>{PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}</span>
                   </div>
@@ -281,7 +281,7 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                 {/* Footer */}
                 <div style={{ textAlign: 'center', margin: '8px 0 4px', fontSize: '11px', fontWeight: 700 }}>
                   {order.admin && <div>Facturado por: {order.admin.name}</div>}
-                  <div style={{ marginTop: '6px', fontSize: '13px', fontWeight: 900 }}>{BUSINESS_INFO.tagline}</div>
+                  <div style={{ marginTop: '6px', fontSize: '11px', fontWeight: 900 }}>{BUSINESS_INFO.tagline}</div>
                 </div>
               </div>
             </div>

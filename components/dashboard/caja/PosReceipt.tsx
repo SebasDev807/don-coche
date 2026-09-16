@@ -67,7 +67,7 @@ const BASE: React.CSSProperties = {
   maxWidth: '100%',
   boxSizing: 'border-box',
   fontFamily: "'Courier New', Courier, monospace",
-  fontSize: '13px',
+  fontSize: '11px',
   lineHeight: '1.5',
   color: '#000',
   background: '#fff',
@@ -106,23 +106,23 @@ export function PosReceipt({ order }: PosReceiptProps) {
     <div id="pos-receipt" style={BASE}>
       {/* Header negocio */}
       <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-        <div style={{ fontSize: '19px', fontWeight: 900, letterSpacing: '1px' }}>
+        <div style={{ fontSize: '16px', fontWeight: 900, letterSpacing: '1px' }}>
           {BUSINESS_INFO.name.toUpperCase()}
         </div>
-        <div style={{ fontSize: '12px', marginTop: '2px', fontWeight: 700 }}>{BUSINESS_INFO.legalName}</div>
-        <div style={{ fontSize: '11px', marginTop: '2px', fontWeight: 700 }}>NIT: {BUSINESS_INFO.nit}</div>
-        <div style={{ fontSize: '11px', fontWeight: 700 }}>{BUSINESS_INFO.address}</div>
-        <div style={{ fontSize: '11px', fontWeight: 700 }}>Tel: {BUSINESS_INFO.phone} — {BUSINESS_INFO.city}</div>
+        <div style={{ fontSize: '10px', marginTop: '2px', fontWeight: 700 }}>{BUSINESS_INFO.legalName}</div>
+        <div style={{ fontSize: '9.5px', marginTop: '2px', fontWeight: 700 }}>NIT: {BUSINESS_INFO.nit}</div>
+        <div style={{ fontSize: '9.5px', fontWeight: 700 }}>{BUSINESS_INFO.address}</div>
+        <div style={{ fontSize: '9.5px', fontWeight: 700 }}>Tel: {BUSINESS_INFO.phone} — {BUSINESS_INFO.city}</div>
       </div>
 
       <Divider />
 
       {/* Número y fecha */}
       <div style={{ textAlign: 'center', margin: '6px 0' }}>
-        <div style={{ fontSize: '15px', fontWeight: 900 }}>
+        <div style={{ fontSize: '13px', fontWeight: 900 }}>
           RECIBO DE VENTA #{String(order.orderNumber).padStart(4, '0')}
         </div>
-        <div style={{ fontSize: '11px', marginTop: '2px', fontWeight: 700 }}>
+        <div style={{ fontSize: '9.5px', marginTop: '2px', fontWeight: 700 }}>
           {formatDate(order.billedAt)}
         </div>
       </div>
@@ -130,7 +130,7 @@ export function PosReceipt({ order }: PosReceiptProps) {
       <Divider />
 
       {/* Datos vehículo / cliente */}
-      <div style={{ margin: '6px 0', fontSize: '12px' }}>
+      <div style={{ margin: '6px 0', fontSize: '10px' }}>
         <Row label="Placa" value={order.vehicle.plate} />
         {vehicleDesc && <Row label="Vehículo" value={vehicleDesc} />}
         <Row label="Cliente" value={customerName} />
@@ -144,11 +144,11 @@ export function PosReceipt({ order }: PosReceiptProps) {
       {/* Servicios */}
       {order.services.length > 0 && (
         <div style={{ margin: '6px 0' }}>
-          <div style={{ fontSize: '12px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: '10px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>
             Servicios
           </div>
           {order.services.map((s) => (
-            <div key={s.id} style={{ fontSize: '12px', padding: '2px 0' }}>
+            <div key={s.id} style={{ fontSize: '10px', padding: '2px 0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px' }}>
                 <span style={{ flex: 1, fontWeight: 700, wordBreak: 'break-word' }}>- {s.service.name}</span>
                 <span style={{ fontWeight: 900, flexShrink: 0 }}>{formatCurrency(s.chargedPrice)}</span>
@@ -161,7 +161,7 @@ export function PosReceipt({ order }: PosReceiptProps) {
       {/* Productos */}
       {order.products.length > 0 && (
         <div style={{ margin: '6px 0' }}>
-          <div style={{ fontSize: '12px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: '10px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>
             Repuestos / Productos
           </div>
           {order.products.map((p) => {
@@ -171,12 +171,12 @@ export function PosReceipt({ order }: PosReceiptProps) {
             const base = ivaRate > 0 ? unitPrice / (1 + ivaRate) : unitPrice;
             const ivaUnitAmt = unitPrice - base;
             return (
-              <div key={p.id} style={{ fontSize: '12px', padding: '2px 0', marginBottom: '2px' }}>
+              <div key={p.id} style={{ fontSize: '10px', padding: '2px 0', marginBottom: '2px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px' }}>
                   <span style={{ flex: 1, fontWeight: 700, wordBreak: 'break-word' }}>- {p.product.name}</span>
                   <span style={{ fontWeight: 900, flexShrink: 0 }}>{formatCurrency(qty * unitPrice)}</span>
                 </div>
-                <div style={{ fontSize: '11px', fontWeight: 700, paddingLeft: '8px', marginTop: '1px' }}>
+                <div style={{ fontSize: '9.5px', fontWeight: 700, paddingLeft: '8px', marginTop: '1px' }}>
                   {qty} und{qty !== 1 ? 's' : ''} x {formatCurrency(unitPrice)}
                   {ivaRate > 0
                     ? ` | Base: ${formatCurrency(base)} + IVA(${Number(p.product.iva)}%): ${formatCurrency(ivaUnitAmt)}`
@@ -191,7 +191,7 @@ export function PosReceipt({ order }: PosReceiptProps) {
       <Divider />
 
       {/* Totales */}
-      <div style={{ margin: '6px 0', fontSize: '12px' }}>
+      <div style={{ margin: '6px 0', fontSize: '10px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0', fontWeight: 700 }}>
           <span>Subtotal</span>
           <span>{formatCurrency(subtotal)}</span>
@@ -204,13 +204,13 @@ export function PosReceipt({ order }: PosReceiptProps) {
         )}
         <div style={{
           display: 'flex', justifyContent: 'space-between',
-          fontSize: '17px', fontWeight: 900,
+          fontSize: '14px', fontWeight: 900,
           marginTop: '6px', padding: '4px 0', borderTop: '2px solid #000',
         }}>
           <span>TOTAL</span>
           <span>{formatCurrency(order.grandTotal)}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '2px', fontWeight: 700 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginTop: '2px', fontWeight: 700 }}>
           <span>Método de Pago</span>
           <span>{PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}</span>
         </div>
@@ -219,9 +219,9 @@ export function PosReceipt({ order }: PosReceiptProps) {
       <Divider />
 
       {/* Footer */}
-      <div style={{ textAlign: 'center', margin: '8px 0 4px', fontSize: '11px', fontWeight: 700 }}>
+      <div style={{ textAlign: 'center', margin: '8px 0 4px', fontSize: '9.5px', fontWeight: 700 }}>
         {order.admin && <div>Atendido por: {order.admin.name}</div>}
-        <div style={{ marginTop: '6px', fontSize: '13px', fontWeight: 900 }}>{BUSINESS_INFO.tagline}</div>
+        <div style={{ marginTop: '6px', fontSize: '9.5px', fontWeight: 900 }}>{BUSINESS_INFO.tagline}</div>
       </div>
     </div>
   );

@@ -55,7 +55,7 @@ const BASE_TICKET: React.CSSProperties = {
   maxWidth: '100%',
   boxSizing: 'border-box',
   fontFamily: "'Courier New', Courier, monospace",
-  fontSize: '13px',
+  fontSize: '11px',
   lineHeight: '1.5',
   color: '#000',
   background: '#fff',
@@ -146,7 +146,7 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
               <span className="material-symbols-outlined" style={{ color: '#16a34a', fontSize: '24px' }}>check_circle</span>
               <div>
                 <div style={{ fontWeight: 700, fontSize: '16px', color: '#111827' }}>¡Venta Registrada!</div>
-                <div style={{ fontSize: '13px', color: '#6b7280' }}>
+                <div style={{ fontSize: '9.5px', color: '#6b7280' }}>
                   Venta Almacén #{String(sale.saleNumber).padStart(4, '0')}
                 </div>
               </div>
@@ -170,10 +170,10 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
               <div style={BASE_TICKET}>
                 {/* Header negocio */}
                 <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-                  <div style={{ fontSize: '19px', fontWeight: 900, letterSpacing: '1px' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 900, letterSpacing: '1px' }}>
                     {BUSINESS_INFO.name.toUpperCase()}
                   </div>
-                  <div style={{ fontSize: '12px', marginTop: '2px', fontWeight: 700 }}>{BUSINESS_INFO.legalName}</div>
+                  <div style={{ fontSize: '10px', marginTop: '2px', fontWeight: 700 }}>{BUSINESS_INFO.legalName}</div>
                   <div style={{ fontSize: '11px', marginTop: '2px', fontWeight: 700 }}>NIT: {BUSINESS_INFO.nit}</div>
                   <div style={{ fontSize: '11px', fontWeight: 700 }}>{BUSINESS_INFO.address}</div>
                   <div style={{ fontSize: '11px', fontWeight: 700 }}>Tel: {BUSINESS_INFO.phone} — {BUSINESS_INFO.city}</div>
@@ -183,7 +183,7 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
 
                 {/* Número y fecha */}
                 <div style={{ textAlign: 'center', margin: '6px 0' }}>
-                  <div style={{ fontSize: '15px', fontWeight: 900 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 900 }}>
                     VENTA ALMACÉN #{String(sale.saleNumber).padStart(4, '0')}
                   </div>
                   <div style={{ fontSize: '11px', marginTop: '2px', fontWeight: 700 }}>
@@ -194,7 +194,7 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
                 <Divider />
 
                 {/* Cliente y responsable */}
-                <div style={{ margin: '6px 0', fontSize: '12px' }}>
+                <div style={{ margin: '6px 0', fontSize: '10px' }}>
                   <Row label="Cliente" value={sale.customerName || 'Consumidor Final'} />
                   {sale.customerCc && <Row label="CC/NIT" value={sale.customerCc} />}
                   {sale.admin && <Row label="Atendido por" value={sale.admin.name} />}
@@ -204,7 +204,7 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
 
                 {/* Productos */}
                 <div style={{ margin: '6px 0' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>
                     Productos
                   </div>
                   {sale.items.map((item, idx) => {
@@ -214,7 +214,7 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
                     const base = ivaRate > 0 ? unitPrice / (1 + ivaRate) : unitPrice;
                     const ivaUnitAmt = unitPrice - base;
                     return (
-                      <div key={idx} style={{ fontSize: '12px', padding: '2px 0', marginBottom: '2px' }}>
+                      <div key={idx} style={{ fontSize: '10px', padding: '2px 0', marginBottom: '2px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px' }}>
                           <span style={{ flex: 1, fontWeight: 700, wordBreak: 'break-word' }}>- {item.product.name}</span>
                           <span style={{ fontWeight: 900, flexShrink: 0 }}>{formatCurrency(qty * unitPrice)}</span>
@@ -233,7 +233,7 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
                 <Divider />
 
                 {/* Totales */}
-                <div style={{ margin: '6px 0', fontSize: '12px' }}>
+                <div style={{ margin: '6px 0', fontSize: '10px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0', fontWeight: 700 }}>
                     <span>Subtotal</span>
                     <span>{formatCurrency(sale.subtotal)}</span>
@@ -244,11 +244,11 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
                       <span>{formatCurrency(sale.ivaAmount)}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '17px', fontWeight: 900, marginTop: '6px', padding: '4px 0', borderTop: '2px solid #000' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 900, marginTop: '6px', padding: '4px 0', borderTop: '2px solid #000' }}>
                     <span>TOTAL</span>
                     <span>{formatCurrency(sale.grandTotal)}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '2px', fontWeight: 700 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginTop: '2px', fontWeight: 700 }}>
                     <span>Método de Pago</span>
                     <span>{PAYMENT_LABELS[sale.paymentMethod] || sale.paymentMethod}</span>
                   </div>
@@ -259,7 +259,7 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
                 {/* Footer */}
                 <div style={{ textAlign: 'center', margin: '8px 0 4px', fontSize: '11px', fontWeight: 700 }}>
                   {sale.admin && <div>Atendido por: {sale.admin.name}</div>}
-                  <div style={{ marginTop: '6px', fontSize: '13px', fontWeight: 900 }}>{BUSINESS_INFO.tagline}</div>
+                  <div style={{ marginTop: '6px', fontSize: '11px', fontWeight: 900 }}>{BUSINESS_INFO.tagline}</div>
                 </div>
               </div>
             </div>
@@ -276,7 +276,7 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
                   <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check_circle</span>
                   Factura electrónica emitida
                 </div>
-                <div style={{ fontSize: '12px', marginTop: '6px' }}>
+                <div style={{ fontSize: '10px', marginTop: '6px' }}>
                   <div>Factura: <b>{sale.aliaddoConsecutive || 'N/A'}</b></div>
                   <div style={{ wordBreak: 'break-all' }}>CUFE: {sale.cufe}</div>
                 </div>

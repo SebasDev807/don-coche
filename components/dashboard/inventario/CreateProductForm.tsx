@@ -213,7 +213,7 @@ export function CreateProductForm() {
           {/* Porcentaje de Ganancia */}
           {!isInsumos && (
             <div className="col-span-1">
-              <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Porcentaje de Ganancia [%]</label>
+              <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Margen de Ganancia [%]</label>
               <input
                 {...register('profitPercentage')}
                 type="number"
@@ -274,7 +274,7 @@ export function CreateProductForm() {
                 readOnly
                 className="h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface-container-highest px-4 text-on-surface-variant cursor-not-allowed"
               />
-              <p className="text-secondary text-sm mt-1">Calculado automáticamente: Costo + (Costo * % Ganancia)</p>
+              <p className="text-secondary text-sm mt-1">Calculado automáticamente según el margen bruto</p>
             </div>
           )}
 

@@ -145,7 +145,7 @@ export function EditServiceForm({ id, defaultValues }: EditServiceFormProps) {
 
           {/* Porcentaje de Ganancia */}
           <div className="col-span-1">
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">% de Ganancia (Opcional)</label>
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2">Margen de Ganancia [%] (Opcional)</label>
             <div className="relative">
               <input
                 {...register('profitPercentage')}

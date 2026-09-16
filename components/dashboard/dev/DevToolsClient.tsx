@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { wipeDevData, verifyDevPassword, deleteInactiveUsers, getDevCustomers, deleteCustomerCascade, deleteAllCustomersCascade, seedMockCustomers } from '@/actions/dev/dev.actions';
+import { wipeDevData, verifyDevPassword, deleteInactiveUsers, getDevCustomers, deleteCustomerCascade, deleteAllCustomersCascade, seedMockCustomers, seedMockProducts, deleteMockProducts } from '@/actions/dev/dev.actions';
 export function DevToolsClient() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [password, setPassword] = useState('');
@@ -183,6 +183,44 @@ export function DevToolsClient() {
       }
     } catch (e) {
       setErrorMsg('Error al ejecutar la semilla de clientes.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSeedMockProducts = async () => {
+    if (!confirm('¿Seguro que deseas inyectar 10 productos mock en la base de datos?')) return;
+    setIsSubmitting(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const res = await seedMockProducts(password, 10);
+      if (res.success) {
+        setSuccessMsg(res.message);
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (e) {
+      setErrorMsg('Error al ejecutar la semilla de productos.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteMockProducts = async () => {
+    if (!confirm('¿Seguro que deseas eliminar todos los productos mock? Esta acción no se puede deshacer.')) return;
+    setIsSubmitting(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const res = await deleteMockProducts(password);
+      if (res.success) {
+        setSuccessMsg(res.message);
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (e) {
+      setErrorMsg('Error al eliminar los productos mock.');
     } finally {
       setIsSubmitting(false);
     }
@@ -372,6 +410,54 @@ export function DevToolsClient() {
             >
               <span className="material-symbols-outlined text-[18px]">add_reaction</span>
               Inyectar Clientes
+            </button>
+          </div>
+
+          {/* Tarjeta de Acción: Seed Productos Mock */}
+          <div className="bg-surface-container-lowest border border-[#10b981]/40 rounded-xl p-5 hover:border-[#10b981] hover:shadow-md transition-all flex flex-col h-full">
+            <div className="flex items-start gap-3 mb-4">
+              <span className="material-symbols-outlined text-[#10b981] text-3xl">inventory_2</span>
+              <div>
+                <h3 className="font-bold text-on-surface text-lg">Semilla de Productos</h3>
+                <p className="text-xs text-on-surface-variant font-medium mt-1">Generar 10 Productos Mock</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-on-surface-variant mb-6 flex-1">
+              Inyecta 10 productos falsos a la base de datos (con el nombre "MOCK"). Útil para probar paginación y llenado del inventario sin afectar la lógica contable real a largo plazo.
+            </p>
+
+            <button
+              onClick={handleSeedMockProducts}
+              disabled={isSubmitting || !!successMsg}
+              className="w-full bg-[#ecfdf5] text-[#065f46] border border-[#10b981]/50 hover:bg-[#10b981] hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-[18px]">inventory_2</span>
+              Inyectar Productos
+            </button>
+          </div>
+
+          {/* Tarjeta de Acción: Eliminar Productos Mock */}
+          <div className="bg-surface-container-lowest border border-error/40 rounded-xl p-5 hover:border-error hover:shadow-md transition-all flex flex-col h-full">
+            <div className="flex items-start gap-3 mb-4">
+              <span className="material-symbols-outlined text-error text-3xl">delete_sweep</span>
+              <div>
+                <h3 className="font-bold text-on-surface text-lg">Limpiar Productos Mock</h3>
+                <p className="text-xs text-error font-medium mt-1">Borrar inventario de prueba</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-on-surface-variant mb-6 flex-1">
+              Elimina de forma segura todos los productos cuyo nombre inicie con "MOCK". (Fallará si los productos ya tienen ventas operativas asociadas).
+            </p>
+
+            <button
+              onClick={handleDeleteMockProducts}
+              disabled={isSubmitting}
+              className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+              Borrar Productos Mock
             </button>
           </div>
 

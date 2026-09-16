@@ -301,3 +301,86 @@ export async function seedMockCustomers(password: string, count: number = 10): P
     return { success: false, message: 'Error al generar clientes mock. Es posible que hubo una colisión de placas o cédulas.' };
   }
 }
+
+const MOCK_PRODUCT_NAMES = ['Filtro de Aceite', 'Bujía', 'Pastillas de Freno', 'Amortiguador', 'Batería', 'Aceite Sintético', 'Llanta', 'Correa de Distribución', 'Radiador', 'Filtro de Aire'];
+
+export async function seedMockProducts(password: string, count: number = 10): Promise<{ success: boolean; message: string }> {
+  try {
+    const session = await verifyRole(['SUPERUSUARIO']);
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { passwordHash: true },
+    });
+    
+    if (!user) return { success: false, message: 'Usuario no encontrado.' };
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) return { success: false, message: 'Contraseña incorrecta.' };
+
+    await prisma.$transaction(async (tx) => {
+      const existingCategories = await tx.category.findMany();
+      const catIds = existingCategories.map(c => c.id);
+
+      for (let i = 0; i < count; i++) {
+        const baseName = MOCK_PRODUCT_NAMES[Math.floor(Math.random() * MOCK_PRODUCT_NAMES.length)];
+        const name = `MOCK ${baseName} ${Math.floor(Math.random() * 1000)}`;
+        const slug = `mock-${baseName.toLowerCase().replace(/ /g, '-')}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const barCode = `MCK-PRD-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+        const unitCost = Math.floor(10000 + Math.random() * 90000); // 10k to 100k
+        const profitPercentage = 30 + Math.floor(Math.random() * 20); // 30% to 50%
+        const salePrice = (unitCost / (1 - (profitPercentage / 100))) * 1.19; // Price with IVA
+
+        await tx.product.create({
+          data: {
+            name,
+            slug,
+            barCode,
+            stock: Math.floor(1 + Math.random() * 50),
+            unitCost,
+            salePrice,
+            profitPercentage,
+            iva: 19,
+            categoryId: catIds.length > 0 ? catIds[Math.floor(Math.random() * catIds.length)] : undefined
+          }
+        });
+      }
+    });
+
+    return { success: true, message: `Se han generado ${count} productos mock exitosamente.` };
+  } catch (error) {
+    console.error('[seedMockProducts] Error:', error);
+    return { success: false, message: 'Error al generar productos mock.' };
+  }
+}
+
+export async function deleteMockProducts(password: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const session = await verifyRole(['SUPERUSUARIO']);
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { passwordHash: true },
+    });
+    
+    if (!user) return { success: false, message: 'Usuario no encontrado.' };
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) return { success: false, message: 'Contraseña incorrecta.' };
+
+    await prisma.$transaction(async (tx) => {
+      // Borrar productos cuyo nombre empiece con "MOCK"
+      const mockProducts = await tx.product.findMany({
+        where: { name: { startsWith: 'MOCK' } }
+      });
+      const productIds = mockProducts.map(p => p.id);
+
+      if (productIds.length > 0) {
+        await tx.product.deleteMany({
+          where: { id: { in: productIds } }
+        });
+      }
+    });
+
+    return { success: true, message: 'Productos mock eliminados correctamente.' };
+  } catch (error) {
+    console.error('[deleteMockProducts] Error:', error);
+    return { success: false, message: 'Error al eliminar productos mock. Si tienen ventas operativas, purga la base de datos.' };
+  }
+}

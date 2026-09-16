@@ -156,7 +156,7 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
                       >
                         <span className="material-symbols-outlined text-[20px]">edit</span>
                       </button>
-                      {userRole !== 'ADMINISTRADOR' && userRole !== 'TECNICO' && (
+                      {userRole !== 'AUXILIAR_ADMINISTRATIVO' && userRole !== 'TECNICO' && (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(product.id); }}
                           className="cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors"

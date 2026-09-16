@@ -17,9 +17,9 @@ export interface DeleteProductResponse {
  * @returns {Promise<DeleteProductResponse>} El resultado de la operación.
  */
 export async function deleteProduct(id: string): Promise<DeleteProductResponse> {
-  // Solo SuperUsuario, Gerente, Administrador y Auxiliar Administrativo pueden eliminar productos
+  // Solo SuperUsuario, Gerente y Administrador pueden eliminar productos
   const { verifyRole } = await import('@/lib/dal');
-  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
 
   try {
     if (!id) {

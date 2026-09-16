@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { ACTION_ICONS } from '@/constants/icons';
-import Image from 'next/image';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 
 export const metadata: Metadata = {

@@ -55,7 +55,7 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
   const handleDelete = async (id: string) => {
     const result = await MySwal.fire({
       title: '¿Estás seguro?',
-      text: "El producto será marcado como inactivo.",
+      text: "¿Estas seguro que deseas eliminar este prducto?",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: 'var(--color-error)',

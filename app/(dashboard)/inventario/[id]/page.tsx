@@ -4,6 +4,9 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { ACTION_ICONS } from '@/constants/icons';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { verifySession } from '@/lib/dal';
+
+import { DeleteProductDetailButton } from '@/components/dashboard/inventario/DeleteProductDetailButton';
 
 export const metadata: Metadata = {
   title: 'Detalle del Producto | Don Coche',
@@ -13,6 +16,9 @@ export const metadata: Metadata = {
 export default async function ProductDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id } = params;
+
+  const session = await verifySession();
+  const userRole = session.role;
 
   const product = await prisma.product.findUnique({
     where: { id, isActive: true },
@@ -71,13 +77,16 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                   Categoría: {categoryName}
                 </p>
               </div>
-              <PrimaryButton
-                href={`/inventario/editar/${product.id}`}
-                className="w-12 h-12 !p-0 flex-shrink-0 rounded-full flex items-center justify-center transition-all cursor-pointer outline-none bg-surface-container-high text-on-surface-variant hover:bg-primary hover:text-on-primary shadow-sm"
-                title="Editar Producto"
-              >
-                <span className="material-symbols-outlined text-[24px]">{ACTION_ICONS.edit}</span>
-              </PrimaryButton>
+              <div className="flex gap-2">
+                <DeleteProductDetailButton id={product.id} userRole={userRole} />
+                <PrimaryButton
+                  href={`/inventario/editar/${product.id}`}
+                  className="w-12 h-12 !p-0 flex-shrink-0 rounded-full flex items-center justify-center transition-all cursor-pointer outline-none bg-surface-container-high text-on-surface-variant hover:bg-primary hover:text-on-primary shadow-sm"
+                  title="Editar Producto"
+                >
+                  <span className="material-symbols-outlined text-[24px]">{ACTION_ICONS.edit}</span>
+                </PrimaryButton>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-6 mb-8 bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/60">

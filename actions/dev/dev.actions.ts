@@ -331,7 +331,7 @@ export async function seedMockProducts(password: string, count: number = 10, pro
         targetCategoryId = insumoCat.id;
       } else {
         const existingCategories = await tx.category.findMany({
-          where: { name: { not: { equals: 'Insumos', mode: 'insensitive' } } }
+          where: { NOT: { name: { equals: 'Insumos', mode: 'insensitive' } } }
         });
         if (existingCategories.length > 0) {
           targetCategoryId = existingCategories[Math.floor(Math.random() * existingCategories.length)].id;

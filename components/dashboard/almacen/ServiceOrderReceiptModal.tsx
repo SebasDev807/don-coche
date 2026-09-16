@@ -55,7 +55,9 @@ function formatDate(date: string | Date) {
 }
 
 const BASE_TICKET: React.CSSProperties = {
-  width: '302px',
+  width: '80mm',
+  maxWidth: '100%',
+  boxSizing: 'border-box',
   fontFamily: "'Courier New', Courier, monospace",
   fontSize: '13px',
   lineHeight: '1.5',
@@ -121,10 +123,11 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
           body * { visibility: hidden; }
           #svc-receipt-root, #svc-receipt-root * { visibility: visible; }
           #svc-receipt-root { position: absolute; left: 0; top: 0; width: 100%; }
-          #svc-receipt-root > div > div {
+          #svc-receipt-root > div {
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
+            padding: 10px 8px !important;
           }
           .receipt-no-print { display: none !important; }
           @page { size: 80mm auto; margin: 0; }
@@ -211,7 +214,7 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                         <div key={`srv-${i}`} style={{ fontSize: '12px', padding: '2px 0' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px' }}>
                             <span style={{ flex: 1, fontWeight: 700, wordBreak: 'break-word' }}>- {s.service.name}</span>
-                            <span style={{ fontWeight: 900, whiteSpace: 'nowrap' }}>{formatCurrency(s.chargedPrice)}</span>
+                            <span style={{ fontWeight: 900, flexShrink: 0 }}>{formatCurrency(s.chargedPrice)}</span>
                           </div>
                         </div>
                       ))}
@@ -235,7 +238,7 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                           <div key={`prod-${i}`} style={{ fontSize: '12px', padding: '2px 0', marginBottom: '2px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px' }}>
                               <span style={{ flex: 1, fontWeight: 700, wordBreak: 'break-word' }}>- {p.product?.name}</span>
-                              <span style={{ fontWeight: 900, whiteSpace: 'nowrap' }}>{formatCurrency(qty * unitPrice)}</span>
+                              <span style={{ fontWeight: 900, flexShrink: 0 }}>{formatCurrency(qty * unitPrice)}</span>
                             </div>
                             <div style={{ fontSize: '11px', fontWeight: 700, paddingLeft: '8px', marginTop: '1px' }}>
                               {qty} und{qty !== 1 ? 's' : ''} x {formatCurrency(unitPrice)}

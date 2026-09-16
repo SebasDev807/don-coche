@@ -54,6 +54,7 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
+            padding: 10px 8px !important;
           }
           .receipt-no-print {
             display: none !important;

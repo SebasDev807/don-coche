@@ -9,6 +9,7 @@ interface SaleReceiptModalProps {
     soldAt: string | Date;
     paymentMethod: string;
     customerName: string | null;
+    customerCc?: string | null;
     subtotal: number;
     ivaAmount: number;
     grandTotal: number;
@@ -35,7 +36,7 @@ const PAYMENT_LABELS: Record<string, string> = {
 };
 
 function formatCurrency(v: number) {
-  return `$${v.toLocaleString('es-CO')}`;
+  return `$${Math.round(v).toLocaleString('es-CO')}`;
 }
 
 function formatDate(date: string | Date) {
@@ -47,6 +48,31 @@ function formatDate(date: string | Date) {
     minute: '2-digit',
     hour12: true,
   });
+}
+
+const BASE_TICKET: React.CSSProperties = {
+  width: '302px',
+  fontFamily: "'Courier New', Courier, monospace",
+  fontSize: '13px',
+  lineHeight: '1.5',
+  color: '#000',
+  background: '#fff',
+  padding: '14px 10px',
+  margin: '0 auto',
+  fontWeight: 700,
+};
+
+function Divider() {
+  return <div style={{ borderTop: '1px dashed #000', margin: '5px 0' }} />;
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0', gap: '6px' }}>
+      <span style={{ fontWeight: 700, flexShrink: 0 }}>{label}:</span>
+      <span style={{ fontWeight: 700, textAlign: 'right', wordBreak: 'break-word' }}>{value}</span>
+    </div>
+  );
 }
 
 export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
@@ -73,7 +99,7 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
             position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0;
           }
           .receipt-no-print { display: none !important; }
-          @page { size: 80mm auto; margin: 0; }
+          @page { size: 80mm auto; margin: 4mm; }
         }
       `}</style>
 
@@ -85,7 +111,6 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
         }
       `}</style>
 
-      {/* Backdrop */}
       <div
         ref={backdropRef}
         onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
@@ -134,102 +159,99 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
               id="almacen-receipt-root"
               style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12)', borderRadius: '4px', overflow: 'hidden' }}
             >
-              {/* POS Receipt */}
-              <div
-                style={{
-                  width: '302px', fontFamily: "'Courier New', Courier, monospace",
-                  fontSize: '12px', lineHeight: '1.4', color: '#000',
-                  background: '#fff', padding: '12px 8px', margin: '0 auto',
-                }}
-              >
+              <div style={BASE_TICKET}>
                 {/* Header negocio */}
                 <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '1px' }}>
+                  <div style={{ fontSize: '19px', fontWeight: 900, letterSpacing: '1px' }}>
                     {BUSINESS_INFO.name.toUpperCase()}
                   </div>
-                  <div style={{ fontSize: '11px', marginTop: '2px' }}>{BUSINESS_INFO.legalName}</div>
-                  <div style={{ fontSize: '10px', marginTop: '2px', color: '#555' }}>NIT: {BUSINESS_INFO.nit}</div>
-                  <div style={{ fontSize: '10px', color: '#555' }}>{BUSINESS_INFO.address}</div>
-                  <div style={{ fontSize: '10px', color: '#555' }}>Tel: {BUSINESS_INFO.phone} — {BUSINESS_INFO.city}</div>
+                  <div style={{ fontSize: '12px', marginTop: '2px', fontWeight: 700 }}>{BUSINESS_INFO.legalName}</div>
+                  <div style={{ fontSize: '11px', marginTop: '2px', fontWeight: 700 }}>NIT: {BUSINESS_INFO.nit}</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700 }}>{BUSINESS_INFO.address}</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700 }}>Tel: {BUSINESS_INFO.phone} — {BUSINESS_INFO.city}</div>
                 </div>
 
-                <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />
+                <Divider />
 
                 {/* Número y fecha */}
                 <div style={{ textAlign: 'center', margin: '6px 0' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 700 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 900 }}>
                     VENTA ALMACÉN #{String(sale.saleNumber).padStart(4, '0')}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#555', marginTop: '2px' }}>
+                  <div style={{ fontSize: '11px', marginTop: '2px', fontWeight: 700 }}>
                     {formatDate(sale.soldAt)}
                   </div>
                 </div>
 
-                <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />
+                <Divider />
 
-                {/* Cliente */}
-                <div style={{ margin: '6px 0', fontSize: '11px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
-                    <span style={{ color: '#555' }}>Cliente:</span>
-                    <span>{sale.customerName || 'Consumidor Final'}</span>
-                  </div>
+                {/* Cliente y responsable */}
+                <div style={{ margin: '6px 0', fontSize: '12px' }}>
+                  <Row label="Cliente" value={sale.customerName || 'Consumidor Final'} />
+                  {sale.customerCc && <Row label="CC/NIT" value={sale.customerCc} />}
+                  {sale.admin && <Row label="Atendido por" value={sale.admin.name} />}
                 </div>
 
-                <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />
+                <Divider />
 
                 {/* Productos */}
                 <div style={{ margin: '6px 0' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}>
                     Productos
                   </div>
-                  {sale.items.map((item, idx) => (
-                    <div key={idx} style={{ fontSize: '11px', padding: '3px 0' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <span style={{ flex: 1, paddingRight: '8px' }}>
-                          - {item.product.name}
-                        </span>
-                        <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
-                          {formatCurrency(item.quantity * item.unitPrice)}
-                        </span>
+                  {sale.items.map((item, idx) => {
+                    const unitPrice = Number(item.unitPrice);
+                    const qty = Number(item.quantity);
+                    const ivaRate = item.ivaRate ? Number(item.ivaRate) / 100 : 0;
+                    const base = ivaRate > 0 ? unitPrice / (1 + ivaRate) : unitPrice;
+                    const ivaUnitAmt = unitPrice - base;
+                    return (
+                      <div key={idx} style={{ fontSize: '12px', padding: '2px 0', marginBottom: '2px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px' }}>
+                          <span style={{ flex: 1, fontWeight: 700, wordBreak: 'break-word' }}>- {item.product.name}</span>
+                          <span style={{ fontWeight: 900, whiteSpace: 'nowrap' }}>{formatCurrency(qty * unitPrice)}</span>
+                        </div>
+                        <div style={{ fontSize: '11px', fontWeight: 700, paddingLeft: '8px', marginTop: '1px' }}>
+                          {qty} und{qty !== 1 ? 's' : ''} x {formatCurrency(unitPrice)}
+                          {ivaRate > 0
+                            ? ` | Base: ${formatCurrency(base)} + IVA(${Math.round(ivaRate * 100)}%): ${formatCurrency(ivaUnitAmt)}`
+                            : ' | IVA: 0%'}
+                        </div>
                       </div>
-                      <div style={{ color: '#555', paddingLeft: '8px', marginTop: '1px', fontSize: '10px' }}>
-                        {item.quantity} unds x {formatCurrency(item.unitPrice)}
-                        {item.ivaRate ? ` (Incl. IVA ${Number(item.ivaRate)}%)` : ''}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
-                <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />
+                <Divider />
 
                 {/* Totales */}
-                <div style={{ margin: '6px 0', fontSize: '11px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
+                <div style={{ margin: '6px 0', fontSize: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0', fontWeight: 700 }}>
                     <span>Subtotal</span>
-                    <span style={{ fontWeight: 600 }}>{formatCurrency(sale.subtotal)}</span>
+                    <span>{formatCurrency(sale.subtotal)}</span>
                   </div>
                   {sale.ivaAmount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0', fontWeight: 700 }}>
                       <span>IVA</span>
-                      <span style={{ fontWeight: 600 }}>{formatCurrency(sale.ivaAmount)}</span>
+                      <span>{formatCurrency(sale.ivaAmount)}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 800, marginTop: '6px', padding: '4px 0', borderTop: '1px dashed #000' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '17px', fontWeight: 900, marginTop: '6px', padding: '4px 0', borderTop: '2px solid #000' }}>
                     <span>TOTAL</span>
                     <span>{formatCurrency(sale.grandTotal)}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginTop: '2px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '2px', fontWeight: 700 }}>
                     <span>Método de Pago</span>
-                    <span style={{ fontWeight: 600 }}>{PAYMENT_LABELS[sale.paymentMethod] || sale.paymentMethod}</span>
+                    <span>{PAYMENT_LABELS[sale.paymentMethod] || sale.paymentMethod}</span>
                   </div>
                 </div>
 
-                <hr style={{ border: 'none', borderTop: '1px dashed #999', margin: '4px 0' }} />
+                <Divider />
 
                 {/* Footer */}
-                <div style={{ textAlign: 'center', margin: '8px 0 4px', fontSize: '10px', color: '#555' }}>
+                <div style={{ textAlign: 'center', margin: '8px 0 4px', fontSize: '11px', fontWeight: 700 }}>
                   {sale.admin && <div>Atendido por: {sale.admin.name}</div>}
-                  <div style={{ marginTop: '6px', fontSize: '12px', fontWeight: 600 }}>{BUSINESS_INFO.tagline}</div>
+                  <div style={{ marginTop: '6px', fontSize: '13px', fontWeight: 900 }}>{BUSINESS_INFO.tagline}</div>
                 </div>
               </div>
             </div>
@@ -240,7 +262,6 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
             className="receipt-no-print"
             style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px 20px', borderTop: '1px solid #e5e7eb', background: '#fff' }}
           >
-            {/* Estado factura electrónica */}
             {isSuccess && (
               <div style={{ padding: '12px', background: '#ecfdf5', border: '1px solid #10b981', borderRadius: '8px', color: '#065f46' }}>
                 <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>

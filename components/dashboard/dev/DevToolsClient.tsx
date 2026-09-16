@@ -188,13 +188,13 @@ export function DevToolsClient() {
     }
   };
 
-  const handleSeedMockProducts = async () => {
-    if (!confirm('¿Seguro que deseas inyectar 10 productos mock en la base de datos?')) return;
+  const handleSeedMockProducts = async (type: 'ALMACEN' | 'INSUMO') => {
+    if (!confirm(`¿Seguro que deseas inyectar 10 productos mock de tipo ${type} en la base de datos?`)) return;
     setIsSubmitting(true);
     setErrorMsg('');
     setSuccessMsg('');
     try {
-      const res = await seedMockProducts(password, 10);
+      const res = await seedMockProducts(password, 10, type);
       if (res.success) {
         setSuccessMsg(res.message);
       } else {
@@ -427,14 +427,27 @@ export function DevToolsClient() {
               Inyecta 10 productos falsos a la base de datos (con el nombre "MOCK"). Útil para probar paginación y llenado del inventario sin afectar la lógica contable real a largo plazo.
             </p>
 
-            <button
-              onClick={handleSeedMockProducts}
-              disabled={isSubmitting || !!successMsg}
-              className="w-full bg-[#ecfdf5] text-[#065f46] border border-[#10b981]/50 hover:bg-[#10b981] hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
-            >
-              <span className="material-symbols-outlined text-[18px]">inventory_2</span>
-              Inyectar Productos
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleSeedMockProducts('ALMACEN')}
+                disabled={isSubmitting || !!successMsg}
+                className="w-full bg-[#ecfdf5] text-[#065f46] border border-[#10b981]/50 hover:bg-[#10b981] hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                title="Generar 10 Productos para Almacén"
+              >
+                <span className="material-symbols-outlined text-[18px]">inventory_2</span>
+                Almacén
+              </button>
+              
+              <button
+                onClick={() => handleSeedMockProducts('INSUMO')}
+                disabled={isSubmitting || !!successMsg}
+                className="w-full bg-[#f0fdf4] text-[#166534] border border-[#22c55e]/50 hover:bg-[#22c55e] hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                title="Generar 10 Productos como Insumos"
+              >
+                <span className="material-symbols-outlined text-[18px]">water_drop</span>
+                Insumos
+              </button>
+            </div>
           </div>
 
           {/* Tarjeta de Acción: Eliminar Productos Mock */}

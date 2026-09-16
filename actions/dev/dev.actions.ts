@@ -304,7 +304,7 @@ export async function seedMockCustomers(password: string, count: number = 10): P
 
 const MOCK_PRODUCT_NAMES = ['Filtro de Aceite', 'Bujía', 'Pastillas de Freno', 'Amortiguador', 'Batería', 'Aceite Sintético', 'Llanta', 'Correa de Distribución', 'Radiador', 'Filtro de Aire'];
 
-export async function seedMockProducts(password: string, count: number = 10): Promise<{ success: boolean; message: string }> {
+export async function seedMockProducts(password: string, count: number = 10, productType: 'ALMACEN' | 'INSUMO' = 'ALMACEN'): Promise<{ success: boolean; message: string }> {
   try {
     const session = await verifyRole(['SUPERUSUARIO']);
     const user = await prisma.user.findUnique({
@@ -317,35 +317,67 @@ export async function seedMockProducts(password: string, count: number = 10): Pr
     if (!isPasswordValid) return { success: false, message: 'Contraseña incorrecta.' };
 
     await prisma.$transaction(async (tx) => {
-      const existingCategories = await tx.category.findMany();
-      const catIds = existingCategories.map(c => c.id);
+      let targetCategoryId: string | undefined = undefined;
+
+      if (productType === 'INSUMO') {
+        let insumoCat = await tx.category.findFirst({
+          where: { name: { equals: 'Insumos', mode: 'insensitive' } }
+        });
+        if (!insumoCat) {
+          insumoCat = await tx.category.create({
+            data: { name: 'Insumos', slug: 'insumos' }
+          });
+        }
+        targetCategoryId = insumoCat.id;
+      } else {
+        const existingCategories = await tx.category.findMany({
+          where: { name: { not: { equals: 'Insumos', mode: 'insensitive' } } }
+        });
+        if (existingCategories.length > 0) {
+          targetCategoryId = existingCategories[Math.floor(Math.random() * existingCategories.length)].id;
+        } else {
+          // Si no hay categorías de almacén, creamos una por defecto
+          const defaultCat = await tx.category.create({
+            data: { name: 'Almacén', slug: 'almacen' }
+          });
+          targetCategoryId = defaultCat.id;
+        }
+      }
 
       for (let i = 0; i < count; i++) {
         const baseName = MOCK_PRODUCT_NAMES[Math.floor(Math.random() * MOCK_PRODUCT_NAMES.length)];
-        const name = `MOCK ${baseName} ${Math.floor(Math.random() * 1000)}`;
-        const slug = `mock-${baseName.toLowerCase().replace(/ /g, '-')}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-        const barCode = `MCK-PRD-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+        const name = `MOCK ${productType === 'INSUMO' ? 'Insumo' : 'Producto'} ${baseName} ${Math.floor(Math.random() * 1000)}`;
+        const slug = `mock-${productType.toLowerCase()}-${baseName.toLowerCase().replace(/ /g, '-')}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const barCode = `MCK-${productType === 'INSUMO' ? 'INS' : 'PRD'}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         const unitCost = Math.floor(10000 + Math.random() * 90000); // 10k to 100k
-        const profitPercentage = 30 + Math.floor(Math.random() * 20); // 30% to 50%
-        const salePrice = (unitCost / (1 - (profitPercentage / 100))) * 1.19; // Price with IVA
+        
+        let profitPercentage = null;
+        let salePrice = unitCost; // Insumos se valoran al costo (sin venta)
+        let iva = null;
+
+        if (productType === 'ALMACEN') {
+          profitPercentage = 30 + Math.floor(Math.random() * 20); // 30% to 50%
+          salePrice = (unitCost / (1 - (profitPercentage / 100))) * 1.19; // Price with IVA
+          iva = 19;
+        }
 
         await tx.product.create({
           data: {
             name,
             slug,
             barCode,
-            stock: Math.floor(1 + Math.random() * 50),
+            stock: 100, // Siempre 100 unidades según requerimiento
             unitCost,
             salePrice,
             profitPercentage,
-            iva: 19,
-            categoryId: catIds.length > 0 ? catIds[Math.floor(Math.random() * catIds.length)] : undefined
+            iva,
+            categoryId: targetCategoryId
           }
         });
       }
     });
 
-    return { success: true, message: `Se han generado ${count} productos mock exitosamente.` };
+    return { success: true, message: `Se han generado ${count} productos mock (${productType === 'INSUMO' ? 'Insumos' : 'Almacén'}) exitosamente.` };
   } catch (error) {
     console.error('[seedMockProducts] Error:', error);
     return { success: false, message: 'Error al generar productos mock.' };

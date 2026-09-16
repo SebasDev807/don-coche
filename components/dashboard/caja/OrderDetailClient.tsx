@@ -21,8 +21,10 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('EFECTIVO');
 
   const subtotal = order.totalServices + order.totalProducts;
-  const iva = subtotal * 0.19;
-  const calculatedGrandTotal = subtotal + iva;
+  // Según requerimiento: El IVA no debe ir en servicios. Además, el backend 
+  // ya espera que el grandTotal sea igual al subtotal (sin IVA adicional).
+  const iva = 0; 
+  const calculatedGrandTotal = subtotal;
 
   const handleBill = async (method: PaymentMethod, emitirFactura: boolean) => {
     const actionLabel = emitirFactura ? 'Factura Electrónica DIAN' : 'Recibo POS (Sin electrónica)';
@@ -192,10 +194,12 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
             <span>Total Producto</span>
             <span className="font-label-bold text-on-surface">${order.totalProducts.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between items-center text-on-surface-variant">
-            <span>IVA (19%)</span>
-            <span className="font-label-bold text-on-surface">${iva.toLocaleString()}</span>
-          </div>
+          {iva > 0 && (
+            <div className="flex justify-between items-center text-on-surface-variant">
+              <span>IVA (19%)</span>
+              <span className="font-label-bold text-on-surface">${iva.toLocaleString()}</span>
+            </div>
+          )}
           <div className="pt-4 mt-4 border-t border-outline-variant flex justify-between items-end">
             <span className="uppercase text-sm font-label-bold tracking-wider text-on-surface-variant">Gran Total</span>
             <span className="text-3xl font-headline-lg text-primary">${calculatedGrandTotal.toLocaleString()}</span>

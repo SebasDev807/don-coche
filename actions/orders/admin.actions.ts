@@ -216,14 +216,8 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod, e
         // Si un servicio no tiene código (no fue sincronizado), usamos AGUA como fallback
         const FALLBACK_CODE = 'AGUA';
         const details = [
-          ...updatedOrder.services.map(s => ({
-            unitValueBeforeTax: Number(s.chargedPrice),
-            quantity: 1,
-            description: s.service?.name || 'Servicio Automotriz',
-            itemCode: s.service?.aliaddoItemCode || FALLBACK_CODE,
-            discountAmount: 0,
-            discountIsPercent: true
-          })),
+          // Se omiten los servicios de la factura electrónica por requerimiento:
+          // "el iva no debe ir en servicios y no deben facturarse"
           ...updatedOrder.products.map(p => ({
             unitValueBeforeTax: Number(p.unitPrice),
             quantity: p.quantity,
@@ -233,6 +227,10 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod, e
             discountIsPercent: true
           }))
         ];
+        
+        if (details.length === 0) {
+          throw new Error('No hay productos para facturar electrónicamente (los servicios no se incluyen en la factura).');
+        }
 
 
         // Obtener fecha actual en zona horaria local (Colombia) para evitar error FAD09e de la DIAN

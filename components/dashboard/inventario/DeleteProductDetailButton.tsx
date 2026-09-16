@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { ACTION_ICONS } from '@/constants/icons';
-import { deleteProductAction } from '@/actions/inventory/deleteProduct.actions';
+import { deleteProduct } from '@/actions/inventory/deleteProduct.actions';
 import { useState } from 'react';
 
 const MySwal = withReactContent(Swal);
@@ -36,7 +36,7 @@ export function DeleteProductDetailButton({ id, userRole }: { id: string, userRo
 
     if (result.isConfirmed) {
       setIsDeleting(true);
-      const res = await deleteProductAction(id);
+      const res = await deleteProduct(id);
       
       if (res.success) {
         await MySwal.fire({

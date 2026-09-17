@@ -50,10 +50,6 @@ export function ManualInvoiceModal({ isOpen, onClose }: ManualInvoiceModalProps)
       setError('Ingresa un monto válido mayor a cero.');
       return;
     }
-    if (!description.trim()) {
-      setError('La descripción es obligatoria.');
-      return;
-    }
 
     setIsSubmitting(true);
     const result = await createManualInvoice({
@@ -147,7 +143,7 @@ export function ManualInvoiceModal({ isOpen, onClose }: ManualInvoiceModalProps)
               {/* Descripción */}
               <div>
                 <label className="block text-sm font-bold text-on-surface-variant mb-2">
-                  Descripción <span className="text-error">*</span>
+                  Descripción <span className="text-xs font-normal text-secondary">(opcional)</span>
                 </label>
                 <input
                   type="text"

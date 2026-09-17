@@ -12,7 +12,7 @@ import { PaymentMethod } from '@prisma/client';
  */
 export async function createManualInvoice(data: {
   amount: number;
-  description: string;
+  description?: string;
   paymentMethod: PaymentMethod;
   customerName?: string;
 }) {
@@ -26,10 +26,6 @@ export async function createManualInvoice(data: {
 
     if (!data.amount || data.amount <= 0) {
       return { success: false, message: 'El monto debe ser mayor a cero.' };
-    }
-
-    if (!data.description || !data.description.trim()) {
-      return { success: false, message: 'La descripción es obligatoria.' };
     }
 
     // Buscar o crear un producto virtual "FACTURA MANUAL" para asociar el item
@@ -55,9 +51,19 @@ export async function createManualInvoice(data: {
 
     // Guardamos la descripción en customerName (+ nombre del cliente si viene)
     // para que sea visible en el cuadre de caja sin necesidad de migración de BD.
-    const customerNameField = data.customerName
-      ? `${data.description} | ${data.customerName}`
-      : data.description;
+    const hasDesc = data.description && data.description.trim() !== '';
+    const hasCustomer = data.customerName && data.customerName.trim() !== '';
+    
+    let customerNameField = '';
+    if (hasDesc && hasCustomer) {
+      customerNameField = `${data.description?.trim()} | ${data.customerName?.trim()}`;
+    } else if (hasDesc) {
+      customerNameField = data.description!.trim();
+    } else if (hasCustomer) {
+      customerNameField = data.customerName!.trim();
+    } else {
+      customerNameField = 'Ingreso Personalizado';
+    }
 
     const sale = await prisma.productSale.create({
       data: {

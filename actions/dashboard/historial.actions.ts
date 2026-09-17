@@ -192,18 +192,29 @@ export async function getPaginatedMovements(
       } else {
         const sale = saleMap.get(item.id)!;
         
-        const concepto = sale.items.length > 0
-          ? sale.items[0].product.name + (sale.items.length > 1 ? ` y ${sale.items.length - 1} más` : '')
-          : 'Venta de productos';
+        const isManualInvoice = sale.items.some((i: any) => i.product.slug === '__manual_invoice__');
+        
+        let concepto = '';
+        let detalle = '';
+
+        if (isManualInvoice) {
+          concepto = 'Factura Manual';
+          detalle = sale.customerName || 'Ingreso Personalizado';
+        } else {
+          concepto = sale.items.length > 0
+            ? sale.items[0].product.name + (sale.items.length > 1 ? ` y ${sale.items.length - 1} más` : '')
+            : 'Venta de productos';
+          detalle = sale.customerName ? `Venta a ${sale.customerName}` : 'Venta Directa';
+        }
 
         return {
           id: sale.id,
           orderNumber: sale.saleNumber,
           fecha: sale.soldAt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }),
           hora: sale.soldAt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true }),
-          placa: 'ALMACÉN',
+          placa: isManualInvoice ? 'INGRESO' : 'ALMACÉN',
           concepto,
-          detalle: sale.customerName ? `Venta a ${sale.customerName}` : 'Venta Directa',
+          detalle,
           monto: formatCurrency(Number(sale.grandTotal)),
           montoRaw: Number(sale.grandTotal),
           montoColor: 'text-on-surface',

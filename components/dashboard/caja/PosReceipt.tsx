@@ -178,9 +178,7 @@ export function PosReceipt({ order }: PosReceiptProps) {
                 </div>
                 <div style={{ fontSize: '9.5px', fontWeight: 700, paddingLeft: '8px', marginTop: '1px' }}>
                   {qty} und{qty !== 1 ? 's' : ''} x {formatCurrency(unitPrice)}
-                  {ivaRate > 0
-                    ? ` | Base: ${formatCurrency(base)} + IVA(${Number(p.product.iva)}%): ${formatCurrency(ivaUnitAmt)}`
-                    : ' | IVA: 0%'}
+                  {ivaRate > 0 && ` | Base: ${formatCurrency(base)} + IVA(${Number(p.product.iva)}%): ${formatCurrency(ivaUnitAmt)}`}
                 </div>
               </div>
             );

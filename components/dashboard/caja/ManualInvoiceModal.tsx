@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { PaymentMethod } from '@prisma/client';
 import { createManualInvoice } from '@/actions/caja/manualInvoice.actions';
 import { useRouter } from 'next/navigation';
+import { ReceiptModal } from './ReceiptModal';
 
 interface ManualInvoiceModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: (orderData: any) => void;
 }
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: string }[] = [
@@ -16,23 +18,27 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: string }[] =
   { value: 'TRANSFERENCIA', label: 'Transferencia', icon: 'account_balance' },
 ];
 
-export function ManualInvoiceModal({ isOpen, onClose }: ManualInvoiceModalProps) {
+export function ManualInvoiceModal({ isOpen, onClose, onSuccess }: ManualInvoiceModalProps) {
   const router = useRouter();
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [customerName, setCustomerName] = useState('');
+  const [plate, setPlate] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('EFECTIVO');
+  const [includeIva, setIncludeIva] = useState(false);
+  const [ivaRate, setIvaRate] = useState('19');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState<number | null>(null);
 
   const reset = () => {
     setAmount('');
     setDescription('');
     setCustomerName('');
+    setPlate('');
     setPaymentMethod('EFECTIVO');
+    setIncludeIva(false);
+    setIvaRate('19');
     setError('');
-    setSuccess(null);
     setIsSubmitting(false);
   };
 
@@ -50,6 +56,8 @@ export function ManualInvoiceModal({ isOpen, onClose }: ManualInvoiceModalProps)
       setError('Ingresa un monto válido mayor a cero.');
       return;
     }
+    
+    const finalIvaRate = includeIva ? Number(ivaRate) || 0 : 0;
 
     setIsSubmitting(true);
     const result = await createManualInvoice({
@@ -57,11 +65,41 @@ export function ManualInvoiceModal({ isOpen, onClose }: ManualInvoiceModalProps)
       description: description.trim(),
       paymentMethod,
       customerName: customerName.trim() || undefined,
+      ivaRate: finalIvaRate,
+      plate: plate.trim() || undefined,
     });
     setIsSubmitting(false);
 
     if (result.success) {
-      setSuccess(result.saleNumber ?? null);
+      // Disparamos éxito pasando la orden para imprimir, y cerramos el modal
+      onSuccess({
+        isManualInvoice: true,
+        orderNumber: result.saleNumber,
+        billedAt: new Date(),
+        paymentMethod,
+        totalServices: 0,
+        totalProducts: numericAmount,
+        grandTotal: numericAmount,
+        vehicle: {
+          plate: plate.trim().toUpperCase() || 'N/A',
+          customer: { name: customerName.trim() || 'Consumidor Final' }
+        },
+        technician: { name: 'Sistema' },
+        admin: { name: result.adminName },
+        services: [],
+        products: [
+          {
+            id: `manual-${result.saleNumber}`,
+            quantity: 1,
+            unitPrice: numericAmount,
+            product: { 
+              name: description.trim() || 'Ingreso Personalizado', 
+              iva: finalIvaRate 
+            }
+          }
+        ]
+      });
+      handleClose();
       router.refresh();
     } else {
       setError(result.message || 'Error al registrar la factura.');
@@ -74,7 +112,7 @@ export function ManualInvoiceModal({ isOpen, onClose }: ManualInvoiceModalProps)
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
       <div className="bg-surface-container-lowest w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-up">
 
-        {/* Header */}
+          {/* Header */}
         <div className="p-6 border-b border-surface-variant flex items-center justify-between bg-surface-container">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary-container rounded-full flex items-center justify-center">
@@ -85,41 +123,17 @@ export function ManualInvoiceModal({ isOpen, onClose }: ManualInvoiceModalProps)
               <p className="text-xs text-on-surface-variant">Registro de ingreso personalizado</p>
             </div>
           </div>
-          {!success && (
-            <button
-              onClick={handleClose}
-              className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors cursor-pointer"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          )}
+          <button
+            onClick={handleClose}
+            className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
         </div>
 
         {/* Body */}
         <div className="p-6">
-          {success !== null ? (
-            /* Estado de éxito */
-            <div className="text-center py-6">
-              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-scale-up">
-                <span className="material-symbols-outlined text-4xl">check_circle</span>
-              </div>
-              <h3 className="text-xl font-bold text-on-surface mb-1">¡Factura Registrada!</h3>
-              <p className="text-on-surface-variant text-sm mb-2">
-                Factura manual <span className="font-bold text-primary">V-{success}</span> registrada
-                en el cuadre de caja del día.
-              </p>
-              <p className="text-on-surface-variant text-xs mb-8">
-                Se incluirá en el próximo cierre de caja automáticamente.
-              </p>
-              <button
-                onClick={handleClose}
-                className="w-full bg-primary-container text-on-primary-container font-bold py-3 px-6 rounded-full hover:bg-primary-fixed-dim transition-all shadow-sm cursor-pointer"
-              >
-                Listo
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
 
               {/* Monto */}
               <div>
@@ -155,6 +169,21 @@ export function ManualInvoiceModal({ isOpen, onClose }: ManualInvoiceModalProps)
                 />
               </div>
 
+              {/* Placa (opcional) */}
+              <div>
+                <label className="block text-sm font-bold text-on-surface-variant mb-2">
+                  Placa <span className="text-xs font-normal text-secondary">(opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={plate}
+                  onChange={(e) => setPlate(e.target.value.toUpperCase())}
+                  className="w-full h-12 px-4 rounded-xl border border-outline-variant bg-surface focus:border-primary focus:ring-2 focus:ring-primary transition-all text-on-surface uppercase"
+                  placeholder="Ej. ABC123"
+                  maxLength={10}
+                />
+              </div>
+
               {/* Cliente (opcional) */}
               <div>
                 <label className="block text-sm font-bold text-on-surface-variant mb-2">
@@ -168,6 +197,39 @@ export function ManualInvoiceModal({ isOpen, onClose }: ManualInvoiceModalProps)
                   placeholder="Nombre del cliente"
                   maxLength={100}
                 />
+              </div>
+
+              {/* IVA Opcional */}
+              <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-col gap-3">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={includeIva}
+                    onChange={(e) => setIncludeIva(e.target.checked)}
+                    className="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-on-surface">Incluir IVA en la factura</span>
+                    <span className="text-xs text-on-surface-variant">Discriminar el impuesto sobre el valor total</span>
+                  </div>
+                </label>
+                {includeIva && (
+                  <div className="pl-8 pt-1 flex items-center gap-3 animate-fade-in">
+                    <label className="text-sm font-bold text-on-surface-variant">Porcentaje:</label>
+                    <div className="relative w-24">
+                      <input
+                        type="number"
+                        value={ivaRate}
+                        onChange={(e) => setIvaRate(e.target.value)}
+                        className="w-full h-10 px-3 pr-8 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary transition-all text-on-surface text-center font-bold"
+                        min="0"
+                        max="100"
+                        step="1"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold">%</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Método de pago */}
@@ -241,7 +303,6 @@ export function ManualInvoiceModal({ isOpen, onClose }: ManualInvoiceModalProps)
                 </button>
               </div>
             </form>
-          )}
         </div>
       </div>
     </div>

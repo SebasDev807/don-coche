@@ -15,6 +15,8 @@ export async function createManualInvoice(data: {
   description?: string;
   paymentMethod: PaymentMethod;
   customerName?: string;
+  ivaRate?: number;
+  plate?: string;
 }) {
   try {
     const session = await verifyRole([
@@ -65,13 +67,20 @@ export async function createManualInvoice(data: {
       customerNameField = 'Ingreso Personalizado';
     }
 
+    const finalPlate = data.plate?.trim() ? data.plate.trim().toUpperCase() : 'N/A';
+    const storedName = `[${finalPlate}] ${customerNameField}`;
+
+    const ivaRate = data.ivaRate || 0;
+    const subtotal = ivaRate > 0 ? grandTotal / (1 + (ivaRate / 100)) : grandTotal;
+    const ivaAmount = grandTotal - subtotal;
+
     const sale = await prisma.productSale.create({
       data: {
         adminId: session.userId,
-        customerName: customerNameField,
+        customerName: storedName,
         paymentMethod: data.paymentMethod,
-        subtotal: grandTotal,
-        ivaAmount: 0,
+        subtotal: subtotal,
+        ivaAmount: ivaAmount,
         grandTotal,
         items: {
           create: {
@@ -79,10 +88,13 @@ export async function createManualInvoice(data: {
             quantity: 1,
             unitPrice: grandTotal,
             unitCost: 0,
-            ivaRate: 0,
+            ivaRate: ivaRate,
           },
         },
       },
+      include: {
+        admin: { select: { name: true } }
+      }
     });
 
     revalidatePath('/caja');
@@ -92,6 +104,7 @@ export async function createManualInvoice(data: {
       success: true,
       message: 'Factura manual registrada correctamente.',
       saleNumber: sale.saleNumber,
+      adminName: sale.admin?.name || 'Sistema'
     };
   } catch (error: any) {
     if (error?.message === 'NEXT_REDIRECT') throw error;

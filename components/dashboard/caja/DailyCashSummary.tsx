@@ -5,6 +5,7 @@ import { CashClosureModal } from './CashClosureModal';
 import { CashClosureHistoryModal } from './CashClosureHistoryModal';
 import { ManualInvoiceModal } from './ManualInvoiceModal';
 import { ExportKpiButton } from '../ExportKpiButton';
+import { ReceiptModal } from './ReceiptModal';
 
 interface DailyCashSummaryProps {
   orders: any[];
@@ -14,6 +15,7 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [printOrder, setPrintOrder] = useState<any>(null);
 
   const totalEfectivo = orders.filter(o => o.paymentMethod === 'EFECTIVO').reduce((acc, o) => acc + o.grandTotal, 0);
   const totalTarjeta = orders.filter(o => o.paymentMethod === 'TARJETA').reduce((acc, o) => acc + o.grandTotal, 0);
@@ -139,7 +141,15 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
       <ManualInvoiceModal
         isOpen={isManualModalOpen}
         onClose={() => setIsManualModalOpen(false)}
+        onSuccess={(orderData) => setPrintOrder(orderData)}
       />
+
+      {printOrder && (
+        <ReceiptModal
+          order={printOrder}
+          onClose={() => setPrintOrder(null)}
+        />
+      )}
     </>
   );
 }

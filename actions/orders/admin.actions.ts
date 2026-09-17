@@ -434,14 +434,26 @@ export async function getTodayBilledOrders() {
       date: order.billedAt || new Date(0)
     }));
 
-    const mappedSales = productSales.map(sale => ({
-      id: sale.id,
-      orderNumber: `V-${sale.saleNumber}`,
-      paymentMethod: sale.paymentMethod,
-      grandTotal: Number(sale.grandTotal),
-      vehicle: { plate: 'ALMACÉN' },
-      date: sale.soldAt
-    }));
+    const mappedSales = productSales.map(sale => {
+      let plate = 'ALMACÉN';
+      let desc = sale.customerName || null;
+      if (desc && desc.startsWith('[')) {
+        const idx = desc.indexOf(']');
+        if (idx !== -1) {
+          plate = desc.substring(1, idx);
+          desc = desc.substring(idx + 1).trim();
+        }
+      }
+      return {
+        id: sale.id,
+        orderNumber: `V-${sale.saleNumber}`,
+        paymentMethod: sale.paymentMethod,
+        grandTotal: Number(sale.grandTotal),
+        vehicle: { plate },
+        description: desc,
+        date: sale.soldAt
+      };
+    });
 
     const combined = [...mappedOrders, ...mappedSales].sort((a, b) => b.date.getTime() - a.date.getTime());
 

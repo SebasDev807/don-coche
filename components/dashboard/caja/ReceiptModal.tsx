@@ -184,6 +184,15 @@ export function ReceiptModal({ order, onClose }: ReceiptModalProps) {
             {/* Estado de Facturación Electrónica */}
             <div style={{ flex: '1 1 100%', marginBottom: '8px' }}>
               {(() => {
+                if (order.isManualInvoice) {
+                  return (
+                    <div style={{ padding: '12px', background: '#ecfdf5', border: '1px solid #10b981', borderRadius: '8px', color: '#065f46', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check_circle</span>
+                      Factura POS (Libre) guardada correctamente.
+                    </div>
+                  );
+                }
+
                 const status = order.aliaddoInvoiceStatus;
                 const isSuccess = order.cufe && (!status || status === 'PROCESADA' || status === 'Valida');
                 

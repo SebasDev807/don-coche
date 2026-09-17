@@ -167,29 +167,35 @@ export function StaffTable({ users }: StaffTableProps) {
                 </td>
                 <td className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Link
-                      href={`/personal/editar/${user.cc}`}
-                      title="Editar"
-                      className={`cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
-                    >
-                      <span className="material-symbols-outlined text-[20px]">edit</span>
-                    </Link>
-                    <button 
-                      title="Actualizar Contraseña" 
-                      className={`cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      onClick={() => handleChangePassword(user.id, user.name)}
-                      disabled={!user.isActive || isPending}
-                    >
-                      <span className="material-symbols-outlined text-[20px]">lock</span>
-                    </button>
-                    <button
-                      title="Eliminar (Soft Delete)"
-                      className={`cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      onClick={() => handleDelete(user.id, user.name)}
-                      disabled={!user.isActive || isPending}
-                    >
-                      <span className="material-symbols-outlined text-[20px]">delete</span>
-                    </button>
+                    {user.role !== 'GERENTE' ? (
+                      <>
+                        <Link
+                          href={`/personal/editar/${user.cc}`}
+                          title="Editar"
+                          className={`cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                        >
+                          <span className="material-symbols-outlined text-[20px]">edit</span>
+                        </Link>
+                        <button 
+                          title="Actualizar Contraseña" 
+                          className={`cursor-pointer text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          onClick={() => handleChangePassword(user.id, user.name)}
+                          disabled={!user.isActive || isPending}
+                        >
+                          <span className="material-symbols-outlined text-[20px]">lock</span>
+                        </button>
+                        <button
+                          title="Eliminar (Soft Delete)"
+                          className={`cursor-pointer text-secondary hover:text-error p-2 rounded-full hover:bg-surface-container transition-colors ${!user.isActive || isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          onClick={() => handleDelete(user.id, user.name)}
+                          disabled={!user.isActive || isPending}
+                        >
+                          <span className="material-symbols-outlined text-[20px]">delete</span>
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-xs text-secondary italic px-2">Protegido</span>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -252,6 +258,8 @@ function getRoleStyles(role: string): string {
       return 'bg-purple-100 text-purple-800';
     case 'ADMINISTRADOR':
       return 'bg-blue-100 text-blue-800';
+    case 'AUXILIAR_ADMINISTRATIVO':
+      return 'bg-teal-100 text-teal-800';
     case 'TECNICO':
       return 'bg-orange-100 text-orange-800';
     default:
@@ -266,6 +274,12 @@ function getRoleStyles(role: string): string {
  * @returns {string} El rol en formato de palabra capitalizada.
  */
 function formatRole(role: string): string {
-  if (!role) return '';
-  return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+  const labels: Record<string, string> = {
+    SUPERUSUARIO: 'Superusuario',
+    GERENTE: 'Gerente',
+    ADMINISTRADOR: 'Administrador',
+    AUXILIAR_ADMINISTRATIVO: 'Auxiliar Administrativo',
+    TECNICO: 'T\u00e9cnico',
+  };
+  return labels[role] ?? role;
 }

@@ -77,8 +77,8 @@ export async function getOrderDetail(orderId: string) {
           totalServices: 0,
           totalProducts: Number(sale.subtotal) || Number(sale.grandTotal) - Number(sale.ivaAmount),
           grandTotal: Number(sale.grandTotal),
-          vehicle: { 
-            plate: 'ALMACÉN', 
+          vehicle: {
+            plate: 'ALMACÉN',
             customer: { name: sale.customerName || 'Consumidor Final', phone: sale.customerCc }
           },
           technician: { name: sale.admin.name },
@@ -227,7 +227,7 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod, e
             discountIsPercent: true
           }))
         ];
-        
+
         if (details.length === 0) {
           throw new Error('No hay productos para facturar electrónicamente (los servicios no se incluyen en la factura).');
         }
@@ -319,7 +319,7 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod, e
         const serviceReason = updatedOrder.nextMaintenanceReason || 'revisión general';
         console.log(`[WhatsApp] Intentando enviar recordatorio a ${receiptData.phone}: "${serviceReason}" en "${timeText}" meses`);
         const reminderResult = await sendServiceReminderNotification(receiptData.phone, serviceReason, timeText);
-        
+
         if (!reminderResult.success) {
           console.error(`[WhatsApp ERROR Meta] Falló el recordatorio:`, reminderResult.error);
         } else {

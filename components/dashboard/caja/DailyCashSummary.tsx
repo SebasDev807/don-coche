@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CashClosureModal } from './CashClosureModal';
 import { CashClosureHistoryModal } from './CashClosureHistoryModal';
+import { ManualInvoiceModal } from './ManualInvoiceModal';
 import { ExportKpiButton } from '../ExportKpiButton';
 
 interface DailyCashSummaryProps {
@@ -12,6 +13,7 @@ interface DailyCashSummaryProps {
 export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
   const totalEfectivo = orders.filter(o => o.paymentMethod === 'EFECTIVO').reduce((acc, o) => acc + o.grandTotal, 0);
   const totalTarjeta = orders.filter(o => o.paymentMethod === 'TARJETA').reduce((acc, o) => acc + o.grandTotal, 0);
@@ -30,19 +32,12 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsHistoryModalOpen(true)}
-              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest p-2 rounded-full transition-colors flex items-center justify-center cursor-pointer"
+              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest w-10 h-10 rounded-full transition-colors flex items-center justify-center cursor-pointer"
               title="Ver Historial de Cierres"
             >
               <span className="material-symbols-outlined">history</span>
             </button>
-            <ExportKpiButton endpoint="/api/v1/export/caja/resumen" showDateFilters align="right" title="Resumen de Ventas" />
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="btn-primary text-sm px-6 py-3 rounded-full flex items-center gap-2 shadow-sm hover:shadow-md !bg-yellow-500 hover:!bg-yellow-600 !text-yellow-950 border-none cursor-pointer fade-in font-bold transition-all"
-            >
-              <span className="material-symbols-outlined text-sm">lock_person</span>
-              Cerrar Caja
-            </button>
+            <ExportKpiButton endpoint="/api/v1/export/caja/resumen" showDateFilters align="right" title="Resumen" />
           </div>
         </div>
 
@@ -57,7 +52,7 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
               <thead className="bg-surface-container border-b border-outline-variant sticky top-0 text-on-surface-variant">
                 <tr>
                   <th className="py-3 px-4 font-bold">Orden</th>
-                  <th className="py-3 px-4 font-bold">Placa / Categoria</th>
+                  <th className="py-3 px-4 font-bold">Concepto / Placa</th>
                   <th className="py-3 px-4 font-bold">Método</th>
                   <th className="py-3 px-4 font-bold text-right">Total</th>
                 </tr>
@@ -66,7 +61,16 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
                 {orders.map(order => (
                   <tr key={order.id} className="hover:bg-surface-container transition-colors">
                     <td className="py-3 px-4 text-on-surface font-medium">#{order.orderNumber}</td>
-                    <td className="py-3 px-4 text-on-surface-variant font-bold">{order.vehicle.plate}</td>
+                    <td className="py-3 px-4 text-on-surface-variant font-bold">
+                      {order.vehicle.plate === 'ALMACÉN' && order.description ? (
+                        <div className="flex flex-col">
+                          <span>{order.vehicle.plate}</span>
+                          <span className="text-[11px] font-normal text-secondary truncate max-w-[200px]">{order.description}</span>
+                        </div>
+                      ) : (
+                        order.vehicle.plate
+                      )}
+                    </td>
                     <td className="py-3 px-4">
                       <span className="bg-surface-container-high text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded uppercase">
                         {order.paymentMethod}
@@ -97,9 +101,27 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
               <p className="font-label-bold text-label-lg">${totalTransferencia.toLocaleString()}</p>
             </div>
           </div>
-          <div className="flex justify-between items-end mt-4">
+          <div className="flex justify-between items-end mt-4 mb-6">
             <p className="text-on-surface-variant uppercase text-xs font-label-bold tracking-wider">Total del Día</p>
             <p className="text-3xl font-headline-lg text-primary">${totalGeneral.toLocaleString()}</p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => setIsManualModalOpen(true)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer font-bold transform hover:-translate-y-0.5"
+            >
+              <span className="material-symbols-outlined text-[20px]">add_circle</span>
+              Factura Personalizada
+            </button>
+            
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-yellow-950 text-sm py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer font-black uppercase tracking-wide transform hover:-translate-y-0.5"
+            >
+              <span className="material-symbols-outlined text-[20px]">lock_person</span>
+              Cerrar Caja
+            </button>
           </div>
         </div>
       </div>
@@ -112,6 +134,11 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
       <CashClosureHistoryModal
         isOpen={isHistoryModalOpen}
         onClose={() => setIsHistoryModalOpen(false)}
+      />
+
+      <ManualInvoiceModal
+        isOpen={isManualModalOpen}
+        onClose={() => setIsManualModalOpen(false)}
       />
     </>
   );

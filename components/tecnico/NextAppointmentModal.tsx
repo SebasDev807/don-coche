@@ -75,13 +75,7 @@ export function NextAppointmentModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const finalReason = isCustomReason ? customReason : reason;
-
-    if (!finalReason.trim()) {
-      setError('El motivo es obligatorio');
-      return;
-    }
     setError('');
-
     // Si no selecciona fecha, se enviará string vacío
     onSubmitOrder(selectedDate, finalReason);
   };
@@ -125,7 +119,7 @@ export function NextAppointmentModal({
             {/* Motivo */}
             <div>
               <label className="block text-lg font-label-bold text-on-surface-variant mb-4">
-                Motivo del próximo servicio <span className="text-error">*</span>
+                Motivo del próximo servicio
               </label>
               
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
@@ -238,7 +232,7 @@ export function NextAppointmentModal({
           <button
             type="submit"
             form="next-maintenance-form"
-            disabled={isSubmitting || !(isCustomReason ? customReason.trim() : reason.trim())}
+            disabled={isSubmitting}
             className="h-[56px] px-10 rounded-full bg-primary-container text-on-primary-container font-cta text-base hover:bg-primary-fixed-dim transition-all shadow-sm flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (

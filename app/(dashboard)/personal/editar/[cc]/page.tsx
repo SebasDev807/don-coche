@@ -28,6 +28,11 @@ export default async function EditStaffPage(props: EditStaffPageProps) {
     notFound();
   }
 
+  // ─── Protect Gerente accounts from being edited by anyone ───
+  if (user.role === 'GERENTE') {
+    notFound();
+  }
+
   return (
     <div className="fade-in max-w-7xl mx-auto flex flex-col gap-8">
       {/* ─── Page Header ─── */}

@@ -397,15 +397,32 @@ export async function deleteMockProducts(password: string): Promise<{ success: b
     if (!isPasswordValid) return { success: false, message: 'Contraseña incorrecta.' };
 
     await prisma.$transaction(async (tx) => {
-      // Borrar productos cuyo nombre empiece con "MOCK"
+      // Encontrar productos cuyo nombre empiece con "MOCK"
       const mockProducts = await tx.product.findMany({
-        where: { name: { startsWith: 'MOCK' } }
+        where: { name: { startsWith: 'MOCK' } },
+        select: { id: true },
       });
       const productIds = mockProducts.map(p => p.id);
 
       if (productIds.length > 0) {
+        // 1. Eliminar movimientos de inventario asociados
+        await tx.inventoryMovement.deleteMany({
+          where: { productId: { in: productIds } },
+        });
+
+        // 2. Eliminar items de ventas de almacén asociados
+        await tx.productSaleItem.deleteMany({
+          where: { productId: { in: productIds } },
+        });
+
+        // 3. Eliminar productos usados en órdenes de servicio
+        await tx.orderProduct.deleteMany({
+          where: { productId: { in: productIds } },
+        });
+
+        // 4. Ahora sí, eliminar los productos mock
         await tx.product.deleteMany({
-          where: { id: { in: productIds } }
+          where: { id: { in: productIds } },
         });
       }
     });

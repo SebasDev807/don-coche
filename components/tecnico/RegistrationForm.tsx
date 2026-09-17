@@ -156,13 +156,13 @@ export const RegistrationForm = ({
 
         <hr className="my-2 border-surface-variant" />
 
-        {/* Sección de Próximo Servicio Obligatorio */}
-        <div className={`rounded-xl p-5 border-2 transition-colors ${nextMaintenanceReason ? 'bg-primary-container border-primary text-on-primary-container' : 'bg-error-container border-error text-on-error-container'}`}>
+        {/* Sección de Próximo Servicio (Opcional) */}
+        <div className={`rounded-xl p-5 border-2 transition-colors ${nextMaintenanceReason ? 'bg-primary-container border-primary text-on-primary-container' : 'bg-surface-container border-outline-variant text-on-surface-variant'}`}>
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold flex items-center gap-2">
                 <span className="material-symbols-outlined text-[20px]">calendar_month</span>
-                Próximo Servicio <span className="text-xs ml-1 uppercase font-black bg-error text-on-error px-2 py-0.5 rounded-full">Obligatorio</span>
+                Próximo Servicio <span className="text-xs ml-1 uppercase font-black bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-full">Opcional</span>
               </h3>
               {nextMaintenanceReason ? (
                 <p className="text-sm mt-1">
@@ -171,13 +171,13 @@ export const RegistrationForm = ({
                   <strong>Fecha:</strong> {nextMaintenanceDate || 'Sin fecha sugerida'}
                 </p>
               ) : (
-                <p className="text-sm mt-1 opacity-80">Debe asignar el próximo servicio recomendado al cliente.</p>
+                <p className="text-sm mt-1 opacity-70">Puedes sugerir la próxima visita recomendada al cliente.</p>
               )}
             </div>
             <button
               type="button"
               onClick={onOpenRecommendationModal}
-              className={`px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition-colors ${nextMaintenanceReason ? 'bg-surface text-primary hover:bg-surface-variant' : 'bg-error text-on-error hover:bg-error/80'}`}
+              className={`px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition-colors ${nextMaintenanceReason ? 'bg-surface text-primary hover:bg-surface-variant' : 'bg-surface text-on-surface-variant hover:bg-surface-variant'}`}
             >
               {nextMaintenanceReason ? 'Editar' : 'Asignar'}
             </button>

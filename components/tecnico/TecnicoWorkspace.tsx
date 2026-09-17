@@ -132,10 +132,6 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
       return;
     }
 
-    if (!nextMaintenanceReason) {
-      MySwal.fire('Error', 'Debe asignar el motivo del próximo servicio (campo obligatorio en el formulario)', 'error');
-      return;
-    }
 
     setIsSubmitting(true);
     MySwal.showLoading();
@@ -161,7 +157,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
       MySwal.fire({
         toast: true,
         position: 'top-end',
-        title: '¡Orden y recomendación guardadas!',
+        title: '¡Orden guardada exitosamente!',
         icon: 'success',
         showConfirmButton: false,
         timer: 3000

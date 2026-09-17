@@ -42,10 +42,12 @@ export async function getStaffUsers(query?: string, role?: string): Promise<User
           return 1;
         case 'ADMINISTRADOR':
           return 2;
-        case 'TECNICO':
+        case 'AUXILIAR_ADMINISTRATIVO':
           return 3;
-        default:
+        case 'TECNICO':
           return 4;
+        default:
+          return 5;
       }
     };
 

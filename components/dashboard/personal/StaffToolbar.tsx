@@ -34,6 +34,7 @@ export function StaffToolbar() {
             <option value="">Filtrar por Rol</option>
             <option value="GERENTE">Gerente</option>
             <option value="ADMINISTRADOR">Administrador</option>
+            <option value="AUXILIAR_ADMINISTRATIVO">Auxiliar Administrativo</option>
             <option value="TECNICO">Técnico</option>
           </select>
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">filter_list</span>

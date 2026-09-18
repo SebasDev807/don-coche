@@ -91,16 +91,19 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
       updateData.stock = stock;
     }
 
+    //Fix to allow null values and correct decimal conversion
     if (unitCost !== undefined) {
       updateData.unitCost = new Prisma.Decimal(unitCost);
     }
 
     if (profitPercentage !== undefined) {
-      updateData.profitPercentage = new Prisma.Decimal(profitPercentage);
+      updateData.profitPercentage = profitPercentage === null
+        ? null
+        : new Prisma.Decimal(profitPercentage);
     }
 
     if (iva !== undefined) {
-      updateData.iva = new Prisma.Decimal(iva);
+      updateData.iva = iva === null ? null : new Prisma.Decimal(iva);
     }
 
     // Compute salePrice if unitCost, profitPercentage, or iva changed

@@ -38,9 +38,9 @@ export function EditProductForm({ product }: EditProductFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
 
-  // Extraer el IVA del costo unitario para mostrar el costo base (sin IVA) en el formulario
+  // El unitCost que viene de BD ya incluye el IVA
   const productIva = product.iva !== null && product.iva !== undefined ? product.iva : 0;
-  const originalCost = product.unitCost / (1 + productIva / 100);
+  const originalCost = product.unitCost;
 
   const {
     register,
@@ -100,16 +100,14 @@ export function EditProductForm({ product }: EditProductFormProps) {
     const currentIvaRate = hasIvaValue ? (typeof ivaValue === 'number' ? ivaValue : parseFloat(String(ivaValue)) || 0) : 0;
 
     if (prevIvaRateRef.current !== currentIvaRate) {
-      if (!isInsumos) {
-        const currentCostRaw = getValues('unitCost');
-        if (currentCostRaw) {
-          const rawCost = typeof currentCostRaw === 'string' ? parseLocalizedNumber(currentCostRaw) : (currentCostRaw as unknown as number);
-          if (rawCost > 0) {
-            const oldIvaRate = prevIvaRateRef.current;
-            const baseCost = rawCost / (1 + oldIvaRate / 100);
-            const newCost = baseCost * (1 + currentIvaRate / 100);
-            setValue('unitCost', new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(newCost));
-          }
+      const currentCostRaw = getValues('unitCost');
+      if (currentCostRaw) {
+        const rawCost = typeof currentCostRaw === 'string' ? parseLocalizedNumber(currentCostRaw) : (currentCostRaw as unknown as number);
+        if (rawCost > 0) {
+          const oldIvaRate = prevIvaRateRef.current;
+          const baseCost = rawCost / (1 + oldIvaRate / 100);
+          const newCost = baseCost * (1 + currentIvaRate / 100);
+          setValue('unitCost', new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(newCost));
         }
       }
       prevIvaRateRef.current = currentIvaRate;
@@ -125,7 +123,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
   const onSubmit = async (data: CreateProductFormValues) => {
     setIsSubmitting(true);
 
-    const ivaToApply = (!isInsumos && data.hasIva) ? (data.iva != null ? Number(data.iva) : 19) : 0;
+    const ivaToApply = data.hasIva ? (data.iva != null ? Number(data.iva) : 19) : 0;
     const finalUnitCost = Number(data.unitCost); // El unitCost ya tiene el IVA agregado por el onBlur
 
     const result = await updateProduct({
@@ -244,7 +242,7 @@ export function EditProductForm({ product }: EditProductFormProps) {
             errors={errors}
             placeholder="0"
             transformOnBlur={(val) => {
-              if (isInsumos || !hasIvaValue) return val;
+              if (!hasIvaValue) return val;
               const iva = typeof ivaValue === 'number' ? ivaValue : parseFloat(String(ivaValue)) || 19;
               return val * (1 + iva / 100);
             }}
@@ -267,32 +265,30 @@ export function EditProductForm({ product }: EditProductFormProps) {
           )}
 
           {/* IVA */}
-          {!isInsumos && (
-            <div className="col-span-1">
-              <div className="flex items-center justify-between mb-2">
-                <label className="block font-label-bold text-label-bold text-on-surface-variant">IVA [%]</label>
-                <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
-                  <input
-                    type="checkbox"
-                    {...register('hasIva')}
-                    className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
-                  />
-                  Incluir IVA
-                </label>
-              </div>
-              <input
-                {...register('iva')}
-                type="number"
-                min="0"
-                max="100"
-                step="1"
-                disabled={!hasIvaValue}
-                className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim disabled:bg-surface-container-highest disabled:text-secondary-fixed-dim ${errors.iva ? 'border-error focus:border-error focus:ring-error' : ''}`}
-                placeholder="Ej. 19"
-              />
-              <ErrorMessage message={errors.iva?.message} />
+          <div className="col-span-1">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block font-label-bold text-label-bold text-on-surface-variant">IVA [%]</label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
+                <input
+                  type="checkbox"
+                  {...register('hasIva')}
+                  className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
+                />
+                Incluir IVA
+              </label>
             </div>
-          )}
+            <input
+              {...register('iva')}
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              disabled={!hasIvaValue}
+              className={`h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 text-on-surface placeholder:text-secondary-fixed-dim disabled:bg-surface-container-highest disabled:text-secondary-fixed-dim ${errors.iva ? 'border-error focus:border-error focus:ring-error' : ''}`}
+              placeholder="Ej. 19"
+            />
+            <ErrorMessage message={errors.iva?.message} />
+          </div>
 
           {/* Precio de Venta al Público */}
           {!isInsumos && (

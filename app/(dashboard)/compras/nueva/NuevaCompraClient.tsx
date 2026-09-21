@@ -96,9 +96,9 @@ export function NuevaCompraClient({
     if (!product) return;
     setEditingProductId(productId);
 
-    // El costo en BD ya incluye IVA, lo dividimos para mostrar el costo original
+    // El costo en BD ya incluye IVA
     const productIva = Number(product.iva) || 0;
-    const originalCost = Number(product.unitCost) / (1 + productIva / 100);
+    const originalCost = Number(product.unitCost);
 
     setQuickProductData({
       name: product.name,
@@ -121,26 +121,22 @@ export function NuevaCompraClient({
     const currentIvaRate = quickProductData.hasIva ? (typeof quickProductData.iva === 'number' ? quickProductData.iva : parseFloat(String(quickProductData.iva)) || 0) : 0;
 
     if (prevIvaRateRef.current !== currentIvaRate) {
-      const selectedCat = categories.find(c => c.id === quickProductData.categoryId);
-      const isInsumos = selectedCat?.name.toLowerCase().includes('insumo') || false;
-      if (!isInsumos) {
-        const raw = quickProductData.unitCost;
-        if (raw.trim()) {
-          const num = parseLocalizedNumber(raw);
-          if (num > 0) {
-            const oldIvaRate = prevIvaRateRef.current;
-            const baseCost = num / (1 + oldIvaRate / 100);
-            const newCost = baseCost * (1 + currentIvaRate / 100);
-            setQuickProductData(prev => ({
-              ...prev,
-              unitCost: new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(newCost)
-            }));
-          }
+      const raw = quickProductData.unitCost;
+      if (raw.trim()) {
+        const num = parseLocalizedNumber(raw);
+        if (num > 0) {
+          const oldIvaRate = prevIvaRateRef.current;
+          const baseCost = num / (1 + oldIvaRate / 100);
+          const newCost = baseCost * (1 + currentIvaRate / 100);
+          setQuickProductData(prev => ({
+            ...prev,
+            unitCost: new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(newCost)
+          }));
         }
       }
       prevIvaRateRef.current = currentIvaRate;
     }
-  }, [quickProductData.hasIva, quickProductData.iva, quickProductData.unitCost, quickProductData.categoryId, categories]);
+  }, [quickProductData.hasIva, quickProductData.iva, quickProductData.unitCost]);
 
   useEffect(() => {
     if (!quickProductData.hasIva && quickProductData.iva !== 0) {
@@ -583,9 +579,7 @@ export function NuevaCompraClient({
                     let num = parseLocalizedNumber(raw);
                     if (num > 0) {
                       // Apply IVA logic on blur
-                      const selectedCat = categories.find(c => c.id === quickProductData.categoryId);
-                      const isInsumos = selectedCat?.name.toLowerCase().includes('insumo') || false;
-                      if (!isInsumos && quickProductData.hasIva && quickProductData.iva > 0) {
+                      if (quickProductData.hasIva && quickProductData.iva > 0) {
                         const previousFormatted = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num);
                         // Prevent applying IVA again if it was already applied
                         if (quickProductData.unitCost !== previousFormatted && quickProductData.unitCost !== new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num * (1 + quickProductData.iva / 100))) {

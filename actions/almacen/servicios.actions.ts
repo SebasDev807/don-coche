@@ -227,11 +227,14 @@ export async function createAndBillServiceOrder(params: {
         });
       }
 
-      // Verificar si hay orden EN_PISTA para esta placa
-      const existingOpenOrder = await tx.order.findFirst({
-        where: { vehicleId: vehicle.id, status: 'EN_PISTA' },
-        orderBy: { createdAt: 'desc' },
-      });
+      // Verificar si hay orden EN_PISTA para esta placa (No acumular si es GEN-000, Opción B)
+      let existingOpenOrder = null;
+      if (finalPlate !== 'GEN-000') {
+        existingOpenOrder = await tx.order.findFirst({
+          where: { vehicleId: vehicle.id, status: 'EN_PISTA' },
+          orderBy: { createdAt: 'desc' },
+        });
+      }
 
       let orderRecord;
 
@@ -547,10 +550,14 @@ export async function createServiceOrderForCaja(params: {
       }
 
       // Verificar si existe orden EN_PISTA para esta placa (de CUALQUIER tecnico/admin)
-      const existingOpenOrder = await tx.order.findFirst({
-        where: { vehicleId: vehicle.id, status: 'EN_PISTA' },
-        orderBy: { createdAt: 'desc' },
-      });
+      // No acumular si es GEN-000 (Opción B)
+      let existingOpenOrder = null;
+      if (finalPlate !== 'GEN-000') {
+        existingOpenOrder = await tx.order.findFirst({
+          where: { vehicleId: vehicle.id, status: 'EN_PISTA' },
+          orderBy: { createdAt: 'desc' },
+        });
+      }
 
       // RAMA A: Acumular en orden existente
       if (existingOpenOrder) {

@@ -2,10 +2,9 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { PaymentMethod, ItemCategory } from '@prisma/client';
-import { AlmacenProduct, createProductSale } from '@/actions/almacen/almacen.actions';
+import { AlmacenProduct } from '@/actions/almacen/almacen.actions';
 import { ProductGrid } from './ProductGrid';
 import { SaleCart } from './SaleCart';
-import { SaleReceiptModal } from './SaleReceiptModal';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { getServicesByCategory, createAndBillServiceOrder, createServiceOrderForCaja } from '@/actions/almacen/servicios.actions';
@@ -59,7 +58,6 @@ export function AlmacenClient({ initialProducts, hideServicesTab = false, prefil
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('EFECTIVO');
   const [customerName, setCustomerName] = useState(prefillData?.customerName || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [completedSale, setCompletedSale] = useState<any>(null);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
   const [sentToCajaOrderNumber, setSentToCajaOrderNumber] = useState<number | null>(null);
 
@@ -184,29 +182,16 @@ export function AlmacenClient({ initialProducts, hideServicesTab = false, prefil
     setIsSubmitting(true);
     MySwal.showLoading();
 
-    let res: any;
-
-    if (hasServices) {
-      res = await createAndBillServiceOrder({
-        plate: vehicleData.plate,
-        customerName: customerName.trim() || undefined,
-        customerCc: vehicleData.customerCc?.trim() || undefined,
-        customerPhone: vehicleData.customerPhone?.trim() || undefined,
-        serviceIds: Array.from(selectedServiceIds),
-        productItems: items,
-        paymentMethod,
-        emitirFactura,
-      });
-    } else {
-      res = await createProductSale({
-        items,
-        paymentMethod,
-        emitirFactura,
-        customerName: customerName.trim() || undefined,
-        customerCc: vehicleData?.customerCc?.trim() || undefined,
-        customerPhone: vehicleData?.customerPhone?.trim() || undefined,
-      });
-    }
+    const res = await createAndBillServiceOrder({
+      plate: vehicleData?.plate,
+      customerName: customerName.trim() || undefined,
+      customerCc: vehicleData?.customerCc?.trim() || undefined,
+      customerPhone: vehicleData?.customerPhone?.trim() || undefined,
+      serviceIds: Array.from(selectedServiceIds),
+      productItems: items,
+      paymentMethod,
+      emitirFactura,
+    });
 
     setIsSubmitting(false);
     MySwal.close();
@@ -215,11 +200,7 @@ export function AlmacenClient({ initialProducts, hideServicesTab = false, prefil
       setCart(new Map());
       setSelectedServiceIds(new Set());
       setCustomerName('');
-      if (hasServices) {
-        setCompletedOrder(res.data);
-      } else {
-        setCompletedSale(res.data);
-      }
+      setCompletedOrder(res.data);
     } else {
       MySwal.fire('Error', res.message, 'error');
     }
@@ -452,14 +433,6 @@ export function AlmacenClient({ initialProducts, hideServicesTab = false, prefil
         <ServiceOrderReceiptModal
           order={completedOrder}
           onClose={() => setCompletedOrder(null)}
-        />
-      )}
-
-      {/* Modal de recibo post-venta de solo productos */}
-      {completedSale && (
-        <SaleReceiptModal
-          sale={completedSale}
-          onClose={() => setCompletedSale(null)}
         />
       )}
     </div>

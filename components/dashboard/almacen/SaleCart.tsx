@@ -192,15 +192,15 @@ export function SaleCart({
             <div className="space-y-3 p-3 bg-surface border border-outline-variant rounded-xl shadow-sm">
               <CustomerSearchBar onSelectCustomer={handleSelectCustomer} onClear={handleClearCustomer} />
               
-              {hasServices && customerVehicles.length > 0 && (
+              {customerVehicles.length > 0 && (
                 <div className="pt-2 border-t border-outline-variant">
                   <VehicleSelector vehicles={customerVehicles} onSelectVehicle={handleSelectVehicle} onClear={handleClearVehicle} />
                 </div>
               )}
             </div>
 
-            {/* Vehículo opcional para servicios (si no hay guardados) */}
-            {hasServices && customerVehicles.length === 0 && (
+            {/* Vehículo opcional para servicios/productos (si no hay guardados) */}
+            {customerVehicles.length === 0 && (
               <div className="space-y-3 p-3 bg-surface border border-outline-variant rounded-lg">
                 <p className="text-xs text-on-surface-variant font-bold flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">directions_car</span>
@@ -226,7 +226,7 @@ export function SaleCart({
             <div className="space-y-3">
               <div>
                 <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
-                  Nombre Cliente {hasServices ? '*' : '(Opcional)'}
+                  Nombre Cliente (Opcional)
                 </label>
                 <input
                   type="text"
@@ -236,34 +236,30 @@ export function SaleCart({
                   className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
               </div>
-              {hasServices && (
-                <>
-                  <div>
-                    <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
-                      CC Cliente
-                    </label>
-                    <input
-                      type="text"
-                      value={customerCc}
-                      onChange={(e) => setCustomerCc(e.target.value)}
-                      placeholder="1234567890"
-                      className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
-                      Teléfono Cliente
-                    </label>
-                    <input
-                      type="text"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="3001234567"
-                      className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                    />
-                  </div>
-                </>
-              )}
+              <div>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
+                  CC Cliente
+                </label>
+                <input
+                  type="text"
+                  value={customerCc}
+                  onChange={(e) => setCustomerCc(e.target.value)}
+                  placeholder="1234567890"
+                  className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">
+                  Teléfono Cliente
+                </label>
+                <input
+                  type="text"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="3001234567"
+                  className="w-full h-9 px-3 rounded-lg border border-outline-variant bg-surface text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                />
+              </div>
             </div>
 
             {/* Método de pago */}
@@ -309,8 +305,8 @@ export function SaleCart({
 
             {/* Botones de acción */}
             <div className="space-y-2">
-              {/* Botón Enviar a Caja — solo cuando hay servicios */}
-              {hasServices && onSendToCaja && (
+              {/* Botón Enviar a Caja */}
+              {onSendToCaja && (
                 <button
                   onClick={() => onSendToCaja({ plate, customerCc, customerPhone })}
                   disabled={isSubmitting || isEmpty}

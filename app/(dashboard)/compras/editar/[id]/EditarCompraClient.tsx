@@ -611,64 +611,68 @@ export function EditarCompraClient({
                 const isInsumos = selectedCat?.name.toLowerCase().includes('insumo') || false;
 
                 return (
-                  <div className="grid grid-cols-2 gap-4">
-                    {!isInsumos && (
-                      <div>
-                        <label className="block text-body-sm text-secondary mb-1">Margen Ganancia [%]</label>
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      {!isInsumos && (
+                        <div>
+                          <label className="block text-body-sm text-secondary mb-1">Margen Ganancia [%]</label>
+                          <input
+                            required
+                            type="number" min="0" step="any" placeholder="15"
+                            className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none"
+                            value={quickProductData.profitPercentage}
+                            onChange={(e) => setQuickProductData({ ...quickProductData, profitPercentage: e.target.value })}
+                          />
+                        </div>
+                      )}
+                      {/* IVA [%] */}
+                      <div className={isInsumos ? "col-span-2" : ""}>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-body-sm text-secondary">IVA [%]</label>
+                          <label className="flex items-center gap-1 cursor-pointer text-[10px] text-secondary">
+                            <input
+                              type="checkbox"
+                              checked={quickProductData.hasIva}
+                              onChange={(e) => setQuickProductData({ ...quickProductData, hasIva: e.target.checked })}
+                              className="w-3 h-3"
+                            />
+                            Incluir
+                          </label>
+                        </div>
                         <input
                           required
-                          type="number" min="0" step="any" placeholder="15"
-                          className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none"
-                          value={quickProductData.profitPercentage}
-                          onChange={(e) => setQuickProductData({ ...quickProductData, profitPercentage: e.target.value })}
+                          type="number" min="0" step="any" disabled={!quickProductData.hasIva}
+                          className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none disabled:opacity-50"
+                          value={quickProductData.iva}
+                          onChange={(e) => setQuickProductData({ ...quickProductData, iva: Number(e.target.value) })}
+                        />
+                      </div>
+                    </div>
+                    {!isInsumos && (
+                      <div className="mt-4">
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-body-sm text-secondary">Precio de Venta (Público) *</label>
+                          <label className="flex items-center gap-1 cursor-pointer text-[10px] text-secondary">
+                            <input
+                              type="checkbox"
+                              checked={quickProductData.autoRound}
+                              onChange={(e) => setQuickProductData({ ...quickProductData, autoRound: e.target.checked })}
+                              className="w-3 h-3"
+                            />
+                            Redondear a $50
+                          </label>
+                        </div>
+                        <input
+                          readOnly
+                          type="text"
+                          className="w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant text-on-surface-variant cursor-not-allowed"
+                          value={formattedSellingPrice}
                         />
                       </div>
                     )}
-                    {/* IVA [%] */}
-                    <div className={isInsumos ? "col-span-2" : ""}>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="block text-body-sm text-secondary">IVA [%]</label>
-                        <label className="flex items-center gap-1 cursor-pointer text-[10px] text-secondary">
-                          <input
-                            type="checkbox"
-                            checked={quickProductData.hasIva}
-                            onChange={(e) => setQuickProductData({ ...quickProductData, hasIva: e.target.checked })}
-                            className="w-3 h-3"
-                          />
-                          Incluir
-                        </label>
-                      </div>
-                      <input
-                        required
-                        type="number" min="0" step="any" disabled={!quickProductData.hasIva}
-                        className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none disabled:opacity-50"
-                        value={quickProductData.iva}
-                        onChange={(e) => setQuickProductData({ ...quickProductData, iva: Number(e.target.value) })}
-                      />
-                    </div>
-                  </div>
+                  </>
                 );
               })()}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-body-sm text-secondary">Precio de Venta (Público) *</label>
-                  <label className="flex items-center gap-1 cursor-pointer text-[10px] text-secondary">
-                    <input
-                      type="checkbox"
-                      checked={quickProductData.autoRound}
-                      onChange={(e) => setQuickProductData({ ...quickProductData, autoRound: e.target.checked })}
-                      className="w-3 h-3"
-                    />
-                    Redondear a $50
-                  </label>
-                </div>
-                <input
-                  readOnly
-                  type="text"
-                  className="w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant text-on-surface-variant cursor-not-allowed"
-                  value={formattedSellingPrice}
-                />
-              </div>
 
               <div className="flex justify-end gap-3 mt-4">
                 <button

@@ -78,10 +78,11 @@ export async function createProductSale(params: {
   emitirFactura: boolean;
   customerName?: string;
   customerCc?: string;
+  customerPhone?: string;
 }) {
   try {
     const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO', 'TECNICO']);
-    const { items, paymentMethod, emitirFactura, customerName, customerCc } = params;
+    const { items, paymentMethod, emitirFactura, customerName, customerCc, customerPhone } = params;
 
     if (!items || items.length === 0) {
       return { success: false, message: 'El carrito está vacío' };
@@ -146,6 +147,7 @@ export async function createProductSale(params: {
           adminId: session.userId,
           customerName: customerName || null,
           customerCc: customerCc || null,
+          customerPhone: customerPhone || null,
           paymentMethod,
           subtotal,
           ivaAmount,

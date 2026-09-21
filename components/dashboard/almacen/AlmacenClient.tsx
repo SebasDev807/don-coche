@@ -193,7 +193,7 @@ export function AlmacenClient({ initialProducts, hideServicesTab = false, prefil
         customerCc: vehicleData.customerCc?.trim() || undefined,
         customerPhone: vehicleData.customerPhone?.trim() || undefined,
         serviceIds: Array.from(selectedServiceIds),
-        productItems: items, // Necesitaremos actualizar createAndBillServiceOrder para que lo reciba
+        productItems: items,
         paymentMethod,
         emitirFactura,
       });
@@ -203,6 +203,8 @@ export function AlmacenClient({ initialProducts, hideServicesTab = false, prefil
         paymentMethod,
         emitirFactura,
         customerName: customerName.trim() || undefined,
+        customerCc: vehicleData?.customerCc?.trim() || undefined,
+        customerPhone: vehicleData?.customerPhone?.trim() || undefined,
       });
     }
 

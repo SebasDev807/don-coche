@@ -19,7 +19,7 @@ interface ServiceOrderReceiptModalProps {
       brand: string | null;
       model: string | null;
       color: string | null;
-      customer: { name: string | null; cc: string | null } | null;
+      customer: { name: string | null; cc: string | null; phone?: string | null } | null;
     };
     technician?: { name: string } | null;
     admin: { name: string } | null;
@@ -199,6 +199,7 @@ export function ServiceOrderReceiptModal({ order, onClose }: ServiceOrderReceipt
                   ) : null}
                   {order.vehicle.customer?.name && <Row label="Cliente" value={order.vehicle.customer.name} />}
                   {order.vehicle.customer?.cc && <Row label="CC" value={order.vehicle.customer.cc} />}
+                  {order.vehicle.customer?.phone && <Row label="Teléfono" value={order.vehicle.customer.phone} />}
                   <Row label="Técnico" value={order.technician?.name || order.admin?.name || 'N/A'} />
                   {order.admin && <Row label="Cajero" value={order.admin.name} />}
                 </div>

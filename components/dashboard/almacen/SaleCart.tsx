@@ -321,7 +321,7 @@ export function SaleCart({
                 </button>
               )}
               <button
-                onClick={() => onSell(false, hasServices ? { plate, customerCc, customerPhone } : undefined)}
+                onClick={() => onSell(false, { plate, customerCc, customerPhone })}
                 disabled={isSubmitting || isEmpty}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container text-on-surface font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
               >
@@ -329,7 +329,7 @@ export function SaleCart({
                 Generar Recibo POS
               </button>
               <button
-                onClick={() => onSell(true, hasServices ? { plate, customerCc, customerPhone } : undefined)}
+                onClick={() => onSell(true, { plate, customerCc, customerPhone })}
                 disabled={isSubmitting || isEmpty}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
               >

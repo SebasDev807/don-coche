@@ -135,6 +135,7 @@ export function PosReceipt({ order }: PosReceiptProps) {
         {vehicleDesc && <Row label="Vehículo" value={vehicleDesc} />}
         <Row label="Cliente" value={customerName} />
         {cc && <Row label="CC" value={cc} />}
+        {order.vehicle.customer?.phone && <Row label="Teléfono" value={order.vehicle.customer.phone} />}
         <Row label="Técnico" value={order.technician?.name || 'N/A'} />
         {order.admin && <Row label="Cajero" value={order.admin.name} />}
       </div>

@@ -10,6 +10,7 @@ interface SaleReceiptModalProps {
     paymentMethod: string;
     customerName: string | null;
     customerCc?: string | null;
+    customerPhone?: string | null;
     subtotal: number;
     ivaAmount: number;
     grandTotal: number;
@@ -197,6 +198,7 @@ export function SaleReceiptModal({ sale, onClose }: SaleReceiptModalProps) {
                 <div style={{ margin: '6px 0', fontSize: '10px' }}>
                   <Row label="Cliente" value={sale.customerName || 'Consumidor Final'} />
                   {sale.customerCc && <Row label="CC/NIT" value={sale.customerCc} />}
+                  {sale.customerPhone && <Row label="Teléfono" value={sale.customerPhone} />}
                   {sale.admin && <Row label="Atendido por" value={sale.admin.name} />}
                 </div>
 

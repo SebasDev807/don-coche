@@ -466,3 +466,36 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
     };
   }
 }
+
+export async function updateQuickProductAction(id: string, data: { name: string; unitCost: number; salePrice: number; categoryId?: string; profitPercentage?: number; iva?: number; barCode?: string; stock?: number }) {
+  try {
+    const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const product = await prisma.product.update({
+      where: { id },
+      data: {
+        name: data.name,
+        slug: slug,
+        barCode: data.barCode || null,
+        unitCost: data.unitCost,
+        salePrice: data.salePrice,
+        profitPercentage: data.profitPercentage,
+        iva: data.iva,
+        categoryId: data.categoryId || null,
+        stock: data.stock !== undefined ? data.stock : undefined,
+      }
+    });
+    return {
+      success: true,
+      data: {
+        ...product,
+        unitCost: Number(product.unitCost),
+        salePrice: Number(product.salePrice),
+        profitPercentage: product.profitPercentage ? Number(product.profitPercentage) : null,
+        iva: product.iva ? Number(product.iva) : null,
+      }
+    };
+  } catch (error) {
+    console.error('Error updating quick product:', error);
+    return { success: false, error: 'No se pudo actualizar el producto.' };
+  }
+}

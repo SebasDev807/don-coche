@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Supplier, Product } from "@prisma/client";
 
-import { createPurchaseInvoiceAction, createQuickProductAction, createQuickSupplierAction } from "@/actions/purchases/purchases.actions";
+import { createPurchaseInvoiceAction, createQuickProductAction, updateQuickProductAction, createQuickSupplierAction } from "@/actions/purchases/purchases.actions";
 import { useRouter } from "next/navigation";
 import { useSellingPrice } from "@/hooks";
 import { parseLocalizedNumber } from "@/lib/utils/parseLocalizedNumber";
@@ -25,6 +25,7 @@ export function NuevaCompraClient({
   const [suppliers, setSuppliers] = useState(initialSuppliers);
   const [products, setProducts] = useState(initialProducts);
   
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [isQuickProductModalOpen, setIsQuickProductModalOpen] = useState(false);
   const [quickProductData, setQuickProductData] = useState({ 
     name: "", 
@@ -89,6 +90,24 @@ export function NuevaCompraClient({
   const removeItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index));
   };
+
+  const handleEditProduct = (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    setEditingProductId(productId);
+    setQuickProductData({
+      name: product.name,
+      categoryId: product.categoryId || "",
+      barCode: product.barCode || "",
+      stock: "",
+      unitCost: product.unitCost?.toString() || "",
+      profitPercentage: product.profitPercentage?.toString() || "",
+      hasIva: Number(product.iva) > 0,
+      iva: Number(product.iva) || 19,
+      autoRound: true,
+    });
+    setIsQuickProductModalOpen(true);
+  };
   
   const handleQuickProductCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,56 +116,100 @@ export function NuevaCompraClient({
     const selectedCat = categories.find(c => c.id === quickProductData.categoryId);
     const isInsumos = selectedCat?.name.toLowerCase().includes('insumo') || false;
 
-    const result = await createQuickProductAction({
-      name: quickProductData.name,
-      barCode: quickProductData.barCode,
-      categoryId: quickProductData.categoryId || undefined,
-      stock: quickProductData.stock ? Number(quickProductData.stock) : 0,
-      unitCost: costValue,
-      salePrice: isInsumos ? 0 : sellingPrice,
-      profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
-      iva: quickProductData.hasIva ? quickProductData.iva : 0
-    });
-    if (result.success && result.data) {
-      const newProduct = result.data;
-      setProducts([...products, newProduct].sort((a, b) => a.name.localeCompare(b.name)));
-      
-      const newItems = [...items];
-      const emptyRowIndex = newItems.findIndex(i => !i.productId);
-      const productQuantity = quickProductData.stock ? Number(quickProductData.stock) : 1;
-      const unitCostNumber = Number(newProduct.unitCost);
-      
-      if (emptyRowIndex >= 0) {
-        newItems[emptyRowIndex] = {
-          productId: newProduct.id,
-          quantity: productQuantity as unknown as number,
-          unitCost: unitCostNumber as unknown as number,
-          subtotal: productQuantity * unitCostNumber
-        };
-      } else {
-        newItems.push({
-          productId: newProduct.id,
-          quantity: productQuantity as unknown as number,
-          unitCost: unitCostNumber as unknown as number,
-          subtotal: productQuantity * unitCostNumber
-        });
-      }
-      setItems(newItems);
-      
-      setIsQuickProductModalOpen(false);
-      setQuickProductData({ 
-        name: "", 
-        categoryId: "",
-        barCode: "",
-        stock: "",
-        unitCost: "", 
-        profitPercentage: "",
-        hasIva: true,
-        iva: 19,
-        autoRound: true,
+    if (editingProductId) {
+      const result = await updateQuickProductAction(editingProductId, {
+        name: quickProductData.name,
+        barCode: quickProductData.barCode,
+        categoryId: quickProductData.categoryId || undefined,
+        stock: undefined,
+        unitCost: costValue,
+        salePrice: isInsumos ? 0 : sellingPrice,
+        profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
+        iva: quickProductData.hasIva ? quickProductData.iva : 0
       });
+      if (result.success && result.data) {
+        const updatedProduct = result.data;
+        setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p).sort((a, b) => a.name.localeCompare(b.name)));
+        
+        setItems(items.map(item => {
+          if (item.productId === updatedProduct.id) {
+            return {
+              ...item,
+              unitCost: Number(updatedProduct.unitCost) as unknown as number,
+              subtotal: Number(item.quantity) * Number(updatedProduct.unitCost)
+            };
+          }
+          return item;
+        }));
+        
+        setIsQuickProductModalOpen(false);
+        setEditingProductId(null);
+        setQuickProductData({ 
+          name: "", 
+          categoryId: "",
+          barCode: "",
+          stock: "",
+          unitCost: "", 
+          profitPercentage: "",
+          hasIva: true,
+          iva: 19,
+          autoRound: true,
+        });
+      } else {
+        setError(result.error || "Ocurrió un error actualizando el producto.");
+      }
     } else {
-      setError(result.error || "Ocurrió un error creando el producto.");
+      const result = await createQuickProductAction({
+        name: quickProductData.name,
+        barCode: quickProductData.barCode,
+        categoryId: quickProductData.categoryId || undefined,
+        stock: quickProductData.stock ? Number(quickProductData.stock) : 0,
+        unitCost: costValue,
+        salePrice: isInsumos ? 0 : sellingPrice,
+        profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
+        iva: quickProductData.hasIva ? quickProductData.iva : 0
+      });
+      if (result.success && result.data) {
+        const newProduct = result.data;
+        setProducts([...products, newProduct].sort((a, b) => a.name.localeCompare(b.name)));
+        
+        const newItems = [...items];
+        const emptyRowIndex = newItems.findIndex(i => !i.productId);
+        const productQuantity = quickProductData.stock ? Number(quickProductData.stock) : 1;
+        const unitCostNumber = Number(newProduct.unitCost);
+        
+        if (emptyRowIndex >= 0) {
+          newItems[emptyRowIndex] = {
+            productId: newProduct.id,
+            quantity: productQuantity as unknown as number,
+            unitCost: unitCostNumber as unknown as number,
+            subtotal: productQuantity * unitCostNumber
+          };
+        } else {
+          newItems.push({
+            productId: newProduct.id,
+            quantity: productQuantity as unknown as number,
+            unitCost: unitCostNumber as unknown as number,
+            subtotal: productQuantity * unitCostNumber
+          });
+        }
+        setItems(newItems);
+        
+        setIsQuickProductModalOpen(false);
+        setQuickProductData({ 
+          name: "", 
+          categoryId: "",
+          barCode: "",
+          stock: "",
+          unitCost: "", 
+          profitPercentage: "",
+          hasIva: true,
+          iva: 19,
+          autoRound: true,
+        });
+      } else {
+        setError(result.error || "Ocurrió un error creando el producto.");
+      }
     }
     setIsCreatingProduct(false);
   };
@@ -284,7 +347,11 @@ export function NuevaCompraClient({
             <div className="flex gap-4">
               <button 
                 type="button" 
-                onClick={() => setIsQuickProductModalOpen(true)}
+                onClick={() => {
+                  setEditingProductId(null);
+                  setQuickProductData({ name: "", categoryId: "", barCode: "", stock: "", unitCost: "", profitPercentage: "", hasIva: true, iva: 19, autoRound: true });
+                  setIsQuickProductModalOpen(true);
+                }}
                 className="text-secondary hover:text-primary font-medium flex items-center gap-2 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">add_box</span> Crear Producto
@@ -303,17 +370,29 @@ export function NuevaCompraClient({
             {items.map((item, index) => (
               <div key={index} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant overflow-x-auto">
                 <div className="flex-grow min-w-[250px]">
-                  <select 
-                    required
-                    className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-body-md"
-                    value={item.productId}
-                    onChange={(e) => handleItemChange(index, "productId", e.target.value)}
-                  >
-                    <option value="">Seleccione un producto</option>
-                    {products.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} - Actual: ${Number(p.unitCost)}</option>
-                    ))}
-                  </select>
+                  <div className="flex items-center w-full gap-2">
+                    <select 
+                      required
+                      className="flex-grow bg-surface-container p-2 rounded-lg border border-outline-variant text-body-md"
+                      value={item.productId}
+                      onChange={(e) => handleItemChange(index, "productId", e.target.value)}
+                    >
+                      <option value="">Seleccione un producto</option>
+                      {products.map(p => (
+                        <option key={p.id} value={p.id}>{p.name} - Actual: ${Number(p.unitCost)}</option>
+                      ))}
+                    </select>
+                    {item.productId && (
+                      <button 
+                        type="button" 
+                        onClick={() => handleEditProduct(item.productId)}
+                        className="p-2 text-primary hover:bg-primary-container/20 rounded-lg shrink-0 cursor-pointer"
+                        title="Editar producto"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">edit</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="w-24 shrink-0">
@@ -384,8 +463,10 @@ export function NuevaCompraClient({
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 fade-in">
           <div className="bg-surface rounded-3xl p-8 max-w-md w-full shadow-lg">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-headline-sm">Creación Rápida</h2>
-              <button type="button" onClick={() => setIsQuickProductModalOpen(false)} className="text-secondary hover:text-on-surface">
+              <h2 className="text-headline-sm font-bold">
+                {editingProductId ? "Editar Producto" : "Creación Rápida"}
+              </h2>
+              <button type="button" onClick={() => { setIsQuickProductModalOpen(false); setEditingProductId(null); }} className="text-secondary hover:text-on-surface">
                 <span className="material-symbols-outlined text-[24px]">close</span>
               </button>
             </div>
@@ -411,15 +492,17 @@ export function NuevaCompraClient({
                     onChange={(e) => setQuickProductData({ ...quickProductData, barCode: e.target.value })}
                   />
                 </div>
-                <div>
-                  <label className="block text-body-sm text-secondary mb-1">Stock Inicial</label>
-                  <input
-                    type="number" min="0" step="1" placeholder="0"
-                    className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none"
-                    value={quickProductData.stock}
-                    onChange={(e) => setQuickProductData({ ...quickProductData, stock: e.target.value })}
-                  />
-                </div>
+                {!editingProductId && (
+                  <div>
+                    <label className="block text-body-sm text-secondary mb-1">Stock Inicial</label>
+                    <input
+                      type="number" min="0" step="1" placeholder="0"
+                      className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none"
+                      value={quickProductData.stock}
+                      onChange={(e) => setQuickProductData({ ...quickProductData, stock: e.target.value })}
+                    />
+                  </div>
+                )}
               </div>
               <div className="mb-4">
                 <label className="block text-body-sm text-secondary mb-1">Categoría</label>
@@ -443,7 +526,7 @@ export function NuevaCompraClient({
                   ))}
                 </select>
               </div>
-              <div>
+              <div className="mb-4">
                 <label className="block text-body-sm text-secondary mb-1">Costo Unitario (Compra) *</label>
                 <input
                   required
@@ -486,29 +569,29 @@ export function NuevaCompraClient({
                       </div>
                     )}
                     <div className={isInsumos ? "col-span-2" : ""}>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-body-sm text-secondary">IVA [%]</label>
-                    <label className="flex items-center gap-1 cursor-pointer text-[10px] text-secondary">
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-body-sm text-secondary">IVA [%]</label>
+                        <label className="flex items-center gap-1 cursor-pointer text-[10px] text-secondary">
+                          <input
+                            type="checkbox"
+                            checked={quickProductData.hasIva}
+                            onChange={(e) => setQuickProductData({ ...quickProductData, hasIva: e.target.checked })}
+                            className="w-3 h-3"
+                          />
+                          Incluir
+                        </label>
+                      </div>
                       <input
-                        type="checkbox"
-                        checked={quickProductData.hasIva}
-                        onChange={(e) => setQuickProductData({ ...quickProductData, hasIva: e.target.checked })}
-                        className="w-3 h-3"
+                        required
+                        type="number" min="0" step="any" disabled={!quickProductData.hasIva}
+                        className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none disabled:opacity-50"
+                        value={quickProductData.iva}
+                        onChange={(e) => setQuickProductData({ ...quickProductData, iva: Number(e.target.value) })}
                       />
-                      Incluir
-                    </label>
+                    </div>
                   </div>
-                  <input
-                    required
-                    type="number" min="0" step="any" disabled={!quickProductData.hasIva}
-                    className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none disabled:opacity-50"
-                    value={quickProductData.iva}
-                    onChange={(e) => setQuickProductData({ ...quickProductData, iva: Number(e.target.value) })}
-                  />
-                </div>
-              </div>
-              );
-            })()}
+                );
+              })()}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-body-sm text-secondary">Precio de Venta (Público) *</label>
@@ -532,11 +615,21 @@ export function NuevaCompraClient({
 
               <div className="flex justify-end gap-3 mt-4">
                 <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickProductModalOpen(false);
+                    setEditingProductId(null);
+                  }}
+                  className="px-6 py-2 rounded-full border border-outline-variant text-secondary hover:bg-surface-container"
+                >
+                  Cancelar
+                </button>
+                <button
                   type="submit"
                   disabled={isCreatingProduct}
-                  className="px-6 py-2 rounded-full bg-primary-fixed text-black hover:brightness-95 transition-colors disabled:opacity-50 cursor-pointer"
+                  className="px-6 py-2 rounded-full bg-primary-fixed text-black hover:brightness-95 transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-2"
                 >
-                  {isCreatingProduct ? "Guardando..." : "Crear y Añadir"}
+                  {isCreatingProduct ? "Guardando..." : (editingProductId ? "Guardar Cambios" : "Crear y Añadir")}
                 </button>
               </div>
             </form>

@@ -108,17 +108,34 @@ export function PendingOrderCard({ order }: PendingOrderCardProps) {
         )}
 
         <div className="mt-auto pt-4 border-t border-outline-variant pl-2">
-          <div className="flex justify-between items-end">
-            <div>
-              <p className="text-on-surface-variant font-label-md uppercase mb-1">Atendido por</p>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[14px] text-on-surface">person</span>
+          <div className="flex justify-between items-end gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-on-surface-variant font-label-md uppercase mb-1">
+                {(order.technicianNames?.length ?? 1) > 1 ? 'Técnicos' : 'Atendido por'}
+              </p>
+              {(order.technicianNames && order.technicianNames.length > 1) ? (
+                <div className="flex flex-col gap-1">
+                  {order.technicianNames.map((name: string, i: number) => (
+                    <div key={i} className="flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-[11px] text-primary">person</span>
+                      </div>
+                      <p className="font-body-sm text-on-surface font-bold text-xs truncate">{name}</p>
+                    </div>
+                  ))}
                 </div>
-                <p className="font-body-md text-on-surface font-bold">{order.technician.name}</p>
-              </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[14px] text-on-surface">person</span>
+                  </div>
+                  <p className="font-body-md text-on-surface font-bold">
+                    {order.technicianNames?.[0] ?? order.technician.name}
+                  </p>
+                </div>
+              )}
             </div>
-            <div className="text-right">
+            <div className="text-right shrink-0">
               <p className="text-on-surface-variant font-label-md uppercase mb-1">Total Est.</p>
               <p className="font-headline-sm text-headline-sm text-primary">
                 ${(order.totalServices + order.totalProducts).toLocaleString()}

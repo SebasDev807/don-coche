@@ -19,18 +19,35 @@ export async function getPendingOrders() {
         vehicle: true,
         technician: { select: { name: true } },
         _count: { select: { services: true } },
+        // Traer los nombres de técnicos por servicio para la tarjeta
+        services: {
+          select: { technicianName: true },
+          distinct: ['technicianName'],
+        },
       },
       orderBy: { createdAt: 'desc' }
     });
 
     return {
       success: true,
-      data: orders.map(order => ({
-        ...order,
-        totalServices: Number(order.totalServices),
-        totalProducts: Number(order.totalProducts),
-        grandTotal: Number(order.grandTotal),
-      }))
+      data: orders.map(order => {
+        // Calcular lista de técnicos únicos que aportaron servicios
+        const techNames: string[] = [];
+        for (const s of order.services) {
+          const name = s.technicianName || order.technician.name;
+          if (name && !techNames.includes(name)) techNames.push(name);
+        }
+        // Si no hay servicios aún (raro), poner al menos al técnico original
+        if (techNames.length === 0) techNames.push(order.technician.name);
+
+        return {
+          ...order,
+          totalServices: Number(order.totalServices),
+          totalProducts: Number(order.totalProducts),
+          grandTotal: Number(order.grandTotal),
+          technicianNames: techNames,
+        };
+      })
     };
   } catch (error: any) {
     console.error(error);

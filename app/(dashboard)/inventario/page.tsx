@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import { InventoryKpiCards } from '@/components/dashboard/inventario/InventoryKpiCards';
 import { InventoryTable } from '@/components/dashboard/inventario/InventoryTable';
 import { InventoryToolbar } from '@/components/dashboard/inventario/InventoryToolbar';
-import { getSeedProducts } from '@/lib/data/seed-inventory';
 import { prisma } from '@/lib/prisma';
 import { PrimaryButton } from '@/components/ui';
 import { verifySession } from '@/lib/dal';
@@ -59,14 +58,14 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
   const totalValue = products.reduce((acc, p) => acc + (Number(p.unitCost) * p.stock), 0);
   const totalProducts = products.length;
   const lowStockAlerts = products.filter(p => p.stock <= 3).length;
-  
+
   // Encontrar la categoría líder
   const categoryCounts = products.reduce((acc, p) => {
     const cat = p.category_rel?.name || p.category || 'Sin Categoría';
     acc[cat] = (acc[cat] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-  
+
   let leadingCategoryRaw = 'N/A';
   let maxCount = 0;
   for (const [cat, count] of Object.entries(categoryCounts)) {
@@ -75,10 +74,10 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
       leadingCategoryRaw = cat;
     }
   }
-  
+
   // Capitalizar para mostrar correctamente ("ALMACEN" -> "Almacen")
-  const leadingCategory = leadingCategoryRaw !== 'N/A' 
-    ? leadingCategoryRaw.charAt(0).toUpperCase() + leadingCategoryRaw.slice(1).toLowerCase() 
+  const leadingCategory = leadingCategoryRaw !== 'N/A'
+    ? leadingCategoryRaw.charAt(0).toUpperCase() + leadingCategoryRaw.slice(1).toLowerCase()
     : 'N/A';
 
   // Serializar objetos Decimal y Date para enviarlos al Client Component

@@ -20,7 +20,7 @@ export function getSeedCategories() {
 export function getSeedProducts(): Product[] {
   const now = new Date();
   
-  return [
+  const products: Product[] = [
     {
       id: '1',
       barCode: generateEAN13(),
@@ -202,4 +202,11 @@ export function getSeedProducts(): Product[] {
       updatedAt: now,
     }
   ];
+
+  // Convertimos los precios ficticios a escala de COP (multiplicando x 1000)
+  return products.map(p => ({
+    ...p,
+    unitCost: new Prisma.Decimal(Number(p.unitCost) * 1000),
+    salePrice: new Prisma.Decimal(Number(p.salePrice) * 1000),
+  }));
 }

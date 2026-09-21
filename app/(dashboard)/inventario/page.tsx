@@ -53,10 +53,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     orderBy: { barCode: 'asc' },
   });
 
-  // Si no hay productos en la base de datos (y no hay filtros), usamos los de seed como fallback
-  if (products.length === 0 && !query && !category) {
-    products = getSeedProducts() as any;
-  }
+  // Si no hay productos en la base de datos, mostramos la tabla vacía en lugar de inyectar mocks.
 
   // Cálculos dinámicos de KPIs
   const totalValue = products.reduce((acc, p) => acc + (Number(p.unitCost) * p.stock), 0);

@@ -394,7 +394,8 @@ export async function createAndBillServiceOrder(params: {
 
 /**
  * Crea una orden de servicios en estado EN_PISTA para que sea cobrada en caja.
- * Pensada para admin/gerente que quieren registrar servicios y enviarlos al flujo de caja.
+ * Si ya existe una orden EN_PISTA para la misma placa, acumula en ella en vez de crear una nueva.
+ * Independientemente del tecnico/usuario que registre, todo va a la misma factura.
  */
 export async function createServiceOrderForCaja(params: {
   plate: string;
@@ -412,7 +413,14 @@ export async function createServiceOrderForCaja(params: {
       return { success: false, message: 'Selecciona al menos un servicio o producto' };
     }
 
-    const order = await prisma.$transaction(async (tx) => {
+    // Nombre del operador para atribucion en la factura
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { name: true },
+    });
+    const operatorName = currentUser?.name || 'Admin';
+
+    const result = await prisma.$transaction(async (tx) => {
       let finalPlate = (plate || '').toUpperCase().trim();
       if (!finalPlate) finalPlate = 'GEN-000';
 
@@ -456,47 +464,92 @@ export async function createServiceOrderForCaja(params: {
         });
       }
 
-      let totalServices = 0;
-      let orderServicesData: any[] = [];
+      // Calcular servicios nuevos
+      let newServicesTotal = 0;
+      const orderServicesData: any[] = [];
       if (serviceIds && serviceIds.length > 0) {
         const catalogServices = await tx.serviceCatalog.findMany({ where: { id: { in: serviceIds } } });
         if (catalogServices.length !== serviceIds.length) throw new Error('Servicios no validos');
-        orderServicesData = catalogServices.map((s) => {
+        catalogServices.forEach((s) => {
           const base = Number(s.basePrice);
           const pct = s.profitPercentage ? Number(s.profitPercentage) : 0;
           const pvp = Math.round((base + (base * pct) / 100) / 50) * 50;
-          totalServices += pvp;
-          return { serviceId: s.id, chargedPrice: pvp };
+          newServicesTotal += pvp;
+          orderServicesData.push({
+            serviceId: s.id,
+            chargedPrice: pvp,
+            technicianId: session.userId,
+            technicianName: operatorName,
+          });
         });
       }
 
-      let totalProducts = 0;
-      let orderProductsData: any[] = [];
+      // Calcular productos nuevos
+      let newProductsTotal = 0;
+      const orderProductsData: any[] = [];
       if (productItems && productItems.length > 0) {
         const productIds = productItems.map(p => p.productId);
         const catalogProducts = await tx.product.findMany({ where: { id: { in: productIds } } });
-        orderProductsData = productItems.map((item) => {
+        productItems.forEach((item) => {
           const p = catalogProducts.find(cp => cp.id === item.productId);
           if (!p) throw new Error('Producto no encontrado: ' + item.productId);
           const unitPrice = Number(p.salePrice);
-          totalProducts += unitPrice * item.quantity;
-          return { productId: item.productId, quantity: item.quantity, unitPrice, unitCost: Number(p.unitCost) };
+          newProductsTotal += unitPrice * item.quantity;
+          orderProductsData.push({ productId: item.productId, quantity: item.quantity, unitPrice, unitCost: Number(p.unitCost) });
         });
       }
 
-      return await tx.order.create({
+      // Verificar si existe orden EN_PISTA para esta placa (de CUALQUIER tecnico/admin)
+      const existingOpenOrder = await tx.order.findFirst({
+        where: { vehicleId: vehicle.id, status: 'EN_PISTA' },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      // RAMA A: Acumular en orden existente
+      if (existingOpenOrder) {
+        const updatedTotalServices = Number(existingOpenOrder.totalServices) + newServicesTotal;
+        const updatedTotalProducts = Number(existingOpenOrder.totalProducts) + newProductsTotal;
+
+        if (orderServicesData.length > 0) {
+          await tx.orderService.createMany({
+            data: orderServicesData.map(s => ({ ...s, orderId: existingOpenOrder.id })),
+          });
+        }
+
+        if (orderProductsData.length > 0) {
+          await tx.orderProduct.createMany({
+            data: orderProductsData.map(p => ({ ...p, orderId: existingOpenOrder.id })),
+          });
+        }
+
+        await tx.order.update({
+          where: { id: existingOpenOrder.id },
+          data: {
+            totalServices: updatedTotalServices,
+            totalProducts: updatedTotalProducts,
+            grandTotal: updatedTotalServices + updatedTotalProducts,
+          },
+        });
+
+        return { id: existingOpenOrder.id, orderNumber: existingOpenOrder.orderNumber, isAccumulated: true };
+      }
+
+      // RAMA B: Crear nueva orden
+      const newOrder = await tx.order.create({
         data: {
           technicianId: session.userId,
           vehicleId: vehicle.id,
           status: 'EN_PISTA',
-          totalServices,
-          totalProducts,
-          grandTotal: totalServices + totalProducts,
+          totalServices: newServicesTotal,
+          totalProducts: newProductsTotal,
+          grandTotal: newServicesTotal + newProductsTotal,
           services: orderServicesData.length > 0 ? { create: orderServicesData } : undefined,
           products: orderProductsData.length > 0 ? { create: orderProductsData } : undefined,
         },
         select: { id: true, orderNumber: true },
       });
+
+      return { id: newOrder.id, orderNumber: newOrder.orderNumber, isAccumulated: false };
     }, { timeout: 15000 });
 
     revalidatePath('/caja');
@@ -504,8 +557,11 @@ export async function createServiceOrderForCaja(params: {
 
     return {
       success: true,
-      message: 'Orden #' + order.orderNumber + ' enviada a caja exitosamente',
-      data: { id: order.id, orderNumber: order.orderNumber },
+      isAccumulated: result.isAccumulated,
+      message: result.isAccumulated
+        ? 'Servicios agregados a la Orden #' + result.orderNumber + ' en caja'
+        : 'Orden #' + result.orderNumber + ' enviada a caja exitosamente',
+      data: { id: result.id, orderNumber: result.orderNumber },
     };
   } catch (error: any) {
     console.error('[createServiceOrderForCaja]', error);

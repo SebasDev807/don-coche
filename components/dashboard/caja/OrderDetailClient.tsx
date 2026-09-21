@@ -141,6 +141,18 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
           <div className="bg-surface-container p-4 rounded-lg">
             <p className="text-xs text-on-surface-variant font-bold uppercase tracking-wider mb-1">Cliente</p>
             <p className="font-medium text-on-surface">{order.vehicle.customer?.name || 'Consumidor Final'}</p>
+            {order.vehicle.customer?.phone && (
+              <p className="text-sm text-on-surface-variant mt-1 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">call</span>
+                {order.vehicle.customer.phone}
+              </p>
+            )}
+            {order.vehicle.customer?.cc && (
+              <p className="text-sm text-on-surface-variant flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">badge</span>
+                {order.vehicle.customer.cc}
+              </p>
+            )}
           </div>
           <div className="bg-surface-container p-4 rounded-lg">
             <p className="text-xs text-on-surface-variant font-bold uppercase tracking-wider mb-1">Técnico Asignado</p>

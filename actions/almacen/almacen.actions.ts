@@ -52,7 +52,7 @@ export async function getAlmacenProducts() {
         barCode: p.barCode,
         description: p.description,
         stock: p.stock,
-        salePrice: Number(p.salePrice),
+        salePrice: Math.round(Number(p.salePrice) / 50) * 50,
         unitCost: Number(p.unitCost),
         iva: p.iva ? Number(p.iva) : 0,
         category: p.category,
@@ -112,7 +112,7 @@ export async function createProductSale(params: {
 
     const saleItemsData = items.map((item) => {
       const p = products.find((p) => p.id === item.productId)!;
-      const unitPrice = Number(p.salePrice);
+      const unitPrice = Math.round(Number(p.salePrice) / 50) * 50;
       const unitCost = Number(p.unitCost);
       const ivaRate = p.iva ? Number(p.iva) : 0;
       

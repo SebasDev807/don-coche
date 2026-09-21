@@ -111,7 +111,7 @@ export function PendingOrderCard({ order }: PendingOrderCardProps) {
             <div className="text-right">
               <p className="text-on-surface-variant font-label-md uppercase mb-1">Total Est.</p>
               <p className="font-headline-sm text-headline-sm text-primary">
-                ${((order.totalServices + order.totalProducts) * 1.19).toLocaleString()}
+                ${(order.totalServices + order.totalProducts).toLocaleString()}
               </p>
             </div>
           </div>

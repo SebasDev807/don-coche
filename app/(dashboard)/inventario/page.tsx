@@ -94,7 +94,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     categoryId: p.categoryId,
     stock: p.stock,
     unitCost: Number(p.unitCost),
-    salePrice: Number(p.salePrice),
+    salePrice: Math.round(Number(p.salePrice) / 50) * 50,
     profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0,
     iva: p.iva ? Number(p.iva) : 19
   }));

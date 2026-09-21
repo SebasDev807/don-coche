@@ -32,7 +32,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
   }
 
   const unitCost = Number(product.unitCost);
-  const salePrice = Number(product.salePrice);
+  const salePrice = Math.round(Number(product.salePrice) / 50) * 50;
   const profitPercentage = product.profitPercentage ? Number(product.profitPercentage) : 0;
 
   const formattedUnitCost = `$ ${new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(unitCost)}`;

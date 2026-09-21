@@ -413,12 +413,12 @@ export function EditarCompraClient({
 
           <div className="flex flex-col gap-3">
             {items.map((item: any, index: number) => (
-              <div key={index} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant overflow-x-auto">
-                <div className="flex-grow min-w-[250px]">
+              <div key={index} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant flex-wrap md:flex-nowrap">
+                <div className="flex-grow w-full md:w-auto md:min-w-[250px] min-w-0">
                   <div className="flex items-center w-full gap-2">
                     <select
                       required
-                      className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-body-md"
+                      className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-body-md truncate min-w-0"
                       value={item.productId}
                       onChange={(e) => handleItemChange(index, "productId", e.target.value)}
                     >

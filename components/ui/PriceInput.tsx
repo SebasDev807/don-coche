@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState } from 'react';
 import { UseFormRegister, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { ErrorMessage } from './ErrorMessage';
 import { parseLocalizedNumber } from '@/lib/utils/parseLocalizedNumber';
@@ -12,6 +13,7 @@ interface PriceInputProps {
   errors: FieldErrors<any>;
   placeholder?: string;
   className?: string;
+  transformOnBlur?: (val: number) => number;
 }
 
 export function PriceInput({ 
@@ -21,8 +23,11 @@ export function PriceInput({
   setValue, 
   errors, 
   placeholder = '0',
-  className = ''
+  className = '',
+  transformOnBlur
 }: PriceInputProps) {
+  
+  const [lastProcessedVal, setLastProcessedVal] = React.useState<number | null>(null);
 
   const formatNumber = (num: number): string => {
     return new Intl.NumberFormat('de-DE', {
@@ -35,8 +40,15 @@ export function PriceInput({
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     if (!raw.trim()) return;
-    const num = parseLocalizedNumber(raw);
+    let num = parseLocalizedNumber(raw);
+    
     if (num > 0) {
+      if (num !== lastProcessedVal) {
+        if (transformOnBlur) {
+          num = transformOnBlur(num);
+        }
+        setLastProcessedVal(num);
+      }
       setValue(name, formatNumber(num), { shouldValidate: true });
     }
   };

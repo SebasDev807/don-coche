@@ -42,7 +42,8 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
     notFound();
   }
 
-  const unitCost = Number(product.unitCost);
+  const productIvaRate = product.iva ? Number(product.iva) : 0;
+  const unitCost = Number(product.unitCost) / (1 + productIvaRate / 100);
   const salePrice = Math.round(Number(product.salePrice) / 50) * 50;
   const profitPercentage = product.profitPercentage ? Number(product.profitPercentage) : 0;
 

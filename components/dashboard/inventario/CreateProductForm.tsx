@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,7 @@ import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { CreateCategoryModal } from './CreateCategoryModal';
 import { PriceInput } from '@/components/ui/PriceInput';
 import { useSellingPrice } from '@/hooks';
+import { parseLocalizedNumber } from '@/lib/utils/parseLocalizedNumber';
 const MySwal = withReactContent(Swal);
 
 /**
@@ -32,6 +33,7 @@ export function CreateProductForm() {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     formState: { errors },
   } = useForm<FormInput, any, CreateProductFormValues>({
@@ -44,8 +46,8 @@ export function CreateProductForm() {
       stock: 0,
       unitCost: '',
       profitPercentage: '' as unknown as number,
-      hasIva: true,
-      iva: 19,
+      hasIva: false,
+      iva: 0,
       autoRound: true,
     },
   });
@@ -70,6 +72,34 @@ export function CreateProductForm() {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  const prevIvaRateRef = useRef(0);
+
+  useEffect(() => {
+    const currentIvaRate = hasIvaValue ? (typeof ivaValue === 'number' ? ivaValue : parseFloat(String(ivaValue)) || 0) : 0;
+    
+    if (prevIvaRateRef.current !== currentIvaRate) {
+      if (!isInsumos) {
+        const currentCostRaw = getValues('unitCost');
+        if (currentCostRaw) {
+          const rawCost = typeof currentCostRaw === 'string' ? parseLocalizedNumber(currentCostRaw) : (currentCostRaw as unknown as number);
+          if (rawCost > 0) {
+            const oldIvaRate = prevIvaRateRef.current;
+            const baseCost = rawCost / (1 + oldIvaRate / 100);
+            const newCost = baseCost * (1 + currentIvaRate / 100);
+            setValue('unitCost', new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(newCost));
+          }
+        }
+      }
+      prevIvaRateRef.current = currentIvaRate;
+    }
+  }, [hasIvaValue, ivaValue, isInsumos, getValues, setValue]);
+
+  useEffect(() => {
+    if (!hasIvaValue && ivaValue !== 0) {
+      setValue('iva', 0, { shouldValidate: true });
+    }
+  }, [hasIvaValue, ivaValue, setValue]);
 
   /**
    * Manejador del envío del formulario.
@@ -203,11 +233,16 @@ export function CreateProductForm() {
           {/* Costo Unitario */}
           <PriceInput
             name="unitCost"
-            label="Costo Unitario ($)"
+            label="Costo Unitario (Compra) *"
             register={register}
             setValue={setValue}
             errors={errors}
             placeholder="0"
+            transformOnBlur={(val) => {
+              if (isInsumos || !hasIvaValue) return val;
+              const iva = typeof ivaValue === 'number' ? ivaValue : parseFloat(String(ivaValue)) || 19;
+              return val * (1 + iva / 100);
+            }}
           />
 
           {/* Porcentaje de Ganancia */}

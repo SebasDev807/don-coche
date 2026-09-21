@@ -93,23 +93,27 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     ? leadingCategoryRaw.charAt(0).toUpperCase() + leadingCategoryRaw.slice(1).toLowerCase()
     : 'N/A';
 
-  // Serializar objetos Decimal y Date para enviarlos al Client Component
-  const serializedProducts = products.map((p) => ({
-    id: p.id,
-    barCode: p.barCode,
-    name: p.name,
-    description: p.description,
-    category: p.category_rel?.name || p.category || 'Sin Categoría',
-    categoryId: p.categoryId,
-    stock: p.stock,
-    unitCost: Number(p.unitCost),
-    salePrice: Math.round(Number(p.salePrice) / 50) * 50,
-    profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0,
-    iva: p.iva ? Number(p.iva) : 19,
-    supplier: p.purchaseItems && p.purchaseItems.length > 0 
-      ? p.purchaseItems[0].invoice.supplier.name 
-      : 'N/A'
-  }));
+  const serializedProducts = products.map((p) => {
+    const ivaRate = p.iva ? Number(p.iva) : 0;
+    const baseUnitCost = Number(p.unitCost) / (1 + ivaRate / 100);
+    
+    return {
+      id: p.id,
+      barCode: p.barCode,
+      name: p.name,
+      description: p.description,
+      category: p.category_rel?.name || p.category || 'Sin Categoría',
+      categoryId: p.categoryId,
+      stock: p.stock,
+      unitCost: baseUnitCost,
+      salePrice: Math.round(Number(p.salePrice) / 50) * 50,
+      profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0,
+      iva: p.iva ? Number(p.iva) : 19,
+      supplier: p.purchaseItems && p.purchaseItems.length > 0 
+        ? p.purchaseItems[0].invoice.supplier.name 
+        : 'N/A'
+    };
+  });
 
   // Ordenar los productos para mostrar primero los de stock bajo (<= 3)
   serializedProducts.sort((a, b) => {

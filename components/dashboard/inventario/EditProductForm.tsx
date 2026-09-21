@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,7 @@ import { updateProduct, getCategories } from '@/actions/inventory';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { PriceInput } from '@/components/ui/PriceInput';
 import { useSellingPrice } from '@/hooks';
+import { parseLocalizedNumber } from '@/lib/utils/parseLocalizedNumber';
 
 const MySwal = withReactContent(Swal);
 
@@ -37,10 +38,15 @@ export function EditProductForm({ product }: EditProductFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
 
+  // Extraer el IVA del costo unitario para mostrar el costo base (sin IVA) en el formulario
+  const productIva = product.iva !== null && product.iva !== undefined ? product.iva : 0;
+  const originalCost = product.unitCost / (1 + productIva / 100);
+
   const {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     formState: { errors },
   } = useForm<z.input<typeof createProductSchema>, any, CreateProductFormValues>({
@@ -51,11 +57,11 @@ export function EditProductForm({ product }: EditProductFormProps) {
       description: product.description || '',
       category: product.categoryId || '',
       stock: product.stock,
-      unitCost: new Intl.NumberFormat('es-CO').format(product.unitCost) as any,
+      unitCost: new Intl.NumberFormat('es-CO').format(originalCost) as any,
       profitPercentage: product.profitPercentage || undefined as unknown as number,
       // Comparación estricta para que iva=0 (producto exento) no sea falsy.
       // product.iva puede ser 0, 5, 19 o null — nunca undefined tras el fix de page.tsx.
-      hasIva: product.iva !== null && product.iva !== undefined && product.iva > 0,
+      hasIva: product.iva !== null && product.iva > 0,
       iva: product.iva !== null && product.iva !== undefined ? product.iva : 19,
       autoRound: true,
     },
@@ -88,8 +94,39 @@ export function EditProductForm({ product }: EditProductFormProps) {
     fetchCategories();
   }, []);
 
+  const prevIvaRateRef = useRef(product.iva !== null && product.iva > 0 ? Number(product.iva) : 0);
+
+  useEffect(() => {
+    const currentIvaRate = hasIvaValue ? (typeof ivaValue === 'number' ? ivaValue : parseFloat(String(ivaValue)) || 0) : 0;
+
+    if (prevIvaRateRef.current !== currentIvaRate) {
+      if (!isInsumos) {
+        const currentCostRaw = getValues('unitCost');
+        if (currentCostRaw) {
+          const rawCost = typeof currentCostRaw === 'string' ? parseLocalizedNumber(currentCostRaw) : (currentCostRaw as unknown as number);
+          if (rawCost > 0) {
+            const oldIvaRate = prevIvaRateRef.current;
+            const baseCost = rawCost / (1 + oldIvaRate / 100);
+            const newCost = baseCost * (1 + currentIvaRate / 100);
+            setValue('unitCost', new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(newCost));
+          }
+        }
+      }
+      prevIvaRateRef.current = currentIvaRate;
+    }
+  }, [hasIvaValue, ivaValue, isInsumos, getValues, setValue]);
+
+  useEffect(() => {
+    if (!hasIvaValue && ivaValue !== 0) {
+      setValue('iva', 0, { shouldValidate: true });
+    }
+  }, [hasIvaValue, ivaValue, setValue]);
+
   const onSubmit = async (data: CreateProductFormValues) => {
     setIsSubmitting(true);
+
+    const ivaToApply = (!isInsumos && data.hasIva) ? (data.iva != null ? Number(data.iva) : 19) : 0;
+    const finalUnitCost = Number(data.unitCost); // El unitCost ya tiene el IVA agregado por el onBlur
 
     const result = await updateProduct({
       id: product.id,
@@ -98,11 +135,11 @@ export function EditProductForm({ product }: EditProductFormProps) {
       description: data.description,
       categoryId: data.category,
       stock: data.stock,
-      unitCost: Number(data.unitCost),
+      unitCost: finalUnitCost,
       profitPercentage: !isInsumos && data.profitPercentage ? Number(data.profitPercentage) : null,
       // data.iva != null (loose) cubre undefined y null sin tratar 0 como falsy.
       // Esto preserva iva=0 (exento) correctamente.
-      iva: (!isInsumos && data.hasIva) ? (data.iva != null ? Number(data.iva) : 19) : 0,
+      iva: ivaToApply,
       autoRound: !isInsumos ? data.autoRound : false,
     } as any);
 
@@ -201,11 +238,16 @@ export function EditProductForm({ product }: EditProductFormProps) {
 
           <PriceInput
             name="unitCost"
-            label="Costo Unitario ($)"
+            label="Costo Unitario (Compra) *"
             register={register}
             setValue={setValue}
             errors={errors}
             placeholder="0"
+            transformOnBlur={(val) => {
+              if (isInsumos || !hasIvaValue) return val;
+              const iva = typeof ivaValue === 'number' ? ivaValue : parseFloat(String(ivaValue)) || 19;
+              return val * (1 + iva / 100);
+            }}
           />
 
           {/* Porcentaje de Ganancia */}

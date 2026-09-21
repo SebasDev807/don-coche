@@ -1,45 +1,45 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Supplier, Product } from "@prisma/client";
+import { useEffect, useRef, useState, } from "react";
+import { Supplier } from "@prisma/client";
 
 import { updatePurchaseInvoiceAction, createQuickProductAction, updateQuickProductAction, createQuickSupplierAction } from "@/actions/purchases/purchases.actions";
 import { useRouter } from "next/navigation";
 import { useSellingPrice } from "@/hooks";
 import { parseLocalizedNumber } from "@/lib/utils/parseLocalizedNumber";
 
-export function EditarCompraClient({ 
+export function EditarCompraClient({
   initialInvoice,
-  initialSuppliers, 
-  products: initialProducts, 
+  initialSuppliers,
+  products: initialProducts,
   categories,
-  adminId 
-}: { 
+  adminId
+}: {
   initialInvoice: any;
-  initialSuppliers: Supplier[], 
-  products: any[], 
+  initialSuppliers: Supplier[],
+  products: any[],
   categories: any[],
-  adminId: string 
+  adminId: string
 }) {
   const router = useRouter();
-  
+
   const [suppliers, setSuppliers] = useState(initialSuppliers);
   const [products, setProducts] = useState(initialProducts);
-  
+
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [isQuickProductModalOpen, setIsQuickProductModalOpen] = useState(false);
-  const [quickProductData, setQuickProductData] = useState({ 
-    name: "", 
+  const [quickProductData, setQuickProductData] = useState({
+    name: "",
     categoryId: "",
     barCode: "",
     stock: "",
-    unitCost: "", 
+    unitCost: "",
     profitPercentage: "",
-    hasIva: true,
-    iva: 19,
+    hasIva: false,
+    iva: 0,
     autoRound: true,
   });
-  
+
   const { sellingPrice, formattedSellingPrice } = useSellingPrice(
     quickProductData.unitCost,
     quickProductData.profitPercentage,
@@ -48,51 +48,51 @@ export function EditarCompraClient({
     quickProductData.autoRound
   );
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
-  
+
   const [isQuickSupplierModalOpen, setIsQuickSupplierModalOpen] = useState(false);
   const [isCreatingSupplier, setIsCreatingSupplier] = useState(false);
   const [quickSupplierData, setQuickSupplierData] = useState({ nit: "", name: "", phone: "", email: "" });
 
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-  
+
   const [supplierId, setSupplierId] = useState(initialInvoice.supplierId);
   const [invoiceNumber, setInvoiceNumber] = useState(initialInvoice.invoiceNumber);
   const [date, setDate] = useState(new Date(initialInvoice.date).toISOString().split("T")[0]);
   const [notes, setNotes] = useState(initialInvoice.notes || "");
-  
+
   const [items, setItems] = useState(initialInvoice.items.map((i: any) => ({
     productId: i.productId,
     quantity: i.quantity as unknown as number,
     unitCost: i.unitCost as unknown as number,
     subtotal: i.subtotal
   })));
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...items];
     const item = newItems[index] as any;
-    
+
     item[field] = value;
-    
+
     if (field === "productId") {
       const selectedProduct = products.find(p => p.id === value);
       if (selectedProduct) {
         item.unitCost = Number(selectedProduct.unitCost);
       }
     }
-    
+
     // Auto-calculate subtotal
     item.subtotal = Number(item.quantity) * Number(item.unitCost);
-    
+
     setItems(newItems);
   };
-  
+
   const addItem = () => {
     setItems([...items, { productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, subtotal: 0 }]);
   };
-  
+
   const removeItem = (index: number) => {
     setItems(items.filter((_: any, i: number) => i !== index));
   };
@@ -101,24 +101,63 @@ export function EditarCompraClient({
     const product = products.find(p => p.id === productId);
     if (!product) return;
     setEditingProductId(productId);
+
+    // El costo en BD ya incluye IVA, lo dividimos para mostrar el costo original
+    const productIva = Number(product.iva) || 0;
+    const originalCost = Number(product.unitCost) / (1 + productIva / 100);
+
     setQuickProductData({
       name: product.name,
       categoryId: product.categoryId || "",
       barCode: product.barCode || "",
       stock: "",
-      unitCost: product.unitCost?.toString() || "",
+      unitCost: originalCost.toString(),
       profitPercentage: product.profitPercentage?.toString() || "",
       hasIva: Number(product.iva) > 0,
-      iva: Number(product.iva) || 19,
+      iva: Number(product.iva) || 0,
       autoRound: true,
     });
     setIsQuickProductModalOpen(true);
   };
-  
+
+  const prevIvaRateRef = useRef(0);
+
+  useEffect(() => {
+    const currentIvaRate = quickProductData.hasIva ? (typeof quickProductData.iva === 'number' ? quickProductData.iva : parseFloat(String(quickProductData.iva)) || 0) : 0;
+
+    if (prevIvaRateRef.current !== currentIvaRate) {
+      const selectedCat = categories.find(c => c.id === quickProductData.categoryId);
+      const isInsumos = selectedCat?.name.toLowerCase().includes('insumo') || false;
+      if (!isInsumos) {
+        const raw = quickProductData.unitCost;
+        if (raw.trim()) {
+          const num = parseLocalizedNumber(raw);
+          if (num > 0) {
+            const oldIvaRate = prevIvaRateRef.current;
+            const baseCost = num / (1 + oldIvaRate / 100);
+            const newCost = baseCost * (1 + currentIvaRate / 100);
+            setQuickProductData(prev => ({
+              ...prev,
+              unitCost: new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(newCost)
+            }));
+          }
+        }
+      }
+      prevIvaRateRef.current = currentIvaRate;
+    }
+  }, [quickProductData.hasIva, quickProductData.iva, quickProductData.unitCost, quickProductData.categoryId, categories]);
+
+  useEffect(() => {
+    if (!quickProductData.hasIva && quickProductData.iva !== 0) {
+      setQuickProductData(prev => ({ ...prev, iva: 0 }));
+    }
+  }, [quickProductData.hasIva, quickProductData.iva]);
+
   const handleQuickProductCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCreatingProduct(true);
-    const costValue = typeof quickProductData.unitCost === 'string' ? parseLocalizedNumber(quickProductData.unitCost) : quickProductData.unitCost;
+    const rawCostValue = typeof quickProductData.unitCost === 'string' ? parseLocalizedNumber(quickProductData.unitCost) : quickProductData.unitCost;
+    const costValue = rawCostValue; // El IVA ya se sumó en el onBlur
     const selectedCat = categories.find(c => c.id === quickProductData.categoryId);
     const isInsumos = selectedCat?.name.toLowerCase().includes('insumo') || false;
 
@@ -136,7 +175,7 @@ export function EditarCompraClient({
       if (result.success && result.data) {
         const updatedProduct = result.data;
         setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p).sort((a, b) => a.name.localeCompare(b.name)));
-        
+
         setItems(items.map((item: any) => {
           if (item.productId === updatedProduct.id) {
             return {
@@ -147,7 +186,7 @@ export function EditarCompraClient({
           }
           return item;
         }));
-        
+
         setIsQuickProductModalOpen(false);
         setEditingProductId(null);
         setQuickProductData({
@@ -157,8 +196,8 @@ export function EditarCompraClient({
           stock: "",
           unitCost: "",
           profitPercentage: "",
-          hasIva: true,
-          iva: 19,
+          hasIva: false,
+          iva: 0,
           autoRound: true,
         });
       } else {
@@ -178,12 +217,12 @@ export function EditarCompraClient({
       if (result.success && result.data) {
         const newProduct = result.data;
         setProducts([...products, newProduct].sort((a, b) => a.name.localeCompare(b.name)));
-        
+
         const newItems = [...items];
         const emptyRowIndex = newItems.findIndex((i: any) => !i.productId);
         const productQuantity = quickProductData.stock ? Number(quickProductData.stock) : 1;
         const unitCostNumber = Number(newProduct.unitCost);
-        
+
         if (emptyRowIndex >= 0) {
           newItems[emptyRowIndex] = {
             productId: newProduct.id,
@@ -200,17 +239,17 @@ export function EditarCompraClient({
           });
         }
         setItems(newItems);
-        
+
         setIsQuickProductModalOpen(false);
-        setQuickProductData({ 
-          name: "", 
+        setQuickProductData({
+          name: "",
           categoryId: "",
           barCode: "",
           stock: "",
-          unitCost: "", 
+          unitCost: "",
           profitPercentage: "",
-          hasIva: true,
-          iva: 19,
+          hasIva: false,
+          iva: 0,
           autoRound: true,
         });
       } else {
@@ -219,7 +258,7 @@ export function EditarCompraClient({
     }
     setIsCreatingProduct(false);
   };
-  
+
   const subtotal = items.reduce((acc: number, item: any) => acc + (item.subtotal || 0), 0);
   const ivaAmount = 0; // Se podría calcular si fuera necesario por ítem
   const grandTotal = subtotal + ivaAmount;
@@ -261,7 +300,7 @@ export function EditarCompraClient({
     setIsPreviewModalOpen(false);
     setIsLoading(true);
     setError(null);
-    
+
     const result = await updatePurchaseInvoiceAction(initialInvoice.id, {
       supplierId,
       invoiceNumber,
@@ -278,7 +317,7 @@ export function EditarCompraClient({
         subtotal: Number(item.subtotal)
       }))
     });
-    
+
     if (result.success) {
       router.push("/compras");
     } else {
@@ -295,22 +334,22 @@ export function EditarCompraClient({
           {error}
         </div>
       )}
-      
+
       <form onSubmit={handlePreview} className="flex flex-col gap-8 fade-in">
         {/* Cabecera */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface p-6 rounded-2xl border border-outline-variant">
           <div className="flex flex-col gap-2 md:col-span-2">
             <div className="flex justify-between items-end">
               <label className="text-body-sm text-secondary font-medium">Proveedor *</label>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setIsQuickSupplierModalOpen(true)}
                 className="text-primary hover:text-primary-hover font-medium flex items-center gap-1 text-sm cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[16px]">person_add</span> Nuevo Proveedor
               </button>
             </div>
-            <select 
+            <select
               required
               className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary"
               value={supplierId}
@@ -322,23 +361,23 @@ export function EditarCompraClient({
               ))}
             </select>
           </div>
-          
+
           <div className="flex flex-col gap-2">
             <label className="text-body-sm text-secondary font-medium">Factura Número *</label>
-            <input 
+            <input
               required
-              type="text" 
+              type="text"
               className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary"
               value={invoiceNumber}
               onChange={(e) => setInvoiceNumber(e.target.value)}
             />
           </div>
-          
+
           <div className="flex flex-col gap-2">
             <label className="text-body-sm text-secondary font-medium">Fecha *</label>
-            <input 
+            <input
               required
-              type="date" 
+              type="date"
               className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary"
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -351,8 +390,8 @@ export function EditarCompraClient({
           <div className="flex justify-between items-end mb-4">
             <h3 className="text-title-md font-medium">Productos de la Factura</h3>
             <div className="flex gap-4">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => {
                   setEditingProductId(null);
                   setQuickProductData({ name: "", categoryId: "", barCode: "", stock: "", unitCost: "", profitPercentage: "", hasIva: true, iva: 19, autoRound: true });
@@ -362,8 +401,8 @@ export function EditarCompraClient({
               >
                 <span className="material-symbols-outlined text-[18px]">add_box</span> Crear Producto
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={addItem}
                 className="text-primary hover:text-primary-hover font-medium flex items-center gap-2 cursor-pointer"
               >
@@ -371,13 +410,13 @@ export function EditarCompraClient({
               </button>
             </div>
           </div>
-          
+
           <div className="flex flex-col gap-3">
             {items.map((item: any, index: number) => (
               <div key={index} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant overflow-x-auto">
                 <div className="flex-grow min-w-[250px]">
                   <div className="flex items-center w-full gap-2">
-                    <select 
+                    <select
                       required
                       className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-body-md"
                       value={item.productId}
@@ -389,10 +428,10 @@ export function EditarCompraClient({
                       ))}
                     </select>
                     {item.productId && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => handleEditProduct(item.productId)}
-                        className="flex-shrink-0 text-primary hover:text-primary/80 transition-colors cursor-pointer" 
+                        className="flex-shrink-0 text-primary hover:text-primary/80 transition-colors cursor-pointer"
                         title="Editar Producto"
                       >
                         <span className="material-symbols-outlined text-[20px]">edit</span>
@@ -400,37 +439,37 @@ export function EditarCompraClient({
                     )}
                   </div>
                 </div>
-                
+
                 <div className="w-24 shrink-0">
                   <label className="text-[10px] text-secondary uppercase block mb-1">Cant</label>
-                  <input 
+                  <input
                     type="number" min="1" step="1" required placeholder="0"
                     className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-center"
                     value={item.quantity}
                     onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
                   />
                 </div>
-                
+
                 <div className="w-32 shrink-0">
                   <label className="text-[10px] text-secondary uppercase block mb-1">Costo Unit</label>
-                  <input 
+                  <input
                     type="number" min="0" step="100" required placeholder="0"
                     className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-right"
                     value={item.unitCost}
                     onChange={(e) => handleItemChange(index, "unitCost", e.target.value)}
                   />
                 </div>
-                
+
                 <div className="w-32 shrink-0 text-right">
                   <label className="text-[10px] text-secondary uppercase block mb-1">Subtotal</label>
                   <div className="font-medium p-2">
                     ${item.subtotal.toLocaleString('es-CO')}
                   </div>
                 </div>
-                
+
                 <div className="shrink-0 pt-5">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => removeItem(index)}
                     className="p-2 text-error hover:bg-error-container rounded-lg disabled:opacity-30 cursor-pointer"
                   >
@@ -450,9 +489,9 @@ export function EditarCompraClient({
               ${grandTotal.toLocaleString('es-CO')}
             </span>
           </div>
-          
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             disabled={isLoading}
             className="w-full md:w-auto flex items-center justify-center gap-2 bg-primary-fixed text-black px-8 py-4 rounded-full font-medium text-title-sm hover:brightness-95 transition-all shadow-md disabled:opacity-50 cursor-pointer"
           >
@@ -472,18 +511,18 @@ export function EditarCompraClient({
               <h3 className="font-title-lg text-title-lg text-on-surface">
                 {editingProductId ? "Editar Producto" : "Crear Producto Rápidamente"}
               </h3>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => {
                   setIsQuickProductModalOpen(false);
                   setEditingProductId(null);
-                }} 
+                }}
                 className="text-secondary hover:text-on-surface cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[24px]">close</span>
               </button>
             </div>
-            
+
             <form onSubmit={handleQuickProductCreate} className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
@@ -526,10 +565,10 @@ export function EditarCompraClient({
                     const val = e.target.value;
                     const cat = categories.find(c => c.id === val);
                     const isInsumos = cat?.name.toLowerCase().includes('insumo');
-                    setQuickProductData({ 
-                      ...quickProductData, 
+                    setQuickProductData({
+                      ...quickProductData,
                       categoryId: val,
-                      profitPercentage: isInsumos ? "" : quickProductData.profitPercentage 
+                      profitPercentage: isInsumos ? "" : quickProductData.profitPercentage
                     });
                   }}
                 >
@@ -552,8 +591,16 @@ export function EditarCompraClient({
                   onBlur={(e) => {
                     const raw = e.target.value;
                     if (!raw.trim()) return;
-                    const num = parseLocalizedNumber(raw);
+                    let num = parseLocalizedNumber(raw);
                     if (num > 0) {
+                      const selectedCat = categories.find(c => c.id === quickProductData.categoryId);
+                      const isInsumos = selectedCat?.name.toLowerCase().includes('insumo') || false;
+                      if (!isInsumos && quickProductData.hasIva && quickProductData.iva > 0) {
+                        const previousFormatted = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num);
+                        if (quickProductData.unitCost !== previousFormatted && quickProductData.unitCost !== new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num * (1 + quickProductData.iva / 100))) {
+                          num = num * (1 + quickProductData.iva / 100);
+                        }
+                      }
                       setQuickProductData({
                         ...quickProductData,
                         unitCost: new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num)
@@ -562,11 +609,11 @@ export function EditarCompraClient({
                   }}
                 />
               </div>
-              
+
               {(() => {
                 const selectedCat = categories.find(c => c.id === quickProductData.categoryId);
                 const isInsumos = selectedCat?.name.toLowerCase().includes('insumo') || false;
-                
+
                 return (
                   <div className="grid grid-cols-2 gap-4">
                     {!isInsumos && (
@@ -698,14 +745,14 @@ export function EditarCompraClient({
           <div className="bg-surface rounded-3xl p-8 max-w-lg w-full shadow-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6 border-b border-outline-variant pb-4">
               <h2 className="text-headline-sm font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">receipt_long</span> 
+                <span className="material-symbols-outlined text-primary">receipt_long</span>
                 Resumen de Factura
               </h2>
               <button type="button" onClick={() => setIsPreviewModalOpen(false)} className="text-secondary hover:text-on-surface">
                 <span className="material-symbols-outlined text-[24px]">close</span>
               </button>
             </div>
-            
+
             <div className="flex flex-col gap-4 mb-6">
               <div className="bg-surface-container rounded-xl p-4 flex flex-col gap-2">
                 <div className="flex justify-between">

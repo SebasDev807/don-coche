@@ -95,10 +95,14 @@ export async function createProduct(formData: FormData) {
     const slug = generateSlug(validatedData.name);
 
     // Calculate salePrice based on unitCost, profitPercentage, and iva
-    const unitCost = validatedData.unitCost;
+    const unitCostBase = validatedData.unitCost;
     const profitPercentage = validatedData.profitPercentage || 0;
     const iva = validatedData.hasIva ? (validatedData.iva !== undefined ? validatedData.iva : 19) : 0;
-    let computedSalePrice = (unitCost + (unitCost * profitPercentage / 100)) * (1 + iva / 100);
+    // El unitCost que viene del frontend ya incluye el IVA (se calcula en el onBlur del input)
+    const finalUnitCost = unitCostBase;
+    
+    // Cálculo del precio de venta usando Markup (Costo * (1 + Margen))
+    let computedSalePrice = finalUnitCost * (1 + (profitPercentage / 100));
     
     if (validatedData.autoRound) {
       computedSalePrice = Math.round(computedSalePrice / 50) * 50;
@@ -111,7 +115,7 @@ export async function createProduct(formData: FormData) {
         description: validatedData.description,
         categoryId: validatedData.category,
         stock: validatedData.stock,
-        unitCost: unitCost,
+        unitCost: finalUnitCost,
         salePrice: computedSalePrice,
         profitPercentage: profitPercentage,
         iva: iva,

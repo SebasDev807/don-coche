@@ -20,6 +20,7 @@ export interface InventoryProduct {
   salePrice: number;
   profitPercentage: number;
   iva?: number;
+  supplier?: string;
 }
 
 /**
@@ -99,6 +100,7 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CÓDIGO</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">DESCRIPCIÓN</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">CATEGORÍA</th>
+              <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">PROVEEDOR</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">COSTO UNIT.</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">GANANCIA</th>
               <th className="py-4 px-6 font-label-bold text-label-bold text-secondary uppercase text-xs tracking-wider">IVA</th>
@@ -123,6 +125,9 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
                     <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
                       {product.category.charAt(0).toUpperCase() + product.category.slice(1).toLowerCase()}
                     </span>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="font-medium truncate max-w-[200px]" title={product.supplier}>{product.supplier || 'N/A'}</div>
                   </td>
                   <td className="py-4 px-6 text-secondary">{formatCurrency(product.unitCost, 2)}</td>
                   <td className="py-4 px-6 text-tertiary font-medium">{product.profitPercentage}%</td>
@@ -173,7 +178,7 @@ export function InventoryTable({ products, userRole }: InventoryTableProps) {
 
             {products.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-8 text-center text-secondary">
+                <td colSpan={10} className="py-8 text-center text-secondary">
                   No hay productos que coincidan con la búsqueda.
                 </td>
               </tr>

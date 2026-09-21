@@ -466,3 +466,29 @@ export async function deleteAllProductsCascade(password: string): Promise<{ succ
     return { success: false, message: 'Error al eliminar los productos. Si tienen ventas u órdenes, limpia la base de datos operativa primero.' };
   }
 }
+
+export async function deleteAllPurchaseInvoicesAction(password: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const session = await verifyRole(['SUPERUSUARIO']);
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { passwordHash: true },
+    });
+    
+    if (!user) return { success: false, message: 'Usuario no encontrado.' };
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) return { success: false, message: 'Contraseña incorrecta.' };
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Eliminar items de facturas de compra
+      await tx.purchaseInvoiceItem.deleteMany();
+      // 2. Eliminar facturas de compra
+      await tx.purchaseInvoice.deleteMany();
+    });
+
+    return { success: true, message: 'Todas las facturas de compra han sido eliminadas correctamente.' };
+  } catch (error) {
+    console.error('[deleteAllPurchaseInvoicesAction] Error:', error);
+    return { success: false, message: 'Error al eliminar las facturas de compra.' };
+  }
+}

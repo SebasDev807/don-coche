@@ -39,7 +39,18 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
   // Intentamos obtener los productos desde la base de datos
   let products = await prisma.product.findMany({
     include: {
-      category_rel: true
+      category_rel: true,
+      purchaseItems: {
+        include: {
+          invoice: {
+            include: { supplier: true }
+          }
+        },
+        orderBy: {
+          invoice: { date: 'desc' }
+        },
+        take: 1
+      }
     },
     where: {
       isActive: true,
@@ -94,7 +105,10 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     unitCost: Number(p.unitCost),
     salePrice: Math.round(Number(p.salePrice) / 50) * 50,
     profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0,
-    iva: p.iva ? Number(p.iva) : 19
+    iva: p.iva ? Number(p.iva) : 19,
+    supplier: p.purchaseItems && p.purchaseItems.length > 0 
+      ? p.purchaseItems[0].invoice.supplier.name 
+      : 'N/A'
   }));
 
   // Ordenar los productos para mostrar primero los de stock bajo (<= 3)

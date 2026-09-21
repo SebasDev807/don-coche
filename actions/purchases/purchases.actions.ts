@@ -132,7 +132,12 @@ export async function createPurchaseInvoiceAction(data: {
 
     return {
       success: true,
-      data: result,
+      data: {
+        ...result,
+        subtotal: Number(result.subtotal),
+        ivaAmount: Number(result.ivaAmount),
+        grandTotal: Number(result.grandTotal)
+      },
     };
   } catch (error: any) {
     console.error("Error creating purchase invoice:", error);
@@ -153,6 +158,13 @@ export async function getPurchaseInvoicesAction() {
             name: true,
           }
         },
+        items: {
+          include: {
+            product: {
+              select: { name: true, iva: true, salePrice: true, profitPercentage: true }
+            }
+          }
+        },
         _count: {
           select: { items: true }
         }
@@ -161,29 +173,296 @@ export async function getPurchaseInvoicesAction() {
         createdAt: 'desc',
       },
     });
-    return { success: true, data: invoices };
+
+    const serializedInvoices = invoices.map(inv => ({
+      ...inv,
+      subtotal: Number(inv.subtotal),
+      ivaAmount: Number(inv.ivaAmount),
+      grandTotal: Number(inv.grandTotal),
+      items: inv.items.map(item => ({
+        ...item,
+        unitCost: Number(item.unitCost),
+        subtotal: Number(item.subtotal),
+        product: {
+          ...item.product,
+          iva: item.product.iva ? Number(item.product.iva) : 0,
+          salePrice: Number(item.product.salePrice),
+          profitPercentage: item.product.profitPercentage ? Number(item.product.profitPercentage) : 0,
+        }
+      }))
+    }));
+
+    return { success: true, data: serializedInvoices };
   } catch (error) {
     console.error("Error fetching purchase invoices:", error);
     return { success: false, error: "Error al obtener historial de compras" };
   }
 }
 
-export async function createQuickProductAction(data: { name: string; unitCost: number; salePrice: number; categoryId?: string }) {
+export async function getPurchaseInvoiceByIdAction(id: string) {
+  try {
+    const invoice = await prisma.purchaseInvoice.findUnique({
+      where: { id },
+      include: {
+        supplier: true,
+        items: {
+          include: {
+            product: {
+              select: { name: true, iva: true, unitCost: true, salePrice: true, profitPercentage: true }
+            }
+          }
+        },
+      },
+    });
+
+    if (!invoice) return { success: false, error: "Factura no encontrada" };
+
+    const serializedInvoice = {
+      ...invoice,
+      subtotal: Number(invoice.subtotal),
+      ivaAmount: Number(invoice.ivaAmount),
+      grandTotal: Number(invoice.grandTotal),
+      items: invoice.items.map(item => ({
+        ...item,
+        unitCost: Number(item.unitCost),
+        subtotal: Number(item.subtotal),
+        product: {
+          ...item.product,
+          iva: item.product.iva ? Number(item.product.iva) : 0,
+          unitCost: Number(item.product.unitCost),
+          salePrice: Number(item.product.salePrice),
+          profitPercentage: item.product.profitPercentage ? Number(item.product.profitPercentage) : 0,
+        }
+      }))
+    };
+
+    return { success: true, data: serializedInvoice };
+  } catch (error) {
+    console.error("Error fetching purchase invoice by id:", error);
+    return { success: false, error: "Error al obtener factura de compra" };
+  }
+}
+
+export async function createQuickProductAction(data: { name: string; unitCost: number; salePrice: number; categoryId?: string; profitPercentage?: number; iva?: number; barCode?: string; stock?: number }) {
   try {
     const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     const product = await prisma.product.create({
       data: {
         name: data.name,
         slug: slug,
+        barCode: data.barCode || null,
         unitCost: data.unitCost,
         salePrice: data.salePrice,
+        profitPercentage: data.profitPercentage,
+        iva: data.iva,
         categoryId: data.categoryId || null,
-        stock: 0, // se sumará al guardar la factura
+        stock: data.stock || 0, // stock inicial opcional
       }
     });
-    return { success: true, data: product };
+    return { 
+      success: true, 
+      data: {
+        ...product,
+        unitCost: Number(product.unitCost),
+        salePrice: Number(product.salePrice),
+        profitPercentage: product.profitPercentage ? Number(product.profitPercentage) : null,
+        iva: product.iva ? Number(product.iva) : null,
+      } 
+    };
   } catch (error: any) {
     console.error("Error quick creating product:", error);
     return { success: false, error: "Error al crear el producto. Puede que el nombre (slug) ya exista." };
+  }
+}
+
+export async function createQuickSupplierAction(data: { name: string; nit: string; phone?: string; email?: string; }) {
+  try {
+    const existing = await prisma.supplier.findUnique({
+      where: { nit: data.nit }
+    });
+    if (existing) {
+      return { success: false, error: "Ya existe un proveedor con este NIT." };
+    }
+    const supplier = await prisma.supplier.create({
+      data: {
+        name: data.name,
+        nit: data.nit,
+        phone: data.phone || null,
+        email: data.email || null,
+      }
+    });
+    return { success: true, data: supplier };
+  } catch (error: any) {
+    console.error("Error creating quick supplier:", error);
+    return { success: false, error: "Error interno al crear el proveedor." };
+  }
+}
+
+export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
+  supplierId: string;
+  invoiceNumber: string;
+  date: Date;
+  subtotal: number;
+  ivaAmount: number;
+  grandTotal: number;
+  adminId: string;
+  notes?: string;
+  items: PurchaseItemInput[];
+}) {
+  try {
+    const existingInvoice = await prisma.purchaseInvoice.findUnique({
+      where: { id: invoiceId },
+      include: { items: true },
+    });
+
+    if (!existingInvoice) {
+      return { success: false, error: "La factura no existe." };
+    }
+
+    // Check for unique invoice number collision if supplier or number changed
+    if (existingInvoice.invoiceNumber !== data.invoiceNumber || existingInvoice.supplierId !== data.supplierId) {
+      const collision = await prisma.purchaseInvoice.findFirst({
+        where: {
+          supplierId: data.supplierId,
+          invoiceNumber: data.invoiceNumber,
+          id: { not: invoiceId }
+        }
+      });
+      if (collision) {
+        return { success: false, error: "Ya existe otra factura con ese número para este proveedor." };
+      }
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      // Create a map of the old items
+      const oldItemsMap = new Map();
+      existingInvoice.items.forEach(i => {
+        oldItemsMap.set(i.productId, i);
+      });
+
+      // Find products that are in the new items list
+      const productIds = new Set([
+        ...existingInvoice.items.map(i => i.productId),
+        ...data.items.map(i => i.productId)
+      ]);
+
+      const products = await tx.product.findMany({
+        where: { id: { in: Array.from(productIds) } }
+      });
+
+      const productMap = new Map();
+      products.forEach(p => productMap.set(p.id, p));
+
+      // Process deltas and update products
+      for (const productId of Array.from(productIds)) {
+        const oldItem = oldItemsMap.get(productId);
+        const newItem = data.items.find(i => i.productId === productId);
+        
+        const oldQty = oldItem ? oldItem.quantity : 0;
+        const newQty = newItem ? newItem.quantity : 0;
+        const delta = newQty - oldQty;
+
+        const product = productMap.get(productId);
+        if (!product) {
+          throw new Error(`Producto con ID ${productId} no encontrado.`);
+        }
+
+        if (delta < 0 && product.stock + delta < 0) {
+          throw new Error(`No se puede reducir la cantidad del producto "${product.name}" porque el stock actual (${product.stock}) quedaría en negativo.`);
+        }
+
+        let newStock = product.stock + delta;
+        
+        // Update product price if it's included in the new items
+        let nextUnitCost = Number(product.unitCost);
+        let nextSalePrice = Number(product.salePrice);
+        
+        if (newItem) {
+          nextUnitCost = newItem.unitCost;
+          // Calculate new sale price if cost changed
+          if (nextUnitCost !== Number(product.unitCost)) {
+             if (product.profitPercentage) {
+               const profit = Number(product.profitPercentage);
+               nextSalePrice = nextUnitCost * (1 + (profit / 100));
+             } else {
+               const marginMultiplier = Number(product.unitCost) > 0 ? (Number(product.salePrice) / Number(product.unitCost)) : 1;
+               nextSalePrice = nextUnitCost * marginMultiplier;
+             }
+          }
+        }
+
+        await tx.product.update({
+          where: { id: productId },
+          data: {
+            stock: newStock,
+            unitCost: nextUnitCost,
+            salePrice: nextSalePrice,
+          }
+        });
+
+        if (delta !== 0) {
+          await tx.inventoryMovement.create({
+            data: {
+              productId: productId,
+              adminId: data.adminId,
+              type: "COMPRA",
+              quantity: delta,
+              previousStock: product.stock,
+              newStock: newStock,
+              reason: `Ajuste por Edición - Factura ${data.invoiceNumber}`,
+            },
+          });
+        }
+      }
+
+      // Delete old items
+      await tx.purchaseInvoiceItem.deleteMany({
+        where: { invoiceId: invoiceId }
+      });
+
+      // Update invoice and insert new items
+      const updatedInvoice = await tx.purchaseInvoice.update({
+        where: { id: invoiceId },
+        data: {
+          supplierId: data.supplierId,
+          invoiceNumber: data.invoiceNumber,
+          date: data.date,
+          subtotal: data.subtotal,
+          ivaAmount: data.ivaAmount,
+          grandTotal: data.grandTotal,
+          notes: data.notes,
+          items: {
+            create: data.items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              unitCost: item.unitCost,
+              subtotal: item.subtotal,
+            })),
+          },
+        },
+      });
+
+      return updatedInvoice;
+    });
+
+    revalidatePath("/compras");
+    revalidatePath("/inventario");
+    revalidatePath(`/compras/editar/${invoiceId}`);
+
+    return {
+      success: true,
+      data: {
+        ...result,
+        subtotal: Number(result.subtotal),
+        ivaAmount: Number(result.ivaAmount),
+        grandTotal: Number(result.grandTotal)
+      },
+    };
+  } catch (error: any) {
+    console.error("Error updating purchase invoice:", error);
+    return {
+      success: false,
+      error: error.message || "Error interno al actualizar la factura de compra.",
+    };
   }
 }

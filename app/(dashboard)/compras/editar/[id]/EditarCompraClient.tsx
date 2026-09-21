@@ -3,18 +3,19 @@
 import { useState, useMemo } from "react";
 import { Supplier, Product } from "@prisma/client";
 
-import { createPurchaseInvoiceAction, createQuickProductAction, createQuickSupplierAction } from "@/actions/purchases/purchases.actions";
+import { updatePurchaseInvoiceAction, createQuickProductAction, createQuickSupplierAction } from "@/actions/purchases/purchases.actions";
 import { useRouter } from "next/navigation";
 import { useSellingPrice } from "@/hooks";
 import { parseLocalizedNumber } from "@/lib/utils/parseLocalizedNumber";
 
-// Definición simple del cliente. En producción, usar un autocompletado avanzado
-export function NuevaCompraClient({ 
+export function EditarCompraClient({ 
+  initialInvoice,
   initialSuppliers, 
   products: initialProducts, 
   categories,
   adminId 
 }: { 
+  initialInvoice: any;
   initialSuppliers: Supplier[], 
   products: any[], 
   categories: any[],
@@ -53,12 +54,17 @@ export function NuevaCompraClient({
 
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   
-  const [supplierId, setSupplierId] = useState("");
-  const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [notes, setNotes] = useState("");
+  const [supplierId, setSupplierId] = useState(initialInvoice.supplierId);
+  const [invoiceNumber, setInvoiceNumber] = useState(initialInvoice.invoiceNumber);
+  const [date, setDate] = useState(new Date(initialInvoice.date).toISOString().split("T")[0]);
+  const [notes, setNotes] = useState(initialInvoice.notes || "");
   
-  const [items, setItems] = useState([{ productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, subtotal: 0 }]);
+  const [items, setItems] = useState(initialInvoice.items.map((i: any) => ({
+    productId: i.productId,
+    quantity: i.quantity as unknown as number,
+    unitCost: i.unitCost as unknown as number,
+    subtotal: i.subtotal
+  })));
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +93,7 @@ export function NuevaCompraClient({
   };
   
   const removeItem = (index: number) => {
-    setItems(items.filter((_, i) => i !== index));
+    setItems(items.filter((_: any, i: number) => i !== index));
   };
   
   const handleQuickProductCreate = async (e: React.FormEvent) => {
@@ -151,7 +157,7 @@ export function NuevaCompraClient({
     setIsCreatingProduct(false);
   };
   
-  const subtotal = items.reduce((acc, item) => acc + (item.subtotal || 0), 0);
+  const subtotal = items.reduce((acc: number, item: any) => acc + (item.subtotal || 0), 0);
   const ivaAmount = 0; // Se podría calcular si fuera necesario por ítem
   const grandTotal = subtotal + ivaAmount;
 
@@ -193,7 +199,7 @@ export function NuevaCompraClient({
     setIsLoading(true);
     setError(null);
     
-    const result = await createPurchaseInvoiceAction({
+    const result = await updatePurchaseInvoiceAction(initialInvoice.id, {
       supplierId,
       invoiceNumber,
       date: new Date(date),
@@ -202,7 +208,7 @@ export function NuevaCompraClient({
       grandTotal,
       adminId,
       notes,
-      items: items.map(item => ({
+      items: items.map((item: any) => ({
         productId: item.productId,
         quantity: Number(item.quantity),
         unitCost: Number(item.unitCost),
@@ -300,7 +306,7 @@ export function NuevaCompraClient({
           </div>
           
           <div className="flex flex-col gap-3">
-            {items.map((item, index) => (
+            {items.map((item: any, index: number) => (
               <div key={index} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant overflow-x-auto">
                 <div className="flex-grow min-w-[250px]">
                   <select 
@@ -373,7 +379,7 @@ export function NuevaCompraClient({
           >
             {isLoading ? "Procesando..." : (
               <>
-                <span className="material-symbols-outlined text-[24px]">check_circle</span> Confirmar Factura e Inventario
+                <span className="material-symbols-outlined text-[24px]">check_circle</span> Actualizar Factura e Inventario
               </>
             )}
           </button>
@@ -616,7 +622,7 @@ export function NuevaCompraClient({
                 <h4 className="font-medium text-body-lg mb-2">Artículos ({items.length})</h4>
                 <div className="bg-surface-container rounded-xl overflow-hidden">
                   <div className="max-h-48 overflow-y-auto p-2">
-                    {items.map((item, idx) => {
+                    {items.map((item: any, idx: number) => {
                       const p = products.find(prod => prod.id === item.productId);
                       return (
                         <div key={idx} className="flex justify-between items-center p-2 border-b border-outline-variant/30 last:border-0 text-body-sm">

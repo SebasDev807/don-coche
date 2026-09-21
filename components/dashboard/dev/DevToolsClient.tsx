@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { wipeDevData, verifyDevPassword, deleteInactiveUsers, getDevCustomers, deleteCustomerCascade, deleteAllCustomersCascade, seedMockCustomers, seedMockProducts, deleteMockProducts, deleteAllProductsCascade } from '@/actions/dev/dev.actions';
+import { wipeDevData, verifyDevPassword, deleteInactiveUsers, getDevCustomers, deleteCustomerCascade, deleteAllCustomersCascade, seedMockCustomers, seedMockProducts, deleteMockProducts, deleteAllProductsCascade, deleteAllPurchaseInvoicesAction } from '@/actions/dev/dev.actions';
 export function DevToolsClient() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [password, setPassword] = useState('');
@@ -240,6 +240,25 @@ export function DevToolsClient() {
       }
     } catch (e) {
       setErrorMsg('Error al eliminar todos los productos.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteAllPurchaseInvoices = async () => {
+    if (!confirm('¿ESTÁ COMPLETAMENTE SEGURO? Esta acción eliminará permanentemente TODAS las facturas de compra y sus items. No afectará el stock actual de los productos, solo borrará el historial de facturas.')) return;
+    setIsSubmitting(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const res = await deleteAllPurchaseInvoicesAction(password);
+      if (res.success) {
+        setSuccessMsg(res.message);
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (e) {
+      setErrorMsg('Error al eliminar las facturas de compra.');
     } finally {
       setIsSubmitting(false);
     }
@@ -514,6 +533,30 @@ export function DevToolsClient() {
             >
               <span className="material-symbols-outlined text-[18px]">delete_forever</span>
               Borrar Todos los Productos
+            </button>
+          </div>
+
+          {/* Tarjeta de Acción: Eliminar TODAS las Facturas de Compra */}
+          <div className="bg-surface-container-lowest border border-error/40 rounded-xl p-5 hover:border-error hover:shadow-md transition-all flex flex-col h-full">
+            <div className="flex items-start gap-3 mb-4">
+              <span className="material-symbols-outlined text-error text-3xl">receipt_long</span>
+              <div>
+                <h3 className="font-bold text-on-surface text-lg">Eliminar Facturas de Compra</h3>
+                <p className="text-xs text-error font-medium mt-1">Borrado total del historial de compras</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-on-surface-variant mb-6 flex-1">
+              Elimina de forma permanente <strong>todas</strong> las facturas de compra registradas a proveedores. No revierte el stock que ya se haya sumado al inventario, solo limpia el historial y los items asociados.
+            </p>
+
+            <button
+              onClick={handleDeleteAllPurchaseInvoices}
+              disabled={isSubmitting}
+              className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+              Borrar Facturas de Compra
             </button>
           </div>
 

@@ -633,7 +633,14 @@ export function EditarCompraClient({
                             <input
                               type="checkbox"
                               checked={quickProductData.hasIva}
-                              onChange={(e) => setQuickProductData({ ...quickProductData, hasIva: e.target.checked })}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                setQuickProductData({
+                                  ...quickProductData,
+                                  hasIva: isChecked,
+                                  iva: 0
+                                });
+                              }}
                               className="w-3 h-3"
                             />
                             Incluir

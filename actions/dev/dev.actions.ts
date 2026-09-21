@@ -433,3 +433,36 @@ export async function deleteMockProducts(password: string): Promise<{ success: b
     return { success: false, message: 'Error al eliminar productos mock. Si tienen ventas operativas, purga la base de datos.' };
   }
 }
+
+export async function deleteAllProductsCascade(password: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const session = await verifyRole(['SUPERUSUARIO']);
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { passwordHash: true },
+    });
+    
+    if (!user) return { success: false, message: 'Usuario no encontrado.' };
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) return { success: false, message: 'Contraseña incorrecta.' };
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Eliminar movimientos de inventario asociados
+      await tx.inventoryMovement.deleteMany();
+
+      // 2. Eliminar items de ventas de almacén asociados
+      await tx.productSaleItem.deleteMany();
+
+      // 3. Eliminar productos usados en órdenes de servicio
+      await tx.orderProduct.deleteMany();
+
+      // 4. Ahora sí, eliminar todos los productos
+      await tx.product.deleteMany();
+    });
+
+    return { success: true, message: 'Todos los productos han sido eliminados correctamente.' };
+  } catch (error) {
+    console.error('[deleteAllProductsCascade] Error:', error);
+    return { success: false, message: 'Error al eliminar los productos. Si tienen ventas u órdenes, limpia la base de datos operativa primero.' };
+  }
+}

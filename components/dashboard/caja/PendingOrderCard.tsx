@@ -6,7 +6,7 @@ import { cancelOrder } from '@/actions/orders';
 import { useRouter } from 'next/navigation';
 
 interface PendingOrderCardProps {
-  order: any;
+  order: any; // order includes vehicle, technician, and services count from admin.actions
 }
 
 function formatElapsedTime(totalMinutes: number): string {
@@ -96,6 +96,16 @@ export function PendingOrderCard({ order }: PendingOrderCardProps) {
             )}
           </div>
         </div>
+
+        {/* Indicador de servicios acumulados */}
+        {order._count?.services > 1 && (
+          <div className="ml-2 mb-3 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[14px] text-secondary">group_work</span>
+            <span className="text-xs text-secondary font-bold">
+              {order._count.services} servicio(s) acumulado(s)
+            </span>
+          </div>
+        )}
 
         <div className="mt-auto pt-4 border-t border-outline-variant pl-2">
           <div className="flex justify-between items-end">

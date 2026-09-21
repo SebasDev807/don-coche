@@ -18,6 +18,26 @@ interface TecnicoWorkspaceProps {
   insumos?: { id: string; name: string; stock: number }[];
 }
 
+// Tipo para orden existente en pista
+interface ExistingOrder {
+  id: string;
+  orderNumber: number;
+  technicianName: string;
+  totalServices: number;
+  totalProducts: number;
+  grandTotal: number;
+  services: { id: string; name: string; chargedPrice: number; technicianName: string }[];
+  products: { id: string; name: string; quantity: number; unitPrice: number }[];
+}
+
+// Tipo para producto seleccionado por el técnico
+interface SelectedProduct {
+  productId: string;
+  quantity: number;
+  name: string;
+  unitPrice: number;
+}
+
 export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: TecnicoWorkspaceProps) {
   const router = useRouter();
 
@@ -32,8 +52,12 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
   const [carColor, setCarColor] = useState('');
   
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customerVehicles, setCustomerVehicles] = useState<{ id: string; plate: string; brand: string | null; model: string | null; color: string | null }[]>([]);
+
+  // Orden existente EN_PISTA para la placa actual
+  const [existingOrder, setExistingOrder] = useState<ExistingOrder | null>(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,7 +68,6 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
   const [nextMaintenanceReason, setNextMaintenanceReason] = useState('');
 
   // Handler para autocompletar datos del cliente seleccionado.
-  // Almacena los vehículos del cliente y limpia los campos del vehículo para que el técnico seleccione uno.
   const handleSelectCustomer = (customer: { cc: string | null; name: string | null; phone: string | null; email: string | null; vehicles: { id: string; plate: string; brand: string | null; model: string | null; color: string | null }[] }) => {
     setCustomerCc(customer.cc || '');
     setCustomerName(customer.name || '');
@@ -56,6 +79,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
     setCarBrand('');
     setCarModel('');
     setCarColor('');
+    setExistingOrder(null);
   };
 
   // Handler para autocompletar datos del vehículo seleccionado desde el dropdown.
@@ -66,35 +90,54 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
     setCarColor(vehicle.color || '');
   };
 
-  // Debounced search for plate
+  // Debounced search for plate — ahora también carga existingOrder
   useEffect(() => {
     const trimmedPlate = plate.replace(/\s+/g, '').toUpperCase();
     if (trimmedPlate.length >= 5) {
       const delayDebounceFn = setTimeout(async () => {
         const res = await searchByPlate(trimmedPlate);
-        if (res.success && res.data && res.data.customer) {
-          const cust = res.data.customer;
-          setCustomerCc(cust.cc || '');
-          setCustomerName(cust.name || '');
-          setCustomerPhone(cust.phone || '');
-          setCustomerEmail(cust.email || '');
-          
-          setCarBrand(res.data.brand || '');
-          setCarModel(res.data.model || '');
-          setCarColor(res.data.color || '');
-          
-          MySwal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'info',
-            title: 'Vehículo encontrado',
-            showConfirmButton: false,
-            timer: 2000
-          });
+        if (res.success) {
+          if (res.data && res.data.customer) {
+            const cust = res.data.customer;
+            setCustomerCc(cust.cc || '');
+            setCustomerName(cust.name || '');
+            setCustomerPhone(cust.phone || '');
+            setCustomerEmail(cust.email || '');
+            
+            setCarBrand(res.data.brand || '');
+            setCarModel(res.data.model || '');
+            setCarColor(res.data.color || '');
+          }
+
+          // Actualizar orden existente
+          setExistingOrder((res as any).existingOrder || null);
+
+          if (res.data && (res as any).existingOrder) {
+            MySwal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'info',
+              title: `Vehículo en pista — Orden #${(res as any).existingOrder.orderNumber}`,
+              text: 'Los servicios que selecciones se acumularán en esta orden.',
+              showConfirmButton: false,
+              timer: 3500,
+            });
+          } else if (res.data) {
+            MySwal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'info',
+              title: 'Vehículo encontrado',
+              showConfirmButton: false,
+              timer: 2000,
+            });
+          }
         }
       }, 500);
 
       return () => clearTimeout(delayDebounceFn);
+    } else {
+      setExistingOrder(null);
     }
   }, [plate]);
 
@@ -103,6 +146,23 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
       prev.includes(serviceId)
         ? prev.filter(id => id !== serviceId)
         : [...prev, serviceId]
+    );
+  };
+
+  // Agregar / quitar producto para enviar a caja
+  const handleToggleProduct = (productId: string, name: string, unitPrice: number) => {
+    setSelectedProducts(prev => {
+      const exists = prev.find(p => p.productId === productId);
+      if (exists) {
+        return prev.filter(p => p.productId !== productId);
+      }
+      return [...prev, { productId, quantity: 1, name, unitPrice }];
+    });
+  };
+
+  const handleChangeProductQty = (productId: string, quantity: number) => {
+    setSelectedProducts(prev =>
+      prev.map(p => p.productId === productId ? { ...p, quantity: Math.max(1, quantity) } : p)
     );
   };
 
@@ -116,7 +176,9 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
     setCarModel('');
     setCarColor('');
     setSelectedServices([]);
+    setSelectedProducts([]);
     setCustomerVehicles([]);
+    setExistingOrder(null);
     setNextMaintenanceDate('');
     setNextMaintenanceReason('');
     router.refresh();
@@ -132,7 +194,6 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
       return;
     }
 
-
     setIsSubmitting(true);
     MySwal.showLoading();
 
@@ -146,8 +207,11 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
       carModel,
       carColor,
       services: selectedServices,
+      products: selectedProducts.length > 0
+        ? selectedProducts.map(p => ({ productId: p.productId, quantity: p.quantity }))
+        : undefined,
       nextMaintenanceDate: nextMaintenanceDate || undefined,
-      nextMaintenanceReason: nextMaintenanceReason || undefined
+      nextMaintenanceReason: nextMaintenanceReason || undefined,
     });
 
     setIsSubmitting(false);
@@ -157,10 +221,10 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
       MySwal.fire({
         toast: true,
         position: 'top-end',
-        title: '¡Orden guardada exitosamente!',
+        title: res.message || '¡Enviado a caja exitosamente!',
         icon: 'success',
         showConfirmButton: false,
-        timer: 3000
+        timer: 3000,
       });
       resetWorkspace();
     } else {
@@ -177,8 +241,6 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-
-
 
   const [activeTab, setActiveTab] = useState<'registro' | 'servicios'>('registro');
 
@@ -240,6 +302,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
             nextMaintenanceDate={nextMaintenanceDate}
             nextMaintenanceReason={nextMaintenanceReason}
             onOpenRecommendationModal={() => setIsModalOpen(true)}
+            existingOrder={existingOrder}
           />
         </div>
 
@@ -269,7 +332,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
             <button
               type="button"
               onClick={() => setActiveRightTab('insumos')}
-              className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border-b-2 ${
+              className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border-b-2 relative ${
                 activeRightTab === 'insumos'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-on-surface-variant hover:text-on-surface'
@@ -277,6 +340,11 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
             >
               <span className="material-symbols-outlined text-[18px]">inventory_2</span>
               Stock de Insumos
+              {selectedProducts.length > 0 && (
+                <span className="absolute top-2 right-4 bg-secondary text-on-secondary text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+                  {selectedProducts.length}
+                </span>
+              )}
             </button>
           </div>
 
@@ -287,11 +355,18 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
               onToggleService={handleToggleService}
               onSubmit={handleCreateOrder}
               isSubmitting={isSubmitting}
+              selectedProducts={selectedProducts}
+              existingOrder={existingOrder}
             />
           </div>
           
           <div className={`flex-1 flex-col overflow-hidden ${activeRightTab === 'insumos' ? 'flex' : 'hidden'}`}>
-            <InsumosPanel insumos={insumos || []} />
+            <InsumosPanel
+              insumos={insumos || []}
+              selectedProducts={selectedProducts}
+              onToggleProduct={handleToggleProduct}
+              onChangeProductQty={handleChangeProductQty}
+            />
           </div>
         </div>
       </div>

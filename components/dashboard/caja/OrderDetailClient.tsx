@@ -135,24 +135,68 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
         </div>
 
         <h3 className="font-bold text-lg mb-4 text-on-surface border-b border-outline-variant pb-2">Mano de Obra</h3>
-        <table className="w-full text-sm mb-8">
-          <tbody>
-            {order.services.map((os: any) => (
-              <tr key={os.id} className="border-b border-outline-variant last:border-0">
-                <td className="py-3 font-medium text-on-surface flex items-center gap-2">
-                  <span className="material-symbols-outlined text-on-surface-variant text-[18px]">build</span>
-                  {os.service.name}
-                </td>
-                <td className="py-3 text-right font-bold text-on-surface">${os.chargedPrice.toLocaleString()}</td>
-              </tr>
-            ))}
-            {order.services.length === 0 && (
-              <tr>
-                <td className="py-4 text-on-surface-variant italic">No hay servicios registrados.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+
+        {/* Agrupar servicios por técnico */}
+        {(() => {
+          // Agrupar por technicianName
+          const byTech = order.services.reduce((groups: Record<string, any[]>, os: any) => {
+            const tech = os.technicianName || order.technician?.name || 'Técnico';
+            if (!groups[tech]) groups[tech] = [];
+            groups[tech].push(os);
+            return groups;
+          }, {});
+
+          const techGroups = Object.entries(byTech);
+          const hasMultipleTechs = techGroups.length > 1;
+
+          return (
+            <>
+              {hasMultipleTechs && (
+                <div className="mb-4 flex items-center gap-2 text-xs text-secondary font-bold">
+                  <span className="material-symbols-outlined text-[16px]">group_work</span>
+                  Orden acumulada por {techGroups.length} técnico(s)
+                </div>
+              )}
+              <table className="w-full text-sm mb-8">
+                <tbody>
+                  {techGroups.map(([techName, services]) => (
+                    <>
+                      {hasMultipleTechs && (
+                        <tr key={`header-${techName}`}>
+                          <td colSpan={2} className="pt-4 pb-1">
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-[10px] text-primary">person</span>
+                              </div>
+                              <span className="text-[11px] font-black text-on-surface-variant uppercase tracking-wider">
+                                {techName}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      {(services as any[]).map((os: any) => (
+                        <tr key={os.id} className="border-b border-outline-variant last:border-0">
+                          <td className="py-3 font-medium text-on-surface flex items-center gap-2">
+                            <span className="material-symbols-outlined text-on-surface-variant text-[18px]">build</span>
+                            {os.service.name}
+                          </td>
+                          <td className="py-3 text-right font-bold text-on-surface">${os.chargedPrice.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </>
+                  ))}
+                  {order.services.length === 0 && (
+                    <tr>
+                      <td className="py-4 text-on-surface-variant italic">No hay servicios registrados.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </>
+          );
+        })()}
+
 
         {order.products.length > 0 && (
           <>

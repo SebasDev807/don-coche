@@ -1,6 +1,17 @@
 import { CustomerSearchBar, type CustomerSuggestion, type VehicleInfo } from './CustomerSearchBar';
 import { VehicleSelector } from './VehicleSelector';
 
+interface ExistingOrder {
+  id: string;
+  orderNumber: number;
+  technicianName: string;
+  totalServices: number;
+  totalProducts: number;
+  grandTotal: number;
+  services: { id: string; name: string; chargedPrice: number; technicianName: string }[];
+  products: { id: string; name: string; quantity: number; unitPrice: number }[];
+}
+
 interface RegistrationFormProps {
   plate: string;
   setPlate: (val: string) => void;
@@ -24,6 +35,7 @@ interface RegistrationFormProps {
   nextMaintenanceDate: string;
   nextMaintenanceReason: string;
   onOpenRecommendationModal: () => void;
+  existingOrder?: ExistingOrder | null;
 }
 
 export const RegistrationForm = ({
@@ -40,14 +52,70 @@ export const RegistrationForm = ({
   onSelectVehicle,
   nextMaintenanceDate,
   nextMaintenanceReason,
-  onOpenRecommendationModal
+  onOpenRecommendationModal,
+  existingOrder,
 }: RegistrationFormProps) => {
   return (
     <section className="w-full h-full bg-surface-container-lowest border-r border-surface-variant lg:border-r p-8 flex flex-col overflow-y-auto" data-purpose="registration-form">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-on-surface mb-2">Registro de Vehículo</h1>
-        <p className="text-on-surface-variant text-base leading-relaxed">Ingrese los detalles para iniciar una nueva orden de servicio.</p>
+        <p className="text-on-surface-variant text-base leading-relaxed">
+          {existingOrder
+            ? 'Los nuevos servicios se agregarán a la orden activa.'
+            : 'Ingrese los detalles para iniciar una nueva orden de servicio.'}
+        </p>
       </div>
+
+      {/* Banner de acumulación — aparece cuando ya hay una orden EN_PISTA para la placa */}
+      {existingOrder && (
+        <div className="mb-6 rounded-xl border-2 border-amber-400 bg-amber-50 p-4 flex flex-col gap-3">
+          <div className="flex items-start gap-3">
+            <span className="material-symbols-outlined text-amber-600 text-[24px] shrink-0 mt-0.5">info</span>
+            <div className="flex-1">
+              <p className="font-bold text-amber-900 text-sm">
+                Orden #{existingOrder.orderNumber} en pista
+              </p>
+              <p className="text-amber-700 text-xs mt-0.5">
+                Abierta por <strong>{existingOrder.technicianName}</strong> · {existingOrder.services.length} servicio(s) registrado(s)
+              </p>
+            </div>
+            <span className="text-amber-900 font-black text-sm whitespace-nowrap">
+              ${existingOrder.grandTotal.toLocaleString()}
+            </span>
+          </div>
+
+          {/* Resumen de servicios ya registrados */}
+          {existingOrder.services.length > 0 && (
+            <div className="bg-amber-100 rounded-lg px-3 py-2 space-y-1">
+              <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mb-1">Servicios ya registrados</p>
+              {existingOrder.services.map((s) => (
+                <div key={s.id} className="flex justify-between items-center text-xs text-amber-900">
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px] text-amber-600">check_circle</span>
+                    {s.name}
+                    <span className="text-amber-600 text-[10px]">({s.technicianName})</span>
+                  </span>
+                  <span className="font-bold">${s.chargedPrice.toLocaleString()}</span>
+                </div>
+              ))}
+              {existingOrder.products.map((p) => (
+                <div key={p.id} className="flex justify-between items-center text-xs text-amber-900">
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px] text-amber-600">inventory_2</span>
+                    {p.name} ×{p.quantity}
+                  </span>
+                  <span className="font-bold">${(p.unitPrice * p.quantity).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="text-[11px] text-amber-700 font-medium">
+            ✓ Tus servicios se acumularán en esta factura.
+          </p>
+        </div>
+      )}
+
       <form className="flex-1 flex flex-col gap-6">
         {/* Búsqueda de cliente y selector de vehículo */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

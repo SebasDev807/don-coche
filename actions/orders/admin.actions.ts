@@ -18,6 +18,7 @@ export async function getPendingOrders() {
       include: {
         vehicle: true,
         technician: { select: { name: true } },
+        _count: { select: { services: true } },
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -108,6 +109,7 @@ export async function getOrderDetail(orderId: string) {
         services: order.services.map(s => ({
           ...s,
           chargedPrice: Number(s.chargedPrice),
+          technicianName: s.technicianName || order.technician?.name || null,
           service: s.service ? {
             ...s.service,
             basePrice: Number(s.service.basePrice)
@@ -349,6 +351,7 @@ export async function billOrder(orderId: string, paymentMethod: PaymentMethod, e
         services: updatedOrder.services.map((s: any) => ({
           ...s,
           chargedPrice: Number(s.chargedPrice),
+          technicianName: s.technicianName || updatedOrder.technician?.name || null,
           service: s.service ? {
             ...s.service,
             basePrice: Number(s.service.basePrice)

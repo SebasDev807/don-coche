@@ -3,12 +3,30 @@
 import { ServiceCard } from './ServiceCard';
 import { useState } from 'react';
 
+interface ExistingOrder {
+  id: string;
+  orderNumber: number;
+  technicianName: string;
+  services: { id: string; name: string; chargedPrice: number; technicianName: string }[];
+  products: { id: string; name: string; quantity: number; unitPrice: number }[];
+  grandTotal: number;
+}
+
+interface SelectedProduct {
+  productId: string;
+  quantity: number;
+  name: string;
+  unitPrice: number;
+}
+
 interface ServicesPanelProps {
   catalogServices: any[];
   selectedServices: string[];
   onToggleService: (id: string) => void;
   onSubmit: () => void;
   isSubmitting: boolean;
+  selectedProducts?: SelectedProduct[];
+  existingOrder?: ExistingOrder | null;
 }
 
 export const ServicesPanel = ({
@@ -16,7 +34,9 @@ export const ServicesPanel = ({
   selectedServices,
   onToggleService,
   onSubmit,
-  isSubmitting
+  isSubmitting,
+  selectedProducts = [],
+  existingOrder,
 }: ServicesPanelProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -24,7 +44,7 @@ export const ServicesPanel = ({
     s.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalAmount = selectedServices.reduce((acc, id) => {
+  const newServicesTotal = selectedServices.reduce((acc, id) => {
     const service = catalogServices.find(s => s.id === id);
     if (!service) return acc;
     const basePrice = Number(service.basePrice) || 0;
@@ -32,6 +52,11 @@ export const ServicesPanel = ({
     const pvp = Math.round((basePrice + (basePrice * profitPercentage / 100)) / 50) * 50;
     return acc + pvp;
   }, 0);
+
+  const newProductsTotal = selectedProducts.reduce((acc, p) => acc + (p.unitPrice * p.quantity), 0);
+  const totalAmount = newServicesTotal + newProductsTotal;
+
+  const totalItems = selectedServices.length + selectedProducts.length;
 
   return (
     <section className="w-full h-full bg-background flex flex-col overflow-hidden" data-purpose="services-order">
@@ -45,7 +70,7 @@ export const ServicesPanel = ({
           </div>
           <input 
             className="block w-full pl-11 pr-3 py-4 border border-outline rounded-full leading-5 bg-surface-container-lowest placeholder-on-surface-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm text-on-surface cursor-pointer" 
-            placeholder="Buscar Servicios y Repuestos..." 
+            placeholder="Buscar Servicios..." 
             type="text" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -84,16 +109,56 @@ export const ServicesPanel = ({
       {/* Order Summary & Submit */}
       <div className="p-6 bg-surface-container-lowest border-t border-surface-variant flex flex-col gap-4">
         <div className="flex justify-between items-center mb-2">
-          <h2 className="text-lg font-bold text-on-surface">Resumen de Orden</h2>
-          <span className="bg-on-surface text-surface text-xs font-bold px-2.5 py-1 rounded-full">{selectedServices.length} ITEMS</span>
+          <h2 className="text-lg font-bold text-on-surface">
+            {existingOrder ? `Agregar a Orden #${existingOrder.orderNumber}` : 'Resumen de Orden'}
+          </h2>
+          <span className="bg-on-surface text-surface text-xs font-bold px-2.5 py-1 rounded-full">{totalItems} ITEMS</span>
         </div>
+
+        {/* Servicios ya en la orden (read-only) */}
+        {existingOrder && existingOrder.services.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 space-y-1">
+            <p className="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-1">Ya registrado</p>
+            {existingOrder.services.map(s => (
+              <div key={s.id} className="flex justify-between items-center text-xs text-amber-900">
+                <span className="text-amber-700">{s.name}</span>
+                <span className="font-bold">${s.chargedPrice.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        )}
         
-        {selectedServices.length === 0 ? (
-          <p className="text-sm text-on-surface-variant italic mb-4">No hay servicios seleccionados aún.</p>
+        {totalItems === 0 ? (
+          <p className="text-sm text-on-surface-variant italic mb-4">No hay servicios ni productos seleccionados aún.</p>
         ) : (
-          <div className="mb-4">
-            <div className="flex justify-between font-bold text-lg">
-              <span>Total a pagar:</span>
+          <div className="mb-2 space-y-1">
+            {selectedServices.map(id => {
+              const service = catalogServices.find(s => s.id === id);
+              if (!service) return null;
+              const basePrice = Number(service.basePrice) || 0;
+              const profitPercentage = Number(service.profitPercentage) || 0;
+              const pvp = Math.round((basePrice + (basePrice * profitPercentage / 100)) / 50) * 50;
+              return (
+                <div key={id} className="flex justify-between items-center text-sm">
+                  <span className="flex items-center gap-1 text-on-surface">
+                    <span className="material-symbols-outlined text-[14px] text-primary">build</span>
+                    {service.name}
+                  </span>
+                  <span className="font-bold text-on-surface">${pvp.toLocaleString()}</span>
+                </div>
+              );
+            })}
+            {selectedProducts.map(p => (
+              <div key={p.productId} className="flex justify-between items-center text-sm">
+                <span className="flex items-center gap-1 text-on-surface">
+                  <span className="material-symbols-outlined text-[14px] text-secondary">inventory_2</span>
+                  {p.name} ×{p.quantity}
+                </span>
+                <span className="font-bold text-on-surface">${(p.unitPrice * p.quantity).toLocaleString()}</span>
+              </div>
+            ))}
+            <div className="flex justify-between font-bold text-lg border-t border-outline-variant pt-2 mt-2">
+              <span>{existingOrder ? 'A agregar:' : 'Total a pagar:'}</span>
               <span>${totalAmount.toLocaleString()}</span>
             </div>
           </div>
@@ -105,7 +170,11 @@ export const ServicesPanel = ({
           className={`w-full font-bold text-lg py-5 px-6 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm mt-auto 
             ${(isSubmitting || selectedServices.length === 0) ? 'bg-surface-variant text-on-surface-variant cursor-not-allowed' : 'bg-primary-container hover:bg-primary-fixed-dim text-black cursor-pointer'}`}
         >
-          {isSubmitting ? 'Procesando...' : 'Finalizar y Enviar a Caja'}
+          {isSubmitting
+            ? 'Procesando...'
+            : existingOrder
+            ? `Agregar a Orden #${existingOrder.orderNumber}`
+            : 'Finalizar y Enviar a Caja'}
           {!isSubmitting && (
             <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" strokeLinecap="round" strokeLinejoin="round"></path>

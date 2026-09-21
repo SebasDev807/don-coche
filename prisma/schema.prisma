@@ -95,6 +95,7 @@ model User {
   // Relaciones
   ordersAsTech        Order[]             @relation("TechnicianOrders")
   ordersAsAdmin       Order[]             @relation("AdminOrders")
+  orderServices       OrderService[]      @relation("TechnicianOrderServices")
   stockMoves          InventoryMovement[] @relation("AdminMovements")
   attendance          AttendanceRecord[]
   createdAppointments Appointment[]       @relation("CreatedAppointments")
@@ -302,13 +303,16 @@ model Order {
 }
 
 model OrderService {
-  id           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId      String  @map("order_id") @db.Uuid
-  serviceId    String  @map("service_id") @db.Uuid
-  chargedPrice Decimal @map("charged_price") @db.Decimal(10, 2) /// Precio inmutable al momento de facturar
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId        String  @map("order_id") @db.Uuid
+  serviceId      String  @map("service_id") @db.Uuid
+  chargedPrice   Decimal @map("charged_price") @db.Decimal(10, 2) /// Precio inmutable al momento de facturar
+  technicianId   String? @map("technician_id") @db.Uuid /// Técnico que agregó este servicio (para acumulación multi-técnico)
+  technicianName String? @map("technician_name") /// Nombre desnormalizado para facilitar el recibo
 
-  order   Order          @relation(fields: [orderId], references: [id])
-  service ServiceCatalog @relation(fields: [serviceId], references: [id])
+  order      Order          @relation(fields: [orderId], references: [id])
+  service    ServiceCatalog @relation(fields: [serviceId], references: [id])
+  technician User?          @relation("TechnicianOrderServices", fields: [technicianId], references: [id])
 
   @@map("order_services")
 }

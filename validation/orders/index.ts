@@ -13,9 +13,14 @@ export const createOrderSchema = z.object({
   carModel: z.string().optional(),
   carColor: z.string().optional(),
   services: z.array(z.string()).min(1, { message: 'Debe seleccionar al menos un servicio' }),
+  // Productos opcionales que el técnico puede enviar a caja para incluir en la factura
+  products: z.array(z.object({
+    productId: z.string(),
+    quantity: z.number().int().min(1),
+  })).optional(),
   nextMaintenanceDate: z.string().optional(),
   nextMaintenanceReason: z.string().optional(),
-  // In the future, we can add products array here.
 });
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
+

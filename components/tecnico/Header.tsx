@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { AccountSwitcher } from './AccountSwitcher';
 
@@ -14,16 +15,32 @@ interface HeaderProps {
   userDepartment?: string | null;
   activeUserId?: string;
   availableUsers?: UserInfo[];
+  activePath?: string;
 }
 
-export const Header = ({ technicianName, logoutAction, userDepartment, activeUserId, availableUsers }: HeaderProps) => {
+export const Header = ({ technicianName, logoutAction, userDepartment, activeUserId, availableUsers, activePath = '/tecnico' }: HeaderProps) => {
   const today = new Date();
   const formattedDate = today.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
     <header className="bg-surface-container-lowest border-b border-surface-variant px-4 lg:px-6 py-3 lg:py-4 flex justify-between items-center gap-2" data-purpose="main-header">
       <div className="flex items-center gap-4 shrink-0">
-        <Image src="/images/logo_1.png" alt="Don Coche Logo" width={120} height={40} className="object-contain" />
+        <Image src="/images/logo_1.png" alt="Don Coche Logo" width={120} height={40} className="object-contain mr-4" />
+        
+        <nav className="hidden md:flex items-center gap-2">
+          <Link 
+            href="/tecnico" 
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activePath === '/tecnico' ? 'bg-primary text-on-primary' : 'text-on-surface hover:bg-surface-container-high'}`}
+          >
+            Taller
+          </Link>
+          <Link 
+            href="/tecnico/almacen" 
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activePath === '/tecnico/almacen' ? 'bg-primary text-on-primary' : 'text-on-surface hover:bg-surface-container-high'}`}
+          >
+            Punto de Venta
+          </Link>
+        </nav>
       </div>
       <div className="flex items-center gap-2 lg:gap-6 min-w-0">
         {userDepartment && (

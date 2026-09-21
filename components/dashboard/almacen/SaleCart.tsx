@@ -20,6 +20,12 @@ interface SaleCartProps {
   isSubmitting: boolean;
   customerName: string;
   onCustomerNameChange: (v: string) => void;
+  prefillData?: {
+    plate?: string;
+    customerName?: string;
+    customerCc?: string;
+    customerPhone?: string;
+  };
 }
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string; icon: string }[] = [
@@ -42,10 +48,11 @@ export function SaleCart({
   isSubmitting,
   customerName,
   onCustomerNameChange,
+  prefillData,
 }: SaleCartProps) {
-  const [plate, setPlate] = useState('');
-  const [customerCc, setCustomerCc] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
+  const [plate, setPlate] = useState(prefillData?.plate || '');
+  const [customerCc, setCustomerCc] = useState(prefillData?.customerCc || '');
+  const [customerPhone, setCustomerPhone] = useState(prefillData?.customerPhone || '');
   const [customerVehicles, setCustomerVehicles] = useState<VehicleInfo[]>([]);
 
   const handleSelectCustomer = (customer: CustomerSuggestion) => {

@@ -121,6 +121,20 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
             <h1 className="text-2xl font-black text-on-surface">Orden #{order.orderNumber}</h1>
             <p className="text-on-surface-variant">Placa: <span className="font-bold text-on-surface">{order.vehicle.plate}</span></p>
           </div>
+          <button
+            onClick={() => {
+              const qs = new URLSearchParams();
+              qs.set('plate', order.vehicle.plate);
+              if (order.vehicle.customer?.name) qs.set('name', order.vehicle.customer.name);
+              if (order.vehicle.customer?.cc) qs.set('cc', order.vehicle.customer.cc);
+              if (order.vehicle.customer?.phone) qs.set('phone', order.vehicle.customer.phone);
+              router.push(`/almacen?${qs.toString()}`);
+            }}
+            className="ml-auto flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-lg text-sm font-bold transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">add_circle</span>
+            Agregar servicios o compras
+          </button>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-8">

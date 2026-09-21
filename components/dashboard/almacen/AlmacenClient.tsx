@@ -16,6 +16,13 @@ const MySwal = withReactContent(Swal);
 
 interface AlmacenClientProps {
   initialProducts: AlmacenProduct[];
+  hideServicesTab?: boolean;
+  prefillData?: {
+    plate?: string;
+    customerName?: string;
+    customerCc?: string;
+    customerPhone?: string;
+  };
 }
 
 const SERVICE_CATEGORIES: {
@@ -44,13 +51,13 @@ const SERVICE_CATEGORIES: {
     },
   ];
 
-export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
+export function AlmacenClient({ initialProducts, hideServicesTab = false, prefillData }: AlmacenClientProps) {
   const [activeTab, setActiveTab] = useState<'productos' | 'servicios'>('productos');
   const [products] = useState<AlmacenProduct[]>(initialProducts);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<Map<string, number>>(new Map());
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('EFECTIVO');
-  const [customerName, setCustomerName] = useState('');
+  const [customerName, setCustomerName] = useState(prefillData?.customerName || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSale, setCompletedSale] = useState<any>(null);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
@@ -64,10 +71,12 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
   const observerTarget = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getServicesByCategory().then((res) => {
-      if (res.success) setServices(res.data);
-    });
-  }, []);
+    if (!hideServicesTab) {
+      getServicesByCategory().then((res) => {
+        if (res.success) setServices(res.data);
+      });
+    }
+  }, [hideServicesTab]);
 
   const filteredServices = services.filter((s) =>
     s.name.toLowerCase().includes(servicesSearch.toLowerCase())
@@ -267,28 +276,30 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
   return (
     <div className="flex flex-col h-full gap-4">
       {/* ── Tabs Navigation ── */}
-      <div className="flex bg-surface-container-low p-1 rounded-2xl w-full sm:w-96 mx-auto mb-2 border border-outline-variant shadow-sm">
-        <button
-          onClick={() => setActiveTab('productos')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${activeTab === 'productos'
-            ? 'bg-primary text-on-primary shadow-md'
-            : 'text-on-surface-variant hover:bg-surface-container-high'
-            }`}
-        >
-          <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
-          Productos
-        </button>
-        <button
-          onClick={() => setActiveTab('servicios')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${activeTab === 'servicios'
-            ? 'bg-primary text-on-primary shadow-md'
-            : 'text-on-surface-variant hover:bg-surface-container-high'
-            }`}
-        >
-          <span className="material-symbols-outlined text-[20px]">build_circle</span>
-          Servicios
-        </button>
-      </div>
+      {!hideServicesTab && (
+        <div className="flex bg-surface-container-low p-1 rounded-2xl w-full sm:w-96 mx-auto mb-2 border border-outline-variant shadow-sm">
+          <button
+            onClick={() => setActiveTab('productos')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${activeTab === 'productos'
+              ? 'bg-primary text-on-primary shadow-md'
+              : 'text-on-surface-variant hover:bg-surface-container-high'
+              }`}
+          >
+            <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
+            Productos
+          </button>
+          <button
+            onClick={() => setActiveTab('servicios')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${activeTab === 'servicios'
+              ? 'bg-primary text-on-primary shadow-md'
+              : 'text-on-surface-variant hover:bg-surface-container-high'
+              }`}
+          >
+            <span className="material-symbols-outlined text-[20px]">build_circle</span>
+            Servicios
+          </button>
+        </div>
+      )}
 
       {/* ── Contenido de la pestaña "Productos" ── */}
       {activeTab === 'productos' && (

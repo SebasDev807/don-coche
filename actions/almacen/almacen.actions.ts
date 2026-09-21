@@ -32,7 +32,7 @@ export interface SaleCartItem {
  */
 export async function getAlmacenProducts() {
   try {
-    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+    await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO', 'TECNICO']);
 
     const products = await prisma.product.findMany({
       where: { isActive: true, stock: { gt: 0 } },
@@ -80,7 +80,7 @@ export async function createProductSale(params: {
   customerCc?: string;
 }) {
   try {
-    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO', 'TECNICO']);
     const { items, paymentMethod, emitirFactura, customerName, customerCc } = params;
 
     if (!items || items.length === 0) {

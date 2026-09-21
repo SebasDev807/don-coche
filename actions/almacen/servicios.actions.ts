@@ -63,8 +63,7 @@ export async function getServicesByCategory(category?: ItemCategory) {
 
 /**
  * Crea una orden de servicios y la factura DIRECTAMENTE en un solo paso.
- * Para uso exclusivo del Admin/Gerente desde el Punto de Venta.
- * No pasa por estado EN_PISTA — va directo a FACTURADA.
+ * Si ya hay una orden EN_PISTA para el vehiculo, acumula todo y la factura.
  */
 export async function createAndBillServiceOrder(params: {
   plate: string;
@@ -80,7 +79,7 @@ export async function createAndBillServiceOrder(params: {
   emitirFactura: boolean;
 }) {
   try {
-    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO', 'TECNICO']);
     const {
       plate, customerName, customerCc, customerPhone, carBrand, carModel, carColor,
       serviceIds, productItems, paymentMethod, emitirFactura,
@@ -89,6 +88,13 @@ export async function createAndBillServiceOrder(params: {
     if ((!serviceIds || serviceIds.length === 0) && (!productItems || productItems.length === 0)) {
       return { success: false, message: 'Selecciona al menos un servicio o producto' };
     }
+
+    // Nombre del operador para atribucion en la factura
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { name: true },
+    });
+    const operatorName = currentUser?.name || 'Admin';
 
     // Pre-validar productos si hay alguno
     let products: any[] = [];
@@ -113,9 +119,7 @@ export async function createAndBillServiceOrder(params: {
     const billedOrder = await prisma.$transaction(async (tx) => {
       // 1. Vehículo / Cliente
       let finalPlate = (plate || '').toUpperCase().trim();
-      if (!finalPlate) {
-        finalPlate = 'GEN-000'; // Vehículo genérico cuando no se especifica placa
-      }
+      if (!finalPlate) finalPlate = 'GEN-000';
 
       let vehicle = await tx.vehicle.findUnique({
         where: { plate: finalPlate },
@@ -182,8 +186,8 @@ export async function createAndBillServiceOrder(params: {
         });
       }
 
-      // 2. Calcular precios de servicios
-      let totalServices = 0;
+      // 2. Calcular precios de servicios nuevos
+      let newServicesTotal = 0;
       let orderServicesData: any[] = [];
       let catalogServices: any[] = [];
       
@@ -198,13 +202,13 @@ export async function createAndBillServiceOrder(params: {
           const base = Number(s.basePrice);
           const pct = s.profitPercentage ? Number(s.profitPercentage) : 0;
           const pvp = Math.round((base + (base * pct) / 100) / 50) * 50;
-          totalServices += pvp;
-          return { serviceId: s.id, chargedPrice: pvp };
+          newServicesTotal += pvp;
+          return { serviceId: s.id, chargedPrice: pvp, technicianId: session.userId, technicianName: operatorName };
         });
       }
 
-      // Calcular precios de productos
-      let totalProducts = 0;
+      // 3. Calcular precios de productos nuevos
+      let newProductsTotal = 0;
       let orderProductsData: any[] = [];
 
       if (productItems && productItems.length > 0) {
@@ -212,7 +216,7 @@ export async function createAndBillServiceOrder(params: {
           const p = products.find(prod => prod.id === item.productId);
           const unitPrice = Number(p.salePrice);
           const lineTotal = unitPrice * item.quantity;
-          totalProducts += lineTotal;
+          newProductsTotal += lineTotal;
           
           return {
             productId: item.productId,
@@ -223,33 +227,76 @@ export async function createAndBillServiceOrder(params: {
         });
       }
 
-      const expectedGrandTotal = totalServices + totalProducts;
-
-      // 3. Crear orden ya FACTURADA
-      const order = await tx.order.create({
-        data: {
-          technicianId: session.userId,
-          adminId: session.userId,
-          vehicleId: vehicle.id,
-          status: 'FACTURADA',
-          paymentMethod,
-          billedAt: new Date(),
-          totalServices,
-          totalProducts,
-          grandTotal: expectedGrandTotal,
-          services: orderServicesData.length > 0 ? { create: orderServicesData } : undefined,
-          products: orderProductsData.length > 0 ? { create: orderProductsData } : undefined,
-        },
-        include: {
-          vehicle: { include: { customer: true } },
-          technician: { select: { name: true } },
-          admin: { select: { name: true } },
-          services: { include: { service: true } },
-          products: { include: { product: true } },
-        },
+      // Verificar si hay orden EN_PISTA para esta placa
+      const existingOpenOrder = await tx.order.findFirst({
+        where: { vehicleId: vehicle.id, status: 'EN_PISTA' },
+        orderBy: { createdAt: 'desc' },
       });
 
-      // Descontar inventario si hubo productos
+      let orderRecord;
+
+      if (existingOpenOrder) {
+        // Acumular y facturar
+        const updatedTotalServices = Number(existingOpenOrder.totalServices) + newServicesTotal;
+        const updatedTotalProducts = Number(existingOpenOrder.totalProducts) + newProductsTotal;
+
+        if (orderServicesData.length > 0) {
+          await tx.orderService.createMany({
+            data: orderServicesData.map(s => ({ ...s, orderId: existingOpenOrder.id })),
+          });
+        }
+        if (orderProductsData.length > 0) {
+          await tx.orderProduct.createMany({
+            data: orderProductsData.map(p => ({ ...p, orderId: existingOpenOrder.id })),
+          });
+        }
+
+        orderRecord = await tx.order.update({
+          where: { id: existingOpenOrder.id },
+          data: {
+            adminId: session.userId,
+            status: 'FACTURADA',
+            paymentMethod,
+            billedAt: new Date(),
+            totalServices: updatedTotalServices,
+            totalProducts: updatedTotalProducts,
+            grandTotal: updatedTotalServices + updatedTotalProducts,
+          },
+          include: {
+            vehicle: { include: { customer: true } },
+            technician: { select: { name: true } },
+            admin: { select: { name: true } },
+            services: { include: { service: true } },
+            products: { include: { product: true } },
+          },
+        });
+      } else {
+        // 3. Crear orden ya FACTURADA
+        orderRecord = await tx.order.create({
+          data: {
+            technicianId: session.userId,
+            adminId: session.userId,
+            vehicleId: vehicle.id,
+            status: 'FACTURADA',
+            paymentMethod,
+            billedAt: new Date(),
+            totalServices: newServicesTotal,
+            totalProducts: newProductsTotal,
+            grandTotal: newServicesTotal + newProductsTotal,
+            services: orderServicesData.length > 0 ? { create: orderServicesData } : undefined,
+            products: orderProductsData.length > 0 ? { create: orderProductsData } : undefined,
+          },
+          include: {
+            vehicle: { include: { customer: true } },
+            technician: { select: { name: true } },
+            admin: { select: { name: true } },
+            services: { include: { service: true } },
+            products: { include: { product: true } },
+          },
+        });
+      }
+
+      // Descontar inventario si hubo productos nuevos agregados en este paso
       if (orderProductsData.length > 0) {
         for (const op of orderProductsData) {
           const product = products.find(p => p.id === op.productId);
@@ -268,13 +315,13 @@ export async function createAndBillServiceOrder(params: {
               quantity: -op.quantity,
               previousStock: product.stock,
               newStock: newStock,
-              reason: `Venta Directa POS #${order.orderNumber}`
+              reason: `Venta Directa POS #${orderRecord.orderNumber}`
             }
           });
         }
       }
 
-      return { order, catalogServices };
+      return { order: orderRecord, catalogServices };
     }, { timeout: 15000 });
 
     // 4. Aliaddo

@@ -391,3 +391,124 @@ export async function createAndBillServiceOrder(params: {
     return { success: false, message: error.message || 'Error al crear la orden' };
   }
 }
+
+/**
+ * Crea una orden de servicios en estado EN_PISTA para que sea cobrada en caja.
+ * Pensada para admin/gerente que quieren registrar servicios y enviarlos al flujo de caja.
+ */
+export async function createServiceOrderForCaja(params: {
+  plate: string;
+  customerName?: string;
+  customerCc?: string;
+  customerPhone?: string;
+  serviceIds: string[];
+  productItems?: { productId: string; quantity: number }[];
+}) {
+  try {
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+    const { plate, customerName, customerCc, customerPhone, serviceIds, productItems } = params;
+
+    if ((!serviceIds || serviceIds.length === 0) && (!productItems || productItems.length === 0)) {
+      return { success: false, message: 'Selecciona al menos un servicio o producto' };
+    }
+
+    const order = await prisma.$transaction(async (tx) => {
+      let finalPlate = (plate || '').toUpperCase().trim();
+      if (!finalPlate) finalPlate = 'GEN-000';
+
+      let vehicle = await tx.vehicle.findUnique({
+        where: { plate: finalPlate },
+        include: { customer: true },
+      });
+
+      let customerId = vehicle?.customerId ?? null;
+
+      if (customerName || customerCc || customerPhone) {
+        if (!customerId) {
+          const existing = customerCc
+            ? await tx.customer.findUnique({ where: { cc: customerCc } })
+            : null;
+          if (existing) {
+            customerId = existing.id;
+            await tx.customer.update({
+              where: { id: customerId },
+              data: { name: customerName || existing.name, phone: customerPhone || existing.phone, cc: customerCc || existing.cc },
+            });
+          } else {
+            const newCust = await tx.customer.create({
+              data: { cc: customerCc || null, name: customerName || null, phone: customerPhone || null },
+            });
+            customerId = newCust.id;
+          }
+        } else {
+          const c = vehicle!.customer!;
+          await tx.customer.update({
+            where: { id: customerId },
+            data: { name: customerName || c.name, cc: customerCc || c.cc, phone: customerPhone || c.phone },
+          });
+        }
+      }
+
+      if (!vehicle) {
+        vehicle = await tx.vehicle.create({
+          data: { plate: finalPlate, customerId },
+          include: { customer: true },
+        });
+      }
+
+      let totalServices = 0;
+      let orderServicesData: any[] = [];
+      if (serviceIds && serviceIds.length > 0) {
+        const catalogServices = await tx.serviceCatalog.findMany({ where: { id: { in: serviceIds } } });
+        if (catalogServices.length !== serviceIds.length) throw new Error('Servicios no validos');
+        orderServicesData = catalogServices.map((s) => {
+          const base = Number(s.basePrice);
+          const pct = s.profitPercentage ? Number(s.profitPercentage) : 0;
+          const pvp = Math.round((base + (base * pct) / 100) / 50) * 50;
+          totalServices += pvp;
+          return { serviceId: s.id, chargedPrice: pvp };
+        });
+      }
+
+      let totalProducts = 0;
+      let orderProductsData: any[] = [];
+      if (productItems && productItems.length > 0) {
+        const productIds = productItems.map(p => p.productId);
+        const catalogProducts = await tx.product.findMany({ where: { id: { in: productIds } } });
+        orderProductsData = productItems.map((item) => {
+          const p = catalogProducts.find(cp => cp.id === item.productId);
+          if (!p) throw new Error('Producto no encontrado: ' + item.productId);
+          const unitPrice = Number(p.salePrice);
+          totalProducts += unitPrice * item.quantity;
+          return { productId: item.productId, quantity: item.quantity, unitPrice, unitCost: Number(p.unitCost) };
+        });
+      }
+
+      return await tx.order.create({
+        data: {
+          technicianId: session.userId,
+          vehicleId: vehicle.id,
+          status: 'EN_PISTA',
+          totalServices,
+          totalProducts,
+          grandTotal: totalServices + totalProducts,
+          services: orderServicesData.length > 0 ? { create: orderServicesData } : undefined,
+          products: orderProductsData.length > 0 ? { create: orderProductsData } : undefined,
+        },
+        select: { id: true, orderNumber: true },
+      });
+    }, { timeout: 15000 });
+
+    revalidatePath('/caja');
+    revalidatePath('/almacen');
+
+    return {
+      success: true,
+      message: 'Orden #' + order.orderNumber + ' enviada a caja exitosamente',
+      data: { id: order.id, orderNumber: order.orderNumber },
+    };
+  } catch (error: any) {
+    console.error('[createServiceOrderForCaja]', error);
+    return { success: false, message: error.message || 'Error al enviar a caja' };
+  }
+}

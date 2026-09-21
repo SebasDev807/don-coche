@@ -8,7 +8,7 @@ import { SaleCart } from './SaleCart';
 import { SaleReceiptModal } from './SaleReceiptModal';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import { getServicesByCategory, createAndBillServiceOrder } from '@/actions/almacen/servicios.actions';
+import { getServicesByCategory, createAndBillServiceOrder, createServiceOrderForCaja } from '@/actions/almacen/servicios.actions';
 import { ServiceOrderReceiptModal } from './ServiceOrderReceiptModal';
 import { useEffect } from 'react';
 
@@ -54,6 +54,7 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSale, setCompletedSale] = useState<any>(null);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
+  const [sentToCajaOrderNumber, setSentToCajaOrderNumber] = useState<number | null>(null);
 
   // Servicios
   const [services, setServices] = useState<any[]>([]);
@@ -213,6 +214,56 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
     }
   };
 
+  /** Enviar los servicios seleccionados a caja (orden EN_PISTA) sin facturar */
+  const handleSendToCaja = async (vehicleData?: any) => {
+    if (selectedServiceIds.size === 0 && cart.size === 0) return;
+
+    const items = Array.from(cart.entries()).map(([productId, quantity]) => ({ productId, quantity }));
+
+    const result = await MySwal.fire({
+      title: 'Enviar a Caja',
+      text: '¿Deseas enviar esta orden a la cola de caja para que el cajero procese el pago?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, Enviar a Caja',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#16a34a',
+    });
+    if (!result.isConfirmed) return;
+
+    setIsSubmitting(true);
+    MySwal.showLoading();
+
+    const res = await createServiceOrderForCaja({
+      plate: vehicleData?.plate || '',
+      customerName: customerName.trim() || undefined,
+      customerCc: vehicleData?.customerCc?.trim() || undefined,
+      customerPhone: vehicleData?.customerPhone?.trim() || undefined,
+      serviceIds: Array.from(selectedServiceIds),
+      productItems: items.length > 0 ? items : undefined,
+    });
+
+    setIsSubmitting(false);
+    MySwal.close();
+
+    if (res.success) {
+      setCart(new Map());
+      setSelectedServiceIds(new Set());
+      setCustomerName('');
+      setSentToCajaOrderNumber(res.data?.orderNumber ?? null);
+      MySwal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: res.message || 'Enviado a caja',
+        showConfirmButton: false,
+        timer: 3500,
+      });
+    } else {
+      MySwal.fire('Error', res.message, 'error');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full gap-4">
       {/* ── Tabs Navigation ── */}
@@ -288,6 +339,7 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
               onChangeQty={changeQty}
               onRemove={removeFromCart}
               onSell={handleSell}
+              onSendToCaja={(vehicleData) => handleSendToCaja(vehicleData)}
               isSubmitting={isSubmitting}
               customerName={customerName}
               onCustomerNameChange={setCustomerName}
@@ -373,6 +425,7 @@ export function AlmacenClient({ initialProducts }: AlmacenClientProps) {
               onChangeQty={changeQty}
               onRemove={removeFromCart}
               onSell={handleSell}
+              onSendToCaja={(vehicleData) => handleSendToCaja(vehicleData)}
               isSubmitting={isSubmitting}
               customerName={customerName}
               onCustomerNameChange={setCustomerName}

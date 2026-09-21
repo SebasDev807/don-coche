@@ -16,6 +16,7 @@ interface SaleCartProps {
   onChangeQty: (productId: string, delta: number) => void;
   onRemove: (id: string, type: 'PRODUCT' | 'SERVICE') => void;
   onSell: (emitirFactura: boolean, vehicleData?: any) => void;
+  onSendToCaja?: (vehicleData?: any) => void;
   isSubmitting: boolean;
   customerName: string;
   onCustomerNameChange: (v: string) => void;
@@ -37,6 +38,7 @@ export function SaleCart({
   onChangeQty,
   onRemove,
   onSell,
+  onSendToCaja,
   isSubmitting,
   customerName,
   onCustomerNameChange,
@@ -300,6 +302,17 @@ export function SaleCart({
 
             {/* Botones de acción */}
             <div className="space-y-2">
+              {/* Botón Enviar a Caja — solo cuando hay servicios */}
+              {hasServices && onSendToCaja && (
+                <button
+                  onClick={() => onSendToCaja({ plate, customerCc, customerPhone })}
+                  disabled={isSubmitting || isEmpty}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">send_to_mobile</span>
+                  Enviar a Caja
+                </button>
+              )}
               <button
                 onClick={() => onSell(false, hasServices ? { plate, customerCc, customerPhone } : undefined)}
                 disabled={isSubmitting || isEmpty}

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function EditarCompraPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+  const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
   const [suppliersRes, productsRes, categoriesRes, invoiceRes] = await Promise.all([
     getSuppliersAction(),

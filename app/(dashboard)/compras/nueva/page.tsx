@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NuevaCompraPage() {
-  const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+  const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
   const [suppliersRes, productsRes, categoriesRes] = await Promise.all([
     getSuppliersAction(),

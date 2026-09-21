@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { getPurchaseInvoicesAction } from '@/actions/purchases/purchases.actions';
 import Link from 'next/link';
 import { ComprasClient } from './ComprasClient';
-
+import { verifyRole } from '@/lib/dal';
 
 export const metadata: Metadata = {
   title: 'Historial de Compras | Don Coche',
@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ComprasPage() {
+  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
   const result = await getPurchaseInvoicesAction();
   const invoices = result.success && result.data ? result.data : [];
 

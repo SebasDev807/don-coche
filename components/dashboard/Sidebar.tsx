@@ -39,7 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: 'storefront', label: 'Punto de Venta', href: '/almacen', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
   { icon: 'group', label: 'Gestión de Personal', href: '/personal', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'] },
   { icon: 'inventory_2', label: 'Inventario', href: '/inventario', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
-  { icon: 'shopping_cart', label: 'Compras', href: '/compras', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'] },
+  { icon: 'shopping_cart', label: 'Compras', href: '/compras', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
   { icon: 'design_services', label: 'Catálogo de Servicios', href: '/servicios', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
   { icon: 'directions_car', label: 'Clientes y Vehículos', href: '/clientes', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
   { icon: 'calendar_month', label: 'Próximas Citas', href: '/citas', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },

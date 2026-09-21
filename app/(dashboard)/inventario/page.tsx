@@ -5,6 +5,8 @@ import { InventoryToolbar } from '@/components/dashboard/inventario/InventoryToo
 import { prisma } from '@/lib/prisma';
 import { PrimaryButton } from '@/components/ui';
 import { verifySession } from '@/lib/dal';
+import { getSuppliersAction } from '@/actions/suppliers/suppliers.actions';
+import { ProveedoresClient } from '../proveedores/ProveedoresClient';
 
 
 /**
@@ -107,6 +109,10 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     return (a.barCode || '').localeCompare(b.barCode || '');
   });
 
+  // Obtener proveedores
+  const suppliersRes = await getSuppliersAction();
+  const suppliers = suppliersRes.success && suppliersRes.data ? suppliersRes.data : [];
+
   return (
     <div className="fade-in">
       <main className="flex-grow max-w-[1440px] mx-auto w-full">
@@ -137,6 +143,11 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
 
         {/* Contenedor Principal de la Tabla */}
         <InventoryTable products={serializedProducts} userRole={userRole} />
+        
+        {/* Sección de Proveedores */}
+        <div className="mt-12 pt-12 border-t border-outline-variant">
+          <ProveedoresClient initialSuppliers={suppliers} />
+        </div>
       </main>
     </div>
   );

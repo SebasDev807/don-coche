@@ -23,7 +23,18 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
   const product = await prisma.product.findUnique({
     where: { id, isActive: true },
     include: {
-      category_rel: true
+      category_rel: true,
+      purchaseItems: {
+        include: {
+          invoice: {
+            include: { supplier: true }
+          }
+        },
+        orderBy: {
+          invoice: { date: 'desc' }
+        },
+        take: 5
+      }
     }
   });
 
@@ -157,6 +168,40 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                 </p>
               </div>
             </div>
+
+            {/* Historial de Compras (Datos del proveedor en inventario) */}
+            {product.purchaseItems && product.purchaseItems.length > 0 && (
+              <div className="mt-8">
+                <h4 className="font-title-md text-on-surface mb-3 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[20px]">local_shipping</span>
+                  Últimas Compras a Proveedores
+                </h4>
+                <div className="bg-surface-container-low rounded-xl border border-outline-variant overflow-hidden">
+                  <table className="w-full text-left text-body-sm">
+                    <thead>
+                      <tr className="bg-surface border-b border-outline-variant text-secondary">
+                        <th className="p-3 font-medium">Fecha</th>
+                        <th className="p-3 font-medium">Proveedor</th>
+                        <th className="p-3 font-medium">Factura</th>
+                        <th className="p-3 font-medium">Cant.</th>
+                        <th className="p-3 font-medium text-right">Costo Unit.</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/60">
+                      {product.purchaseItems.map((pi) => (
+                        <tr key={pi.id}>
+                          <td className="p-3">{new Date(pi.invoice.date).toLocaleDateString()}</td>
+                          <td className="p-3 font-medium">{pi.invoice.supplier.name}</td>
+                          <td className="p-3">{pi.invoice.invoiceNumber}</td>
+                          <td className="p-3">{pi.quantity}</td>
+                          <td className="p-3 text-right">${Number(pi.unitCost).toLocaleString('es-CO')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

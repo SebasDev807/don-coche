@@ -45,6 +45,7 @@ enum MovementType {
   INGRESO
   AJUSTE
   VENTA
+  COMPRA
 }
 
 enum WhatsAppStatus {
@@ -100,6 +101,7 @@ model User {
   cashClosures        CashClosure[]
   productSales        ProductSale[]       @relation("AdminSales")
   releasesAuthored    AppRelease[]        @relation("AuthorReleases")
+  purchases           PurchaseInvoice[]
 
   @@index([cc]) // Índice para login rápido
   @@map("users")
@@ -193,6 +195,7 @@ model Product {
   orderProducts OrderProduct[]
   saleItems     ProductSaleItem[]   @relation("SaleItems")
   movements     InventoryMovement[]
+  purchaseItems PurchaseInvoiceItem[]
 
   @@map("products")
 }
@@ -471,5 +474,60 @@ model ReleaseFeature {
   release AppRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
 
   @@map("release_features")
+}
+
+// -----------------------------------------------------------------------
+// MODELOS DE COMPRAS Y PROVEEDORES
+// -----------------------------------------------------------------------
+
+model Supplier {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nit       String   @unique
+  name      String
+  phone     String?
+  email     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  purchases PurchaseInvoice[]
+
+  @@map("suppliers")
+}
+
+model PurchaseInvoice {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId     String   @map("supplier_id") @db.Uuid
+  invoiceNumber  String   @map("invoice_number")
+  date           DateTime @default(now()) @db.Date
+  subtotal       Decimal  @db.Decimal(10, 2)
+  ivaAmount      Decimal  @default(0) @map("iva_amount") @db.Decimal(10, 2)
+  grandTotal     Decimal  @map("grand_total") @db.Decimal(10, 2)
+  adminId        String   @map("admin_id") @db.Uuid
+  notes          String?
+  status         String   @default("CONFIRMED")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  supplier       Supplier @relation(fields: [supplierId], references: [id])
+  admin          User     @relation(fields: [adminId], references: [id])
+  items          PurchaseInvoiceItem[]
+
+  @@unique([supplierId, invoiceNumber])
+  @@index([date])
+  @@map("purchase_invoices")
+}
+
+model PurchaseInvoiceItem {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId     String   @map("invoice_id") @db.Uuid
+  productId     String   @map("product_id") @db.Uuid
+  quantity      Int
+  unitCost      Decimal  @map("unit_cost") @db.Decimal(10, 2)
+  subtotal      Decimal  @db.Decimal(10, 2)
+
+  invoice       PurchaseInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product       Product         @relation(fields: [productId], references: [id])
+
+  @@map("purchase_invoice_items")
 }
 

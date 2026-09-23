@@ -71,35 +71,35 @@ export async function createPurchaseInvoiceAction(data: {
 
         const previousStock = product.stock;
         const newStock = previousStock + item.quantity;
-        
+
         const oldUnitCost = Number(product.unitCost);
         const oldSalePrice = Number(product.salePrice);
         const newUnitCost = item.unitCost;
-        
+
         let newSalePrice = oldSalePrice;
 
         // Auto-update sale price based on new unit cost
         if (newUnitCost > oldUnitCost) {
-           if (product.profitPercentage) {
-             const profit = Number(product.profitPercentage);
-             newSalePrice = newUnitCost * (1 + (profit / 100));
-             // If there is IVA, is salePrice with or without IVA? Usually salePrice is base price or final price. 
-             // We will stick to the basic calculation: preserve the margin percentage.
-           } else {
-             // If no explicit profit percentage, preserve the multiplier
-             const marginMultiplier = oldUnitCost > 0 ? (oldSalePrice / oldUnitCost) : 1;
-             newSalePrice = newUnitCost * marginMultiplier;
-           }
+          if (product.profitPercentage) {
+            const profit = Number(product.profitPercentage);
+            newSalePrice = newUnitCost * (1 + (profit / 100));
+            // If there is IVA, is salePrice with or without IVA? Usually salePrice is base price or final price. 
+            // We will stick to the basic calculation: preserve the margin percentage.
+          } else {
+            // If no explicit profit percentage, preserve the multiplier
+            const marginMultiplier = oldUnitCost > 0 ? (oldSalePrice / oldUnitCost) : 1;
+            newSalePrice = newUnitCost * marginMultiplier;
+          }
         } else if (newUnitCost < oldUnitCost) {
-           // Optionally, also lower it, but usually clients want to keep it high unless manually changed.
-           // Since client said "El sistema suba el precio automáticamente", we'll just recalculate it anyway to keep margin consistent.
-           if (product.profitPercentage) {
-             const profit = Number(product.profitPercentage);
-             newSalePrice = newUnitCost * (1 + (profit / 100));
-           } else {
-             const marginMultiplier = oldUnitCost > 0 ? (oldSalePrice / oldUnitCost) : 1;
-             newSalePrice = newUnitCost * marginMultiplier;
-           }
+          // Optionally, also lower it, but usually clients want to keep it high unless manually changed.
+          // Since client said "El sistema suba el precio automáticamente", we'll just recalculate it anyway to keep margin consistent.
+          if (product.profitPercentage) {
+            const profit = Number(product.profitPercentage);
+            newSalePrice = newUnitCost * (1 + (profit / 100));
+          } else {
+            const marginMultiplier = oldUnitCost > 0 ? (oldSalePrice / oldUnitCost) : 1;
+            newSalePrice = newUnitCost * marginMultiplier;
+          }
         }
 
         await tx.product.update({
@@ -259,15 +259,15 @@ export async function createQuickProductAction(data: { name: string; unitCost: n
         stock: data.stock || 0, // stock inicial opcional
       }
     });
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: {
         ...product,
         unitCost: Number(product.unitCost),
         salePrice: Number(product.salePrice),
         profitPercentage: product.profitPercentage ? Number(product.profitPercentage) : null,
         iva: product.iva ? Number(product.iva) : null,
-      } 
+      }
     };
   } catch (error: any) {
     console.error("Error quick creating product:", error);
@@ -357,7 +357,7 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
       for (const productId of Array.from(productIds)) {
         const oldItem = oldItemsMap.get(productId);
         const newItem = data.items.find(i => i.productId === productId);
-        
+
         const oldQty = oldItem ? oldItem.quantity : 0;
         const newQty = newItem ? newItem.quantity : 0;
         const delta = newQty - oldQty;
@@ -372,22 +372,22 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
         }
 
         let newStock = product.stock + delta;
-        
+
         // Update product price if it's included in the new items
         let nextUnitCost = Number(product.unitCost);
         let nextSalePrice = Number(product.salePrice);
-        
+
         if (newItem) {
           nextUnitCost = newItem.unitCost;
           // Calculate new sale price if cost changed
           if (nextUnitCost !== Number(product.unitCost)) {
-             if (product.profitPercentage) {
-               const profit = Number(product.profitPercentage);
-               nextSalePrice = nextUnitCost * (1 + (profit / 100));
-             } else {
-               const marginMultiplier = Number(product.unitCost) > 0 ? (Number(product.salePrice) / Number(product.unitCost)) : 1;
-               nextSalePrice = nextUnitCost * marginMultiplier;
-             }
+            if (product.profitPercentage) {
+              const profit = Number(product.profitPercentage);
+              nextSalePrice = nextUnitCost * (1 + (profit / 100));
+            } else {
+              const marginMultiplier = Number(product.unitCost) > 0 ? (Number(product.salePrice) / Number(product.unitCost)) : 1;
+              nextSalePrice = nextUnitCost * marginMultiplier;
+            }
           }
         }
 
@@ -470,7 +470,7 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
 export async function updateQuickProductAction(id: string, data: { name: string; unitCost: number; salePrice: number; categoryId?: string; profitPercentage?: number; iva?: number; barCode?: string; stock?: number }) {
   try {
     const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-    
+
     // Check if product exists first
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {

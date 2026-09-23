@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, } from "react";
+import { useEffect, useState, } from "react";
 import { Supplier } from "@prisma/client";
 
 import { updatePurchaseInvoiceAction, createQuickProductAction, updateQuickProductAction, createQuickSupplierAction } from "@/actions/purchases/purchases.actions";
@@ -120,34 +120,7 @@ export function EditarCompraClient({
     setIsQuickProductModalOpen(true);
   };
 
-  const prevIvaRateRef = useRef(0);
-
-  useEffect(() => {
-    const currentIvaRate = quickProductData.hasIva ? (typeof quickProductData.iva === 'number' ? quickProductData.iva : parseFloat(String(quickProductData.iva)) || 0) : 0;
-
-    if (prevIvaRateRef.current !== currentIvaRate) {
-      const raw = quickProductData.unitCost;
-      if (raw.trim()) {
-        const num = parseLocalizedNumber(raw);
-        if (num > 0) {
-          const oldIvaRate = prevIvaRateRef.current;
-          const baseCost = num / (1 + oldIvaRate / 100);
-          const newCost = baseCost * (1 + currentIvaRate / 100);
-          setQuickProductData(prev => ({
-            ...prev,
-            unitCost: new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(newCost)
-          }));
-        }
-      }
-      prevIvaRateRef.current = currentIvaRate;
-    }
-  }, [quickProductData.hasIva, quickProductData.iva, quickProductData.unitCost]);
-
-  useEffect(() => {
-    if (!quickProductData.hasIva && quickProductData.iva !== 0) {
-      setQuickProductData(prev => ({ ...prev, iva: 0 }));
-    }
-  }, [quickProductData.hasIva, quickProductData.iva]);
+  // El IVA se aplica en el cálculo del precio de venta (useSellingPrice), no en el campo de costo.
 
   const handleQuickProductCreate = async (e: React.FormEvent) => {
     e.preventDefault();

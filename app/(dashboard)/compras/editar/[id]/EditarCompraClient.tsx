@@ -449,7 +449,7 @@ export function EditarCompraClient({
                 <div className="w-32 shrink-0">
                   <label className="text-[10px] text-secondary uppercase block mb-1">Costo Unit</label>
                   <input
-                    type="number" min="0" step="100" required placeholder="0"
+                    type="number" min="0" step="any" required placeholder="0"
                     className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-right"
                     value={item.unitCost}
                     onChange={(e) => handleItemChange(index, "unitCost", e.target.value)}

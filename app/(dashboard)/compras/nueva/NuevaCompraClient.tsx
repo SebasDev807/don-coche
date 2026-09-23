@@ -132,7 +132,7 @@ export function NuevaCompraClient({
         categoryId: quickProductData.categoryId || undefined,
         stock: undefined,
         unitCost: costValue,
-        salePrice: isInsumos ? 0 : sellingPrice,
+        salePrice: sellingPrice,
         profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
         iva: quickProductData.hasIva ? quickProductData.iva : 0
       });
@@ -174,7 +174,7 @@ export function NuevaCompraClient({
         categoryId: quickProductData.categoryId || undefined,
         stock: quickProductData.stock ? Number(quickProductData.stock) : 0,
         unitCost: costValue,
-        salePrice: isInsumos ? 0 : sellingPrice,
+        salePrice: sellingPrice,
         profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
         iva: quickProductData.hasIva ? quickProductData.iva : 0
       });
@@ -192,7 +192,7 @@ export function NuevaCompraClient({
             barCode: quickProductData.barCode,
             categoryId: quickProductData.categoryId || undefined,
             unitCost: costValue,
-            salePrice: isInsumos ? 0 : sellingPrice,
+            salePrice: sellingPrice,
             profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
             iva: quickProductData.hasIva ? quickProductData.iva : 0
           });

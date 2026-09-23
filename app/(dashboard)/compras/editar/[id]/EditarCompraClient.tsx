@@ -282,7 +282,7 @@ export function EditarCompraClient({
 
     if (!prod) {
       const sub = qty * cost;
-      return { qty, cost, baseSubtotal: sub, profitMargin: 0, netUnitPrice: cost, ivaRate: 0, ivaAmount: 0, unitWithIva: cost, totalSubtotal: sub, isInsumo: false };
+      return { qty, cost, baseSubtotal: sub, netUnitPrice: cost, ivaRate: 0, ivaAmount: 0, unitWithIva: cost, totalSubtotal: sub, isInsumo: false };
     }
 
     const selectedCat = categories.find(c => c.id === prod.categoryId);
@@ -290,28 +290,21 @@ export function EditarCompraClient({
 
     if (isInsumo) {
       const sub = qty * cost;
-      return { qty, cost, baseSubtotal: sub, profitMargin: 0, netUnitPrice: cost, ivaRate: 0, ivaAmount: 0, unitWithIva: cost, totalSubtotal: sub, isInsumo: true };
+      return { qty, cost, baseSubtotal: sub, netUnitPrice: cost, ivaRate: 0, ivaAmount: 0, unitWithIva: cost, totalSubtotal: sub, isInsumo: true };
     }
 
-    const profitMargin = prod.profitPercentage != null ? Number(prod.profitPercentage) : 0;
+    // precio unitario neto = costo unitario * (1 + margenGanancia/100)
     const ivaRate = prod.iva != null ? Number(prod.iva) : 19;
-
-    // 1. Precio Neto Unitario: costoUnitario * (1 + margenGanancia/100)
-    const netUnitPrice = cost * (1 + profitMargin / 100);
-
-    // 2. Precio con IVA Unitario: PrecioNetoUnitario * (1 + ivaPorcentaje/100)
-    const unitWithIva = netUnitPrice * (1 + ivaRate / 100);
-
-    // 3. Total General: PrecioConIvaUnitario * cantidad
-    const totalSubtotal = unitWithIva * qty;
+    const netUnitPrice = cost;
+    const unitWithIva = cost * (1 + ivaRate / 100);
 
     const baseSubtotal = netUnitPrice * qty;
+    const totalSubtotal = unitWithIva * qty;
     const ivaAmount = totalSubtotal - baseSubtotal;
 
     return {
       qty,
       cost,
-      profitMargin,
       netUnitPrice,
       ivaRate,
       ivaAmount,

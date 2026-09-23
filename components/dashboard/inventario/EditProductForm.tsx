@@ -72,18 +72,17 @@ export function EditProductForm({ product }: EditProductFormProps) {
 
   // Clean unit cost for calculation if it is formatted
   const numericUnitCost = typeof unitCostValue === 'string'
-    ? parseInt(unitCostValue.replace(/\D/g, ''), 10) || 0
-    : unitCostValue;
+    ? parseLocalizedNumber(unitCostValue)
+    : (unitCostValue || 0);
 
   const ivaValue = watch('iva');
   const hasIvaValue = watch('hasIva') as boolean;
   const autoRoundValue = watch('autoRound') as boolean;
-  const { formattedSellingPrice } = useSellingPrice(numericUnitCost as number, profitPercentageValue as number, ivaValue as number, hasIvaValue, autoRoundValue);
+  const { formattedCostWithIva, formattedSellingPrice } = useSellingPrice(numericUnitCost as any, profitPercentageValue as number, ivaValue as number, hasIvaValue, autoRoundValue);
 
   const categoryIdValue = watch('category');
   const selectedCategory = categories.find(c => c.id === categoryIdValue);
-  const isInsumos = selectedCategory?.name.toLowerCase() === 'insumos';
-
+  const isInsumos = selectedCategory?.name.toLowerCase().includes('insumo');
 
   const fetchCategories = async () => {
     const cats = await getCategories();
@@ -94,13 +93,11 @@ export function EditProductForm({ product }: EditProductFormProps) {
     fetchCategories();
   }, []);
 
-  // El IVA se aplica en el cálculo del precio de venta (useSellingPrice), no en el campo de costo.
-
   const onSubmit = async (data: CreateProductFormValues) => {
     setIsSubmitting(true);
 
     const ivaToApply = data.hasIva ? (data.iva != null ? Number(data.iva) : 19) : 0;
-    const finalUnitCost = Number(data.unitCost); // Costo neto; el IVA se aplica en el precio de venta
+    const finalUnitCost = typeof data.unitCost === 'string' ? parseLocalizedNumber(data.unitCost) : Number(data.unitCost);
 
     const result = await updateProduct({
       id: product.id,
@@ -111,8 +108,6 @@ export function EditProductForm({ product }: EditProductFormProps) {
       stock: data.stock,
       unitCost: finalUnitCost,
       profitPercentage: !isInsumos && data.profitPercentage ? Number(data.profitPercentage) : null,
-      // data.iva != null (loose) cubre undefined y null sin tratar 0 como falsy.
-      // Esto preserva iva=0 (exento) correctamente.
       iva: ivaToApply,
       autoRound: !isInsumos ? data.autoRound : false,
     } as any);
@@ -261,29 +256,19 @@ export function EditProductForm({ product }: EditProductFormProps) {
             <ErrorMessage message={errors.iva?.message} />
           </div>
 
-          {/* Precio de Venta al Público */}
-          {!isInsumos && (
-            <div className="col-span-1">
-              <div className="flex items-center justify-between mb-2">
-                <label className="block font-label-bold text-label-bold text-on-surface-variant">Precio de Venta (PVP)</label>
-                <label className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
-                  <input
-                    type="checkbox"
-                    {...register('autoRound')}
-                    className="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary focus:ring-2"
-                  />
-                  Redondear a $50
-                </label>
-              </div>
-              <input
-                type="text"
-                value={formattedSellingPrice}
-                readOnly
-                className="h-[56px] form-input w-full rounded-lg border-outline-variant bg-surface-container-highest px-4 text-on-surface-variant cursor-not-allowed"
-              />
-              <p className="text-secondary text-sm mt-1">Calculado automáticamente según el margen bruto</p>
+          {/* Resumen de Costo con IVA y PVP */}
+          <div className="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-surface-container/60 p-4 rounded-xl border border-outline-variant/40">
+            <div>
+              <span className="block text-xs font-semibold text-secondary uppercase tracking-wider mb-1">Costo Unitario con IVA</span>
+              <span className="text-title-md font-bold text-on-surface">{formattedCostWithIva}</span>
             </div>
-          )}
+            {!isInsumos && (
+              <div>
+                <span className="block text-xs font-semibold text-secondary uppercase tracking-wider mb-1">Precio de Venta (PVP con IVA)</span>
+                <span className="text-title-md font-bold text-primary">{formattedSellingPrice}</span>
+              </div>
+            )}
+          </div>
 
           {/* Descripción del Producto */}
           <div className="col-span-1 md:col-span-2">

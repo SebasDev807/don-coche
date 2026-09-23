@@ -78,27 +78,17 @@ export async function createPurchaseInvoiceAction(data: {
 
         let newSalePrice = oldSalePrice;
 
-        // Auto-update sale price based on new unit cost
-        if (newUnitCost > oldUnitCost) {
+        // Auto-update sale price (PVP) based on new unit cost
+        const prodIva = product.iva ? Number(product.iva) : 0;
+        const costWithIva = newUnitCost * (1 + prodIva / 100);
+
+        if (newUnitCost !== oldUnitCost) {
           if (product.profitPercentage) {
             const profit = Number(product.profitPercentage);
-            newSalePrice = newUnitCost * (1 + (profit / 100));
-            // If there is IVA, is salePrice with or without IVA? Usually salePrice is base price or final price. 
-            // We will stick to the basic calculation: preserve the margin percentage.
+            newSalePrice = costWithIva * (1 + (profit / 100));
           } else {
-            // If no explicit profit percentage, preserve the multiplier
-            const marginMultiplier = oldUnitCost > 0 ? (oldSalePrice / oldUnitCost) : 1;
-            newSalePrice = newUnitCost * marginMultiplier;
-          }
-        } else if (newUnitCost < oldUnitCost) {
-          // Optionally, also lower it, but usually clients want to keep it high unless manually changed.
-          // Since client said "El sistema suba el precio automáticamente", we'll just recalculate it anyway to keep margin consistent.
-          if (product.profitPercentage) {
-            const profit = Number(product.profitPercentage);
-            newSalePrice = newUnitCost * (1 + (profit / 100));
-          } else {
-            const marginMultiplier = oldUnitCost > 0 ? (oldSalePrice / oldUnitCost) : 1;
-            newSalePrice = newUnitCost * marginMultiplier;
+            const marginMultiplier = oldUnitCost > 0 ? (oldSalePrice / (oldUnitCost * (1 + prodIva / 100))) : 1;
+            newSalePrice = costWithIva * marginMultiplier;
           }
         }
 
@@ -405,14 +395,17 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
 
         if (newItem) {
           nextUnitCost = newItem.unitCost;
-          // Calculate new sale price if cost changed
+          // Calculate new sale price (PVP) if cost changed
           if (nextUnitCost !== Number(product.unitCost)) {
+            const prodIva = product.iva ? Number(product.iva) : 0;
+            const costWithIva = nextUnitCost * (1 + prodIva / 100);
             if (product.profitPercentage) {
               const profit = Number(product.profitPercentage);
-              nextSalePrice = nextUnitCost * (1 + (profit / 100));
+              nextSalePrice = costWithIva * (1 + (profit / 100));
             } else {
-              const marginMultiplier = Number(product.unitCost) > 0 ? (Number(product.salePrice) / Number(product.unitCost)) : 1;
-              nextSalePrice = nextUnitCost * marginMultiplier;
+              const oldUnitCost = Number(product.unitCost);
+              const marginMultiplier = oldUnitCost > 0 ? (Number(product.salePrice) / (oldUnitCost * (1 + prodIva / 100))) : 1;
+              nextSalePrice = costWithIva * marginMultiplier;
             }
           }
         }

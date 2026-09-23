@@ -19,11 +19,17 @@ export const useSellingPrice = (basePrice: string | number | undefined, profitPe
     sellingPrice = Math.round(sellingPrice / 50) * 50;
   }
   
+  const costWithIvaStr = new Intl.NumberFormat('de-DE', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(costWithIva);
+  const formattedCostWithIva = `$ ${costWithIvaStr}`;
+
   const numStr = new Intl.NumberFormat('de-DE', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(sellingPrice);
   const formattedSellingPrice = `$ ${numStr}`;
 
-  return { sellingPrice, formattedSellingPrice };
+  return { costWithIva, formattedCostWithIva, sellingPrice, formattedSellingPrice };
 };

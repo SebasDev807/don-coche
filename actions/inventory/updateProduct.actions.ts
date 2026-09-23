@@ -110,9 +110,13 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
     if (unitCost !== undefined || profitPercentage !== undefined || iva !== undefined || autoRound !== undefined) {
       const finalUnitCost = unitCost !== undefined ? unitCost : Number(existing.unitCost);
       const finalProfitPercentage = profitPercentage !== undefined ? profitPercentage : (existing.profitPercentage ? Number(existing.profitPercentage) : 0);
+      const finalIva = iva !== undefined ? (iva === null ? 0 : Number(iva)) : (existing.iva ? Number(existing.iva) : 0);
       
-      // Cálculo del precio de venta usando Markup (Costo * (1 + Margen))
-      let computedSalePrice = finalUnitCost * (1 + (finalProfitPercentage / 100));
+      // Costo con IVA
+      const costWithIva = finalUnitCost * (1 + (finalIva / 100));
+      
+      // Cálculo del precio de venta usando Markup (Costo con IVA * (1 + Margen))
+      let computedSalePrice = costWithIva * (1 + (finalProfitPercentage / 100));
 
       // Use provided autoRound or default to true for existing logic
       const shouldRound = autoRound !== undefined ? autoRound : true;

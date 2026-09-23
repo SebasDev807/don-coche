@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useSellingPrice } from "@/hooks";
 import { parseLocalizedNumber } from "@/lib/utils/parseLocalizedNumber";
 
+const DRAFT_KEY = "nueva_compra_draft";
+
 // Definición simple del cliente. En producción, usar un autocompletado avanzado
 export function NuevaCompraClient({
   initialSuppliers,
@@ -54,12 +56,29 @@ export function NuevaCompraClient({
 
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
-  const [supplierId, setSupplierId] = useState("");
-  const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [notes, setNotes] = useState("");
+  // --- Restaurar borrador al montar el componente ---
+  const getInitialDraft = () => {
+    if (typeof window === "undefined") return null;
+    try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch { return null; }
+  };
+  const draft = getInitialDraft();
 
-  const [items, setItems] = useState([{ productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, subtotal: 0 }]);
+  const [supplierId, setSupplierId] = useState(draft?.supplierId ?? "");
+  const [invoiceNumber, setInvoiceNumber] = useState(draft?.invoiceNumber ?? "");
+  const [date, setDate] = useState(draft?.date ?? new Date().toISOString().split("T")[0]);
+  const [notes, setNotes] = useState(draft?.notes ?? "");
+
+  const [items, setItems] = useState(
+    draft?.items ?? [{ productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, subtotal: 0 }]
+  );
+
+  // --- Guardar borrador en localStorage en cada cambio ---
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ supplierId, invoiceNumber, date, notes, items }));
+    } catch { }
+  }, [supplierId, invoiceNumber, date, notes, items]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +107,7 @@ export function NuevaCompraClient({
   };
 
   const removeItem = (index: number) => {
-    setItems(items.filter((_, i) => i !== index));
+    setItems(items.filter((_: any, i: number) => i !== index));
   };
 
   const handleEditProduct = (productId: string) => {
@@ -140,7 +159,7 @@ export function NuevaCompraClient({
         const updatedProduct = result.data;
         setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p).sort((a, b) => a.name.localeCompare(b.name)));
 
-        setItems(items.map(item => {
+        setItems(items.map((item: any) => {
           if (item.productId === updatedProduct.id) {
             return {
               ...item,
@@ -269,7 +288,7 @@ export function NuevaCompraClient({
     setIsCreatingProduct(false);
   };
 
-  const subtotal = items.reduce((acc, item) => acc + (item.subtotal || 0), 0);
+  const subtotal = items.reduce((acc: number, item: any) => acc + (item.subtotal || 0), 0);
   const ivaAmount = 0; // Se podría calcular si fuera necesario por ítem
   const grandTotal = subtotal + ivaAmount;
 
@@ -320,7 +339,7 @@ export function NuevaCompraClient({
       grandTotal,
       adminId,
       notes,
-      items: items.map(item => ({
+      items: items.map((item: any) => ({
         productId: item.productId,
         quantity: Number(item.quantity),
         unitCost: Number(item.unitCost),
@@ -329,6 +348,9 @@ export function NuevaCompraClient({
     });
 
     if (result.success) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(DRAFT_KEY);
+      }
       router.push("/compras");
     } else {
       setError(result.error || "Ocurrió un error inesperado.");
@@ -422,7 +444,7 @@ export function NuevaCompraClient({
           </div>
 
           <div className="flex flex-col gap-3 overflow-x-auto pb-2">
-            {items.map((item, index) => (
+            {items.map((item: any, index: number) => (
               <div key={index} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant flex-wrap md:flex-nowrap">
                 <div className="flex-grow w-full md:w-auto md:min-w-[250px] min-w-0">
                   <div className="flex items-center w-full gap-2">
@@ -775,7 +797,7 @@ export function NuevaCompraClient({
                 <h4 className="font-medium text-body-lg mb-2">Artículos ({items.length})</h4>
                 <div className="bg-surface-container rounded-xl overflow-hidden">
                   <div className="max-h-48 overflow-y-auto p-2">
-                    {items.map((item, idx) => {
+                    {items.map((item: any, idx: number) => {
                       const p = products.find(prod => prod.id === item.productId);
                       return (
                         <div key={idx} className="flex justify-between items-center p-2 border-b border-outline-variant/30 last:border-0 text-body-sm">

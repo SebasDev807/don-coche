@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { verifyRole } from '@/lib/dal';
+import { prisma } from '@/lib/prisma';
 import { getSuppliersAction } from '@/actions/suppliers/suppliers.actions';
-import { getAlmacenProducts } from '@/actions/almacen/almacen.actions';
 import { getCategories } from '@/actions/inventory/core.actions';
 import { NuevaCompraClient } from './NuevaCompraClient';
 
@@ -13,14 +13,25 @@ export const metadata: Metadata = {
 export default async function NuevaCompraPage() {
   const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
-  const [suppliersRes, productsRes, categoriesRes] = await Promise.all([
+  const [suppliersRes, categoriesRes, rawProducts] = await Promise.all([
     getSuppliersAction(),
-    getAlmacenProducts(),
     getCategories(),
+    prisma.product.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' }
+    })
   ]);
 
   const suppliers = suppliersRes.success && suppliersRes.data ? suppliersRes.data : [];
-  const products = productsRes.success && productsRes.data ? productsRes.data : [];
+  const products = rawProducts.map(p => ({
+    id: p.id,
+    name: p.name,
+    barCode: p.barCode,
+    unitCost: Number(p.unitCost),
+    salePrice: Number(p.salePrice),
+    iva: p.iva ? Number(p.iva) : 0,
+    profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0,
+  }));
   const categories = categoriesRes || [];
 
   return (

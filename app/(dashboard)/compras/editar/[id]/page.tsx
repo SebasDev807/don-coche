@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { verifyRole } from '@/lib/dal';
+import { prisma } from '@/lib/prisma';
 import { getSuppliersAction } from '@/actions/suppliers/suppliers.actions';
-import { getAlmacenProducts } from '@/actions/almacen/almacen.actions';
 import { getCategories } from '@/actions/inventory/core.actions';
 import { getPurchaseInvoiceByIdAction } from '@/actions/purchases/purchases.actions';
 import { notFound } from 'next/navigation';
@@ -16,11 +16,14 @@ export default async function EditarCompraPage({ params }: { params: Promise<{ i
   const { id } = await params;
   const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
-  const [suppliersRes, productsRes, categoriesRes, invoiceRes] = await Promise.all([
+  const [suppliersRes, categoriesRes, invoiceRes, rawProducts] = await Promise.all([
     getSuppliersAction(),
-    getAlmacenProducts(),
     getCategories(),
-    getPurchaseInvoiceByIdAction(id)
+    getPurchaseInvoiceByIdAction(id),
+    prisma.product.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' }
+    })
   ]);
 
   if (!invoiceRes.success || !invoiceRes.data) {
@@ -28,7 +31,15 @@ export default async function EditarCompraPage({ params }: { params: Promise<{ i
   }
 
   const suppliers = suppliersRes.success && suppliersRes.data ? suppliersRes.data : [];
-  const products = productsRes.success && productsRes.data ? productsRes.data : [];
+  const products = rawProducts.map(p => ({
+    id: p.id,
+    name: p.name,
+    barCode: p.barCode,
+    unitCost: Number(p.unitCost),
+    salePrice: Number(p.salePrice),
+    iva: p.iva ? Number(p.iva) : 0,
+    profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0,
+  }));
   const categories = categoriesRes || [];
 
   return (

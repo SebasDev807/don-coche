@@ -144,7 +144,7 @@ export function NuevaCompraClient({
     const selectedCat = categories.find(c => c.id === quickProductData.categoryId);
     const isInsumos = selectedCat?.name.toLowerCase().includes('insumo') || false;
 
-    const finalUnitCost = isInsumos && quickProductData.hasIva ? costValue * (1 + quickProductData.iva / 100) : costValue;
+    const finalUnitCost = costValue;
 
     if (editingProductId) {
       const result = await updateQuickProductAction(editingProductId, {

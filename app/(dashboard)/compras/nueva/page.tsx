@@ -31,6 +31,7 @@ export default async function NuevaCompraPage() {
     salePrice: Number(p.salePrice),
     iva: p.iva ? Number(p.iva) : 0,
     profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0,
+    categoryId: p.categoryId,
   }));
   const categories = categoriesRes || [];
 

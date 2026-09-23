@@ -39,6 +39,7 @@ export default async function EditarCompraPage({ params }: { params: Promise<{ i
     salePrice: Number(p.salePrice),
     iva: p.iva ? Number(p.iva) : 0,
     profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0,
+    categoryId: p.categoryId,
   }));
   const categories = categoriesRes || [];
 

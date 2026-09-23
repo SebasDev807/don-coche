@@ -39,29 +39,27 @@ export async function deleteProduct(id: string): Promise<DeleteProductResponse> 
     }
 
 
-    // Hard delete: borrar físicamente de la base de datos
-    await prisma.product.delete({
+    // Soft delete: en lugar de borrar físicamente (lo cual falla si hay facturas o historial),
+    // marcamos el producto como inactivo y liberamos su código de barras y slug.
+    await prisma.product.update({
       where: { id },
+      data: {
+        isActive: false,
+        barCode: existing.barCode ? `${existing.barCode}_del_${Date.now()}` : null,
+        slug: `${existing.slug}_del_${Date.now()}`
+      }
     });
 
     return {
       success: true,
-      message: 'Producto eliminado físicamente exitosamente.',
+      message: 'Producto eliminado exitosamente.',
     };
   } catch (error: any) {
     console.error('[deleteProduct] Error:', error);
     
-    // P2003 es el código de Prisma para violaciones de llaves foráneas
-    if (error.code === 'P2003') {
-      return {
-        success: false,
-        message: 'No se puede eliminar el producto porque tiene historial operativo (ventas, movimientos u órdenes asociadas). Si ya no se usa, considere modificarlo o dejar su stock en 0.',
-      };
-    }
-
     return {
       success: false,
-      message: 'Ocurrió un error al intentar eliminar el producto físicamente.',
+      message: 'Ocurrió un error al intentar eliminar el producto.',
     };
   }
 }

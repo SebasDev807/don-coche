@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   getNotificationsAction,
@@ -10,7 +9,33 @@ import {
   type AppNotification,
 } from '@/actions/dashboard/notifications.actions';
 
+const CACHED_NOTIFICATIONS_KEY = 'dc_cached_notifications';
 const DISMISSED_KEY = 'dc_dismissed_notifications';
+const ITEMS_PER_PAGE = 5;
+
+/** Leer notificaciones guardadas en el cache de localStorage */
+function getCachedNotifications(): AppNotification[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(CACHED_NOTIFICATIONS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as any[];
+    return parsed.map((n) => ({
+      ...n,
+      createdAt: new Date(n.createdAt),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** Guardar notificaciones en el cache de localStorage */
+function setCachedNotifications(notifications: AppNotification[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(CACHED_NOTIFICATIONS_KEY, JSON.stringify(notifications));
+  } catch {}
+}
 
 /** Leer IDs descartados del localStorage */
 function getDismissedIds(): Set<string> {
@@ -29,7 +54,6 @@ function dismissId(id: string) {
   try {
     const ids = getDismissedIds();
     ids.add(id);
-    // Limitar a los últimos 500 para evitar que crezca infinitamente
     const arr = Array.from(ids).slice(-500);
     localStorage.setItem(DISMISSED_KEY, JSON.stringify(arr));
   } catch {}
@@ -47,14 +71,15 @@ function dismissAll(ids: string[]) {
 }
 
 export function NotificationsMenu() {
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>(() => getCachedNotifications());
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Función de carga lazy — solo llama al servidor cuando es necesario
+  // Carga e integración de notificaciones con persistencia
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -65,6 +90,7 @@ export function NotificationsMenu() {
         dismissed.has(n.id) ? { ...n, isRead: true } : n
       );
       setNotifications(filtered);
+      setCachedNotifications(filtered);
       setHasLoaded(true);
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -73,24 +99,18 @@ export function NotificationsMenu() {
     }
   }, []);
 
-  // Carga inicial liviana: solo un fetch del count (para la burbuja del badge)
-  // y carga completa solo cuando se abre el menú
   useEffect(() => {
-    // Carga inicial para mostrar el badge
     load();
-    // Polling cada 60 segundos (no 10, para no saturar)
     const interval = setInterval(load, 60000);
     return () => clearInterval(interval);
   }, [load]);
 
-  // Lazy load al abrir el dropdown
   useEffect(() => {
     if (isOpen && !loading) {
       load();
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cerrar con click fuera
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -104,14 +124,24 @@ export function NotificationsMenu() {
   const displayNotifications = notifications.filter((n) => !n.isRead);
   const unreadCount = displayNotifications.length;
 
+  // Cálculo de paginación
+  const totalPages = Math.max(1, Math.ceil(unreadCount / ITEMS_PER_PAGE));
+  const effectivePage = Math.min(currentPage, totalPages);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const startIndex = (effectivePage - 1) * ITEMS_PER_PAGE;
+  const paginatedNotifications = displayNotifications.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
   const handleMarkAsRead = async (notification: AppNotification) => {
-    // Optimistic update en UI
-    setNotifications(prev =>
-      prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n)
-    );
-    // Persistir en localStorage para notificaciones dinámicas (stock-*)
+    const updated = notifications.map(n => n.id === notification.id ? { ...n, isRead: true } : n);
+    setNotifications(updated);
+    setCachedNotifications(updated);
     dismissId(notification.id);
-    // Persistir en DB para notificaciones persistentes
     markNotificationAsReadAction(notification.id).catch(console.error);
   };
 
@@ -127,12 +157,12 @@ export function NotificationsMenu() {
 
   const handleMarkAllAsRead = async () => {
     const allIds = displayNotifications.map(n => n.id);
-    // Optimistic update
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    // Persistir todos en localStorage
+    const updated = notifications.map(n => ({ ...n, isRead: true }));
+    setNotifications(updated);
+    setCachedNotifications(updated);
     dismissAll(allIds);
-    // Persistir en DB (solo las de DB)
     markAllNotificationsAsReadAction().catch(console.error);
+    setCurrentPage(1);
   };
 
   return (
@@ -157,7 +187,14 @@ export function NotificationsMenu() {
         }`}
       >
         <div className="p-4 border-b border-surface-variant bg-surface-container flex items-center justify-between">
-          <h3 className="font-label-lg font-bold text-on-surface">Notificaciones</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-label-lg font-bold text-on-surface">Notificaciones</h3>
+            {unreadCount > 0 && (
+              <span className="text-xs bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full font-medium">
+                {unreadCount}
+              </span>
+            )}
+          </div>
           {loading && (
             <span className="material-symbols-outlined text-on-surface-variant text-[18px] animate-spin">
               progress_activity
@@ -186,7 +223,7 @@ export function NotificationsMenu() {
             </div>
           ) : (
             <div className="flex flex-col">
-              {displayNotifications.map((notification) => (
+              {paginatedNotifications.map((notification) => (
                 <div
                   key={notification.id}
                   className="flex gap-4 p-4 border-b border-surface-variant last:border-0 hover:bg-surface-variant/50 transition-colors cursor-pointer group"
@@ -235,14 +272,43 @@ export function NotificationsMenu() {
           )}
         </div>
 
-        {displayNotifications.length > 0 && (
-          <div className="p-3 border-t border-surface-variant bg-surface-container text-center">
+        {/* Paginación y Botón Marcar todas como leídas */}
+        {unreadCount > 0 && (
+          <div className="p-3 border-t border-surface-variant bg-surface-container flex items-center justify-between gap-2 text-body-sm">
             <button
               onClick={handleMarkAllAsRead}
-              className="text-primary font-label-md hover:underline transition-all cursor-pointer"
+              className="text-primary font-label-md hover:underline transition-all cursor-pointer text-xs font-medium"
             >
               Marcar todas como leídas
             </button>
+
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-on-surface-variant font-medium">
+                  {effectivePage} de {totalPages}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={effectivePage === 1}
+                    className="p-1 rounded-md text-on-surface hover:bg-surface-variant disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    title="Página anterior"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={effectivePage === totalPages}
+                    className="p-1 rounded-md text-on-surface hover:bg-surface-variant disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    title="Página siguiente"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

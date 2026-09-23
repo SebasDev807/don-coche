@@ -66,7 +66,7 @@ export async function getNotificationsAction(): Promise<AppNotification[]> {
     orderBy: {
       createdAt: 'desc',
     },
-    take: 20, // Límite razonable
+    take: 50, // Permite hasta 50 notificaciones para paginación
   });
 
   // Mapear al formato de la interfaz

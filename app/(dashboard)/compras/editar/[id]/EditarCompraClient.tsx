@@ -537,11 +537,6 @@ export function EditarCompraClient({
                     <div className="font-medium p-1 text-on-surface">
                       ${totals.totalSubtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                     </div>
-                    {totals.ivaRate > 0 && (
-                      <div className="text-[10px] text-secondary leading-tight">
-                        + IVA {totals.ivaRate}%: ${totals.ivaAmount.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                      </div>
-                    )}
                   </div>
 
                   <div className="shrink-0 pt-5">

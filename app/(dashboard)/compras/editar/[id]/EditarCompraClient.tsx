@@ -183,6 +183,51 @@ export function EditarCompraClient({
         profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
         iva: quickProductData.hasIva ? quickProductData.iva : 0
       });
+
+      // Conflicto de código de barras: preguntar si sobreescribir
+      if (!result.success && (result as any).conflict && (result as any).existingProduct) {
+        const existing = (result as any).existingProduct;
+        const confirmed = window.confirm(
+          `⚠️ Este producto ya existe:\n\n"${existing.name}"\n\n¿Seguro que quieres aplicar los cambios a este producto?`
+        );
+        if (confirmed) {
+          setIsCreatingProduct(true);
+          const updateResult = await updateQuickProductAction(existing.id, {
+            name: quickProductData.name,
+            barCode: quickProductData.barCode,
+            categoryId: quickProductData.categoryId || undefined,
+            unitCost: costValue,
+            salePrice: isInsumos ? 0 : sellingPrice,
+            profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
+            iva: quickProductData.hasIva ? quickProductData.iva : 0
+          });
+          if (updateResult.success && updateResult.data) {
+            const updatedProduct = updateResult.data;
+            setProducts(prev => {
+              const exists = prev.find(p => p.id === updatedProduct.id);
+              if (exists) return prev.map(p => p.id === updatedProduct.id ? updatedProduct : p).sort((a, b) => a.name.localeCompare(b.name));
+              return [...prev, updatedProduct].sort((a, b) => a.name.localeCompare(b.name));
+            });
+            const newItems = [...items];
+            const emptyRowIndex = newItems.findIndex((i: any) => !i.productId);
+            const productQuantity = quickProductData.stock ? Number(quickProductData.stock) : 1;
+            const unitCostNumber = Number(updatedProduct.unitCost);
+            if (emptyRowIndex >= 0) {
+              newItems[emptyRowIndex] = { productId: updatedProduct.id, quantity: productQuantity as unknown as number, unitCost: unitCostNumber as unknown as number, subtotal: productQuantity * unitCostNumber };
+            } else {
+              newItems.push({ productId: updatedProduct.id, quantity: productQuantity as unknown as number, unitCost: unitCostNumber as unknown as number, subtotal: productQuantity * unitCostNumber });
+            }
+            setItems(newItems);
+            setIsQuickProductModalOpen(false);
+            setQuickProductData({ name: "", categoryId: "", barCode: "", stock: "", unitCost: "", profitPercentage: "", hasIva: false, iva: 0, autoRound: true });
+          } else {
+            setError(updateResult.error || "Ocurrió un error actualizando el producto.");
+          }
+        }
+        setIsCreatingProduct(false);
+        return;
+      }
+
       if (result.success && result.data) {
         const newProduct = result.data;
         setProducts([...products, newProduct].sort((a, b) => a.name.localeCompare(b.name)));

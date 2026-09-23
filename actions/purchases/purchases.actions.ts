@@ -271,8 +271,27 @@ export async function createQuickProductAction(data: { name: string; unitCost: n
     };
   } catch (error: any) {
     console.error("Error quick creating product:", error);
-    return { success: false, error: "Error al crear el producto. Puede que el nombre (slug) ya exista." };
+    // Si el barcode ya existe, devolver el producto existente para que el cliente decida si actualizar
+    if (error.code === 'P2002' && data.barCode) {
+      const existing = await prisma.product.findUnique({ where: { barCode: data.barCode } });
+      if (existing) {
+        return {
+          success: false,
+          conflict: true,
+          existingProduct: {
+            ...existing,
+            unitCost: Number(existing.unitCost),
+            salePrice: Number(existing.salePrice),
+            profitPercentage: existing.profitPercentage ? Number(existing.profitPercentage) : null,
+            iva: existing.iva ? Number(existing.iva) : null,
+          },
+          error: `El código de barras "${data.barCode}" ya pertenece al producto "${existing.name}".`
+        };
+      }
+    }
+    return { success: false, error: "Error al crear el producto. Puede que el nombre o código de barras ya exista." };
   }
+
 }
 
 export async function createQuickSupplierAction(data: { name: string; nit: string; phone?: string; email?: string; }) {

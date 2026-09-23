@@ -53,6 +53,20 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
 
     // Totals
     currentRow++;
+    sheet.getCell(`E${currentRow}`).value = "Subtotal:";
+    sheet.getCell(`E${currentRow}`).font = { bold: true };
+    sheet.getCell(`F${currentRow}`).value = invoice.subtotal;
+    sheet.getCell(`F${currentRow}`).font = { bold: true };
+    sheet.getCell(`F${currentRow}`).numFmt = '"$"#,##0.00';
+
+    currentRow++;
+    sheet.getCell(`E${currentRow}`).value = "IVA:";
+    sheet.getCell(`E${currentRow}`).font = { bold: true };
+    sheet.getCell(`F${currentRow}`).value = invoice.ivaAmount;
+    sheet.getCell(`F${currentRow}`).font = { bold: true };
+    sheet.getCell(`F${currentRow}`).numFmt = '"$"#,##0.00';
+
+    currentRow++;
     sheet.getCell(`E${currentRow}`).value = "Gran Total:";
     sheet.getCell(`E${currentRow}`).font = { bold: true };
     sheet.getCell(`F${currentRow}`).value = invoice.grandTotal;
@@ -127,7 +141,7 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
                     {invoice.admin.name}
                   </td>
                   <td className="p-4 flex items-center justify-center gap-2">
-                    <button 
+                    <button
                       onClick={() => setSelectedInvoice(invoice)}
                       className="p-2 rounded-full hover:bg-surface-container-high text-secondary hover:text-primary transition-colors"
                       title="Ver Detalles"
@@ -141,7 +155,7 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
                     >
                       <span className="material-symbols-outlined text-[20px]">edit</span>
                     </Link>
-                    <button 
+                    <button
                       onClick={() => handleExportExcel(invoice)}
                       className="p-2 rounded-full hover:bg-surface-container-high text-secondary hover:text-[#107C41] transition-colors"
                       title="Exportar a Excel"
@@ -161,14 +175,14 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
           <div className="bg-surface rounded-3xl p-8 max-w-3xl w-full shadow-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6 border-b border-outline-variant pb-4">
               <h2 className="text-headline-sm font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">receipt_long</span> 
+                <span className="material-symbols-outlined text-primary">receipt_long</span>
                 Detalles de Factura
               </h2>
               <button type="button" onClick={() => setSelectedInvoice(null)} className="text-secondary hover:text-on-surface cursor-pointer">
                 <span className="material-symbols-outlined text-[24px]">close</span>
               </button>
             </div>
-            
+
             <div className="flex flex-col gap-4 mb-6">
               <div className="bg-surface-container rounded-xl p-6 grid grid-cols-2 gap-4">
                 <div>
@@ -232,11 +246,14 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
               <div className="bg-primary-container/20 rounded-xl p-6 flex flex-col gap-2 text-right">
                 <div className="flex justify-between text-secondary">
                   <span>Subtotal:</span>
-                  <span>${selectedInvoice.subtotal.toLocaleString('es-CO')}</span>
+                  <span>${selectedInvoice.items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitCost), 0).toLocaleString('es-CO')}</span>
                 </div>
                 <div className="flex justify-between text-headline-sm font-bold text-primary mt-2 pt-2 border-t border-outline-variant/50">
                   <span>Total Pagado:</span>
-                  <span>${selectedInvoice.grandTotal.toLocaleString('es-CO')}</span>
+                  <span>${selectedInvoice.items.reduce((sum: number, item: any) => {
+                    const ivaRate = item.product?.iva != null ? Number(item.product.iva) : 19;
+                    return sum + (item.unitCost * (1 + ivaRate / 100) * item.quantity);
+                  }, 0).toLocaleString('es-CO')}</span>
                 </div>
               </div>
             </div>

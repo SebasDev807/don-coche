@@ -467,6 +467,20 @@ export function EditarCompraClient({
               </button>
               <button
                 type="button"
+                onClick={() => {
+                  const newItems = items.map((item: any) => {
+                    const totals = getItemTotals(item);
+                    return { ...item, subtotal: totals.baseSubtotal };
+                  });
+                  setItems(newItems);
+                }}
+                className="text-tertiary hover:brightness-90 font-medium flex items-center gap-2 cursor-pointer transition-all"
+                title="Corrige los valores traídos de la base de datos aplicando la nueva fórmula sin IVA."
+              >
+                <span className="material-symbols-outlined text-[18px]">refresh</span> Recalcular Totales
+              </button>
+              <button
+                type="button"
                 onClick={addItem}
                 className="text-primary hover:text-primary-hover font-medium flex items-center gap-2 cursor-pointer"
               >

@@ -29,7 +29,7 @@ export default async function NuevaCompraPage() {
     barCode: p.barCode,
     unitCost: Number(p.unitCost),
     salePrice: Number(p.salePrice),
-    iva: p.iva ? Number(p.iva) : 0,
+    iva: p.iva != null ? Number(p.iva) : 19,
     profitPercentage: p.profitPercentage ? Number(p.profitPercentage) : 0,
     categoryId: p.categoryId,
   }));

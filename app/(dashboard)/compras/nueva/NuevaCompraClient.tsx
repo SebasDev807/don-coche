@@ -303,11 +303,6 @@ export function NuevaCompraClient({
     const selectedCat = categories.find(c => c.id === prod.categoryId);
     const isInsumo = selectedCat?.name?.toLowerCase().includes('insumo') || false;
 
-    if (isInsumo) {
-      const sub = qty * cost;
-      return { qty, cost, baseSubtotal: sub, netUnitPrice: cost, ivaRate: 0, ivaAmount: 0, unitWithIva: cost, totalSubtotal: sub, isInsumo: true };
-    }
-
     const ivaRate = prod.iva != null ? Number(prod.iva) : 19;
     const netUnitPrice = cost;
     const unitWithIva = cost * (1 + ivaRate / 100);
@@ -325,7 +320,7 @@ export function NuevaCompraClient({
       unitWithIva,
       baseSubtotal,
       totalSubtotal,
-      isInsumo: false
+      isInsumo
     };
   };
 
@@ -547,6 +542,13 @@ export function NuevaCompraClient({
                       value={item.unitCost}
                       onChange={(e) => handleItemChange(index, "unitCost", e.target.value)}
                     />
+                  </div>
+
+                  <div className="w-36 shrink-0 text-right">
+                    <label className="text-[10px] text-secondary uppercase block mb-1">Costo Unit + IVA</label>
+                    <div className="font-medium p-1 text-on-surface">
+                      ${totals.unitWithIva.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                    </div>
                   </div>
 
                   <div className="w-40 shrink-0 text-right">

@@ -576,16 +576,8 @@ export function NuevaCompraClient({
                   onBlur={(e) => {
                     const raw = e.target.value;
                     if (!raw.trim()) return;
-                    let num = parseLocalizedNumber(raw);
+                    const num = parseLocalizedNumber(raw);
                     if (num > 0) {
-                      // Apply IVA logic on blur
-                      if (quickProductData.hasIva && quickProductData.iva > 0) {
-                        const previousFormatted = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num);
-                        // Prevent applying IVA again if it was already applied
-                        if (quickProductData.unitCost !== previousFormatted && quickProductData.unitCost !== new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num * (1 + quickProductData.iva / 100))) {
-                          num = num * (1 + quickProductData.iva / 100);
-                        }
-                      }
                       setQuickProductData({
                         ...quickProductData,
                         unitCost: new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num)

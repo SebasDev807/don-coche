@@ -10,10 +10,10 @@ export const useSellingPrice = (basePrice: string | number | undefined, profitPe
   const percentage = typeof profitPercentage === 'string' ? parseFloat(profitPercentage) || 0 : profitPercentage || 0;
   const iva = hasIva ? (typeof ivaPercentage === 'string' ? parseFloat(ivaPercentage) || 0 : ivaPercentage || 0) : 0;
   
-  // El unitCost que viene del frontend ya incluye el IVA (se calcula en el onBlur del input)
-  const costWithIva = cost;
+  // Aplicar IVA al costo base para obtener el costo con IVA incluido
+  const costWithIva = hasIva ? cost * (1 + iva / 100) : cost;
   
-  // Cálculo del precio de venta usando Markup (Costo * (1 + Margen))
+  // Cálculo del precio de venta usando Markup (Costo con IVA * (1 + Margen))
   let sellingPrice = costWithIva * (1 + (percentage / 100));
   if (autoRound) {
     sellingPrice = Math.round(sellingPrice / 50) * 50;

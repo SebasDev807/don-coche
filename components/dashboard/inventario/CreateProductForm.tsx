@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { z } from 'zod';
 import { createProductSchema, CreateProductFormValues } from '@/validation';
-import { createProduct, getCategories } from '@/actions/inventory';
+import { createProduct, getCategories, updateProduct } from '@/actions/inventory';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { CreateCategoryModal } from './CreateCategoryModal';
 import { PriceInput } from '@/components/ui/PriceInput';
@@ -73,31 +73,7 @@ export function CreateProductForm() {
     fetchCategories();
   }, []);
 
-  const prevIvaRateRef = useRef(0);
-
-  useEffect(() => {
-    const currentIvaRate = hasIvaValue ? (typeof ivaValue === 'number' ? ivaValue : parseFloat(String(ivaValue)) || 0) : 0;
-    
-    if (prevIvaRateRef.current !== currentIvaRate) {
-      const currentCostRaw = getValues('unitCost');
-      if (currentCostRaw) {
-        const rawCost = typeof currentCostRaw === 'string' ? parseLocalizedNumber(currentCostRaw) : (currentCostRaw as unknown as number);
-        if (rawCost > 0) {
-          const oldIvaRate = prevIvaRateRef.current;
-          const baseCost = rawCost / (1 + oldIvaRate / 100);
-          const newCost = baseCost * (1 + currentIvaRate / 100);
-          setValue('unitCost', new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(newCost));
-        }
-      }
-      prevIvaRateRef.current = currentIvaRate;
-    }
-  }, [hasIvaValue, ivaValue, isInsumos, getValues, setValue]);
-
-  useEffect(() => {
-    if (!hasIvaValue && ivaValue !== 0) {
-      setValue('iva', 0, { shouldValidate: true });
-    }
-  }, [hasIvaValue, ivaValue, setValue]);
+  // El IVA se aplica en el cálculo del precio de venta (useSellingPrice), no en el campo de costo.
 
   /**
    * Manejador del envío del formulario.
@@ -122,6 +98,62 @@ export function CreateProductForm() {
     const result = await createProduct(formData);
 
     setIsSubmitting(false);
+
+    // Conflicto de código de barras: ofrecer actualizar el producto existente
+    if (!result.success && (result as any).conflict && (result as any).existingProductId) {
+      const existingId = (result as any).existingProductId as string;
+      const existingName = (result as any).existingProductName as string;
+
+      const { isConfirmed } = await MySwal.fire({
+        title: '¿Actualizar producto existente?',
+        html: `El código de barras ya pertenece a:<br/><strong>"${existingName}"</strong><br/><br/>¿Seguro que quieres aplicar los cambios a este producto?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, actualizar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: 'rgba(221, 213, 51, 1)',
+        customClass: {
+          confirmButton: '!text-black'
+        }
+      });
+
+      if (isConfirmed) {
+        setIsSubmitting(true);
+        const ivaToApply = data.hasIva ? (data.iva != null ? Number(data.iva) : 19) : 0;
+        const updateResult = await updateProduct({
+          id: existingId,
+          name: data.name,
+          barCode: data.barCode || undefined,
+          description: data.description,
+          categoryId: data.category,
+          stock: data.stock,
+          unitCost: Number(data.unitCost),
+          profitPercentage: !isInsumos && data.profitPercentage ? Number(data.profitPercentage) : null,
+          iva: ivaToApply,
+          autoRound: !isInsumos ? data.autoRound : false,
+        } as any);
+        setIsSubmitting(false);
+
+        if (updateResult.success) {
+          MySwal.fire({
+            title: '¡Producto actualizado!',
+            text: updateResult.message,
+            icon: 'success',
+            confirmButtonColor: 'rgba(221, 213, 51, 1)',
+            customClass: { confirmButton: '!text-black' }
+          }).then(() => router.push('/inventario'));
+        } else {
+          MySwal.fire({
+            title: 'Error',
+            text: updateResult.message,
+            icon: 'error',
+            confirmButtonColor: 'rgba(221, 213, 51, 1)',
+            customClass: { confirmButton: '!text-black' }
+          });
+        }
+      }
+      return;
+    }
 
     // Mostrar alerta según el resultado de la creación
     if (result.success) {
@@ -148,6 +180,7 @@ export function CreateProductForm() {
       });
     }
   };
+
 
   return (
     <div className="max-w-4xl mx-auto bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant p-6 md:p-8">
@@ -234,11 +267,6 @@ export function CreateProductForm() {
             setValue={setValue}
             errors={errors}
             placeholder="0"
-            transformOnBlur={(val) => {
-              if (!hasIvaValue) return val;
-              const iva = typeof ivaValue === 'number' ? ivaValue : parseFloat(String(ivaValue)) || 19;
-              return val * (1 + iva / 100);
-            }}
           />
 
           {/* Porcentaje de Ganancia */}

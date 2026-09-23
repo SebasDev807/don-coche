@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -94,37 +94,13 @@ export function EditProductForm({ product }: EditProductFormProps) {
     fetchCategories();
   }, []);
 
-  const prevIvaRateRef = useRef(product.iva !== null && product.iva > 0 ? Number(product.iva) : 0);
-
-  useEffect(() => {
-    const currentIvaRate = hasIvaValue ? (typeof ivaValue === 'number' ? ivaValue : parseFloat(String(ivaValue)) || 0) : 0;
-
-    if (prevIvaRateRef.current !== currentIvaRate) {
-      const currentCostRaw = getValues('unitCost');
-      if (currentCostRaw) {
-        const rawCost = typeof currentCostRaw === 'string' ? parseLocalizedNumber(currentCostRaw) : (currentCostRaw as unknown as number);
-        if (rawCost > 0) {
-          const oldIvaRate = prevIvaRateRef.current;
-          const baseCost = rawCost / (1 + oldIvaRate / 100);
-          const newCost = baseCost * (1 + currentIvaRate / 100);
-          setValue('unitCost', new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(newCost));
-        }
-      }
-      prevIvaRateRef.current = currentIvaRate;
-    }
-  }, [hasIvaValue, ivaValue, isInsumos, getValues, setValue]);
-
-  useEffect(() => {
-    if (!hasIvaValue && ivaValue !== 0) {
-      setValue('iva', 0, { shouldValidate: true });
-    }
-  }, [hasIvaValue, ivaValue, setValue]);
+  // El IVA se aplica en el cálculo del precio de venta (useSellingPrice), no en el campo de costo.
 
   const onSubmit = async (data: CreateProductFormValues) => {
     setIsSubmitting(true);
 
     const ivaToApply = data.hasIva ? (data.iva != null ? Number(data.iva) : 19) : 0;
-    const finalUnitCost = Number(data.unitCost); // El unitCost ya tiene el IVA agregado por el onBlur
+    const finalUnitCost = Number(data.unitCost); // Costo neto; el IVA se aplica en el precio de venta
 
     const result = await updateProduct({
       id: product.id,
@@ -241,11 +217,6 @@ export function EditProductForm({ product }: EditProductFormProps) {
             setValue={setValue}
             errors={errors}
             placeholder="0"
-            transformOnBlur={(val) => {
-              if (!hasIvaValue) return val;
-              const iva = typeof ivaValue === 'number' ? ivaValue : parseFloat(String(ivaValue)) || 19;
-              return val * (1 + iva / 100);
-            }}
           />
 
           {/* Porcentaje de Ganancia */}

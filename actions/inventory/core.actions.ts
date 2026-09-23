@@ -77,6 +77,7 @@ export async function createCategory(formData: FormData) {
  * @returns {Promise<{success: boolean, message: string}>} Resultado de la operación
  */
 export async function createProduct(formData: FormData) {
+  let validatedData: ReturnType<typeof createProductSchema.parse> | null = null;
   try {
     // Verificar que el usuario tiene una sesión válida y el rol adecuado
     await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
@@ -85,7 +86,7 @@ export async function createProduct(formData: FormData) {
     const rawData = Object.fromEntries(formData.entries());
 
     // Validar usando Zod (incluye coerción para los números)
-    const validatedData = createProductSchema.parse(rawData);
+    validatedData = createProductSchema.parse(rawData);
 
     // Generar Barcode y Slug
     const categoryRecord = await prisma.category.findUnique({
@@ -94,28 +95,26 @@ export async function createProduct(formData: FormData) {
     const barCode = validatedData.barCode || generateEAN13();
     const slug = generateSlug(validatedData.name);
 
-    // Calculate salePrice based on unitCost, profitPercentage, and iva
     const unitCostBase = validatedData.unitCost;
     const profitPercentage = validatedData.profitPercentage || 0;
     const iva = validatedData.hasIva ? (validatedData.iva !== undefined ? validatedData.iva : 19) : 0;
-    // El unitCost que viene del frontend ya incluye el IVA (se calcula en el onBlur del input)
-    const finalUnitCost = unitCostBase;
+    // Aplicar IVA al costo neto para obtener el precio base con impuesto
+    const costWithIva = unitCostBase * (1 + iva / 100);
     
-    // Cálculo del precio de venta usando Markup (Costo * (1 + Margen))
-    let computedSalePrice = finalUnitCost * (1 + (profitPercentage / 100));
+    // Cálculo del precio de venta: costo con IVA × (1 + margen)
+    let computedSalePrice = costWithIva * (1 + (profitPercentage / 100));
     
     if (validatedData.autoRound) {
       computedSalePrice = Math.round(computedSalePrice / 50) * 50;
     }
 
-    // Insertar en la base de datos
     await prisma.product.create({
       data: {
         name: validatedData.name,
         description: validatedData.description,
         categoryId: validatedData.category,
         stock: validatedData.stock,
-        unitCost: finalUnitCost,
+        unitCost: unitCostBase,
         salePrice: computedSalePrice,
         profitPercentage: profitPercentage,
         iva: iva,
@@ -131,6 +130,20 @@ export async function createProduct(formData: FormData) {
     
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
+        // Buscar el producto existente con ese código de barras para ofrecer actualización
+        const barCodeUsed = validatedData?.barCode;
+        if (barCodeUsed) {
+          const existing = await prisma.product.findUnique({ where: { barCode: barCodeUsed } });
+          if (existing) {
+            return {
+              success: false,
+              conflict: true,
+              existingProductId: existing.id,
+              existingProductName: existing.name,
+              message: `El código de barras "${barCodeUsed}" ya pertenece al producto "${existing.name}".`,
+            };
+          }
+        }
         return {
           success: false,
           message: 'Ya existe otro producto con este código de barras. Usa uno distinto.',

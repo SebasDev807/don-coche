@@ -470,13 +470,6 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
 export async function updateQuickProductAction(id: string, data: { name: string; unitCost: number; salePrice: number; categoryId?: string; profitPercentage?: number; iva?: number; barCode?: string; stock?: number }) {
   try {
     const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-    
-    // Check if product exists first
-    const existing = await prisma.product.findUnique({ where: { id } });
-    if (!existing) {
-      return { success: false, error: 'El producto no fue encontrado. Es posible que haya sido eliminado.' };
-    }
-
     const product = await prisma.product.update({
       where: { id },
       data: {
@@ -501,14 +494,8 @@ export async function updateQuickProductAction(id: string, data: { name: string;
         iva: product.iva ? Number(product.iva) : null,
       }
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error updating quick product:', error);
-    if (error.code === 'P2025') {
-      return { success: false, error: 'El producto no fue encontrado. Es posible que haya sido eliminado.' };
-    }
-    if (error.code === 'P2002') {
-      return { success: false, error: 'El nombre o código de barras ya existe en otro producto.' };
-    }
     return { success: false, error: 'No se pudo actualizar el producto.' };
   }
 }

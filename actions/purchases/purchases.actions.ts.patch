@@ -1,0 +1,8 @@
+--- actions/purchases/purchases.actions.ts
++++ actions/purchases/purchases.actions.ts
+@@ -470,6 +470,7 @@
+ export async function updateQuickProductAction(id: string, data: { name: string; unitCost: number; salePrice: number; categoryId?: string; profitPercentage?: number; iva?: number; barCode?: string; stock?: number }) {
+   try {
++    console.log("Updating product with ID:", id, "Data:", data);
+     const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+     const product = await prisma.product.update({

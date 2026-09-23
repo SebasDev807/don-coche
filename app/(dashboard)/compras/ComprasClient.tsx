@@ -42,7 +42,7 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
         item.unitCost,
         unitWithIva,
         `${ivaRate}%`,
-        item.subtotal
+        item.quantity * item.unitCost
       ];
       sheet.getCell(`C${currentRow}`).numFmt = '"$"#,##0.00';
       sheet.getCell(`D${currentRow}`).numFmt = '"$"#,##0.00';
@@ -219,7 +219,7 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
                               <td className="p-3 text-sm text-right text-secondary">${item.unitCost.toLocaleString('es-CO')}</td>
                               <td className="p-3 text-sm text-right font-medium text-on-surface">${unitWithIva.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
                               <td className="p-3 text-sm text-center text-secondary">{ivaRate}%</td>
-                              <td className="p-3 text-sm text-right font-medium">${item.subtotal.toLocaleString('es-CO')}</td>
+                              <td className="p-3 text-sm text-right font-medium">${(item.quantity * item.unitCost).toLocaleString('es-CO')}</td>
                             </tr>
                           );
                         })}

@@ -97,7 +97,7 @@ export function NuevaCompraClient({
     }
 
     const totals = getItemTotals(item);
-    item.subtotal = totals.totalSubtotal;
+    item.subtotal = totals.baseSubtotal;
 
     setItems(newItems);
   };

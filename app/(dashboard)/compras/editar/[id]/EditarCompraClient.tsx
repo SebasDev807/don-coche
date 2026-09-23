@@ -84,7 +84,7 @@ export function EditarCompraClient({
     }
 
     const totals = getItemTotals(item);
-    item.subtotal = totals.totalSubtotal;
+    item.subtotal = totals.baseSubtotal;
 
     setItems(newItems);
   };

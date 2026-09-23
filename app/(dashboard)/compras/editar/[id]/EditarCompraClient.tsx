@@ -130,14 +130,16 @@ export function EditarCompraClient({
     const selectedCat = categories.find(c => c.id === quickProductData.categoryId);
     const isInsumos = selectedCat?.name.toLowerCase().includes('insumo') || false;
 
+    const finalUnitCost = isInsumos && quickProductData.hasIva ? costValue * (1 + quickProductData.iva / 100) : costValue;
+
     if (editingProductId) {
       const result = await updateQuickProductAction(editingProductId, {
         name: quickProductData.name,
         barCode: quickProductData.barCode,
         categoryId: quickProductData.categoryId || undefined,
         stock: undefined,
-        unitCost: costValue,
-        salePrice: sellingPrice,
+        unitCost: finalUnitCost,
+        salePrice: isInsumos ? 0 : sellingPrice,
         profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
         iva: quickProductData.hasIva ? quickProductData.iva : 0
       });
@@ -178,8 +180,8 @@ export function EditarCompraClient({
         barCode: quickProductData.barCode,
         categoryId: quickProductData.categoryId || undefined,
         stock: quickProductData.stock ? Number(quickProductData.stock) : 0,
-        unitCost: costValue,
-        salePrice: sellingPrice,
+        unitCost: finalUnitCost,
+        salePrice: isInsumos ? 0 : sellingPrice,
         profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
         iva: quickProductData.hasIva ? quickProductData.iva : 0
       });
@@ -196,8 +198,8 @@ export function EditarCompraClient({
             name: quickProductData.name,
             barCode: quickProductData.barCode,
             categoryId: quickProductData.categoryId || undefined,
-            unitCost: costValue,
-            salePrice: sellingPrice,
+            unitCost: finalUnitCost,
+            salePrice: isInsumos ? 0 : sellingPrice,
             profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),
             iva: quickProductData.hasIva ? quickProductData.iva : 0
           });
@@ -665,10 +667,12 @@ export function EditarCompraClient({
                         />
                       </div>
                     </div>
-                    {!isInsumos && (
-                      <div className="mt-4">
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="block text-body-sm text-secondary">Precio de Venta (Público) *</label>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-body-sm text-secondary">
+                          {isInsumos ? "Costo Total (con IVA) *" : "Precio de Venta (Público) *"}
+                        </label>
+                        {!isInsumos && (
                           <label className="flex items-center gap-1 cursor-pointer text-[10px] text-secondary">
                             <input
                               type="checkbox"
@@ -678,15 +682,15 @@ export function EditarCompraClient({
                             />
                             Redondear a $50
                           </label>
-                        </div>
-                        <input
-                          readOnly
-                          type="text"
-                          className="w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant text-on-surface-variant cursor-not-allowed"
-                          value={formattedSellingPrice}
-                        />
+                        )}
                       </div>
-                    )}
+                      <input
+                        readOnly
+                        type="text"
+                        className="w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant text-on-surface-variant cursor-not-allowed"
+                        value={formattedSellingPrice}
+                      />
+                    </div>
                   </>
                 );
               })()}

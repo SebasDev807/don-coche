@@ -94,8 +94,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
     : 'N/A';
 
   const serializedProducts = products.map((p) => {
-    const ivaRate = p.iva ? Number(p.iva) : 0;
-    const baseUnitCost = Number(p.unitCost) / (1 + ivaRate / 100);
+    const baseUnitCost = Number(p.unitCost);
     
     return {
       id: p.id,

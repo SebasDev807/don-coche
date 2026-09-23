@@ -425,7 +425,7 @@ export function EditarCompraClient({
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 overflow-x-auto pb-2">
             {items.map((item: any, index: number) => (
               <div key={index} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant flex-wrap md:flex-nowrap">
                 <div className="flex-grow w-full md:w-auto md:min-w-[250px] min-w-0">

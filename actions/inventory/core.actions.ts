@@ -78,6 +78,8 @@ export async function createCategory(formData: FormData) {
  */
 export async function createProduct(formData: FormData) {
   let validatedData: ReturnType<typeof createProductSchema.parse> | null = null;
+  let barCode: string | null = null;
+  let slug: string | null = null;
   try {
     // Verificar que el usuario tiene una sesión válida y el rol adecuado
     await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
@@ -92,8 +94,8 @@ export async function createProduct(formData: FormData) {
     const categoryRecord = await prisma.category.findUnique({
       where: { id: validatedData.category }
     });
-    const barCode = validatedData.barCode || generateEAN13();
-    const slug = generateSlug(validatedData.name);
+    barCode = validatedData.barCode || generateEAN13();
+    slug = generateSlug(validatedData.name);
 
     const unitCostBase = validatedData.unitCost;
     const profitPercentage = validatedData.profitPercentage || 0;
@@ -130,23 +132,27 @@ export async function createProduct(formData: FormData) {
     
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
-        // Buscar el producto existente con ese código de barras para ofrecer actualización
+        // Buscar el producto existente (por barcode o por slug) para ofrecer actualización
         const barCodeUsed = validatedData?.barCode;
-        if (barCodeUsed) {
-          const existing = await prisma.product.findUnique({ where: { barCode: barCodeUsed } });
-          if (existing) {
-            return {
-              success: false,
-              conflict: true,
-              existingProductId: existing.id,
-              existingProductName: existing.name,
-              message: `El código de barras "${barCodeUsed}" ya pertenece al producto "${existing.name}".`,
-            };
-          }
+        let existing = barCodeUsed
+          ? await prisma.product.findUnique({ where: { barCode: barCodeUsed } })
+          : null;
+        if (!existing && slug) {
+          existing = await prisma.product.findUnique({ where: { slug } });
+        }
+        if (existing) {
+          const conflictField = barCodeUsed && existing.barCode === barCodeUsed ? 'código de barras' : 'nombre';
+          return {
+            success: false,
+            conflict: true,
+            existingProductId: existing.id,
+            existingProductName: existing.name,
+            message: `El ${conflictField} ya pertenece al producto "${existing.name}".`,
+          };
         }
         return {
           success: false,
-          message: 'Ya existe otro producto con este código de barras. Usa uno distinto.',
+          message: 'Ya existe otro producto con este código de barras o nombre. Usa uno distinto.',
         };
       }
     }
@@ -154,3 +160,4 @@ export async function createProduct(formData: FormData) {
     return { success: false, message: error.message || 'Error al crear el producto' };
   }
 }
+

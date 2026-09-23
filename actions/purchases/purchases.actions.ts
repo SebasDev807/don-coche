@@ -244,8 +244,8 @@ export async function getPurchaseInvoiceByIdAction(id: string) {
 }
 
 export async function createQuickProductAction(data: { name: string; unitCost: number; salePrice: number; categoryId?: string; profitPercentage?: number; iva?: number; barCode?: string; stock?: number }) {
+  const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
   try {
-    const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     const product = await prisma.product.create({
       data: {
         name: data.name,
@@ -271,21 +271,27 @@ export async function createQuickProductAction(data: { name: string; unitCost: n
     };
   } catch (error: any) {
     console.error("Error quick creating product:", error);
-    // Si el barcode ya existe, devolver el producto existente para que el cliente decida si actualizar
-    if (error.code === 'P2002' && data.barCode) {
-      const existing = await prisma.product.findUnique({ where: { barCode: data.barCode } });
-      if (existing) {
+    // Si hay conflicto único (barcode o slug/nombre), buscar el producto existente para ofrecer actualización
+    if (error.code === 'P2002') {
+      // Intentar por barcode primero, luego por slug
+      const existing = data.barCode
+        ? await prisma.product.findUnique({ where: { barCode: data.barCode } })
+        : null;
+      const existingBySlug = existing ?? await prisma.product.findUnique({ where: { slug } });
+      const found = existingBySlug;
+      if (found) {
+        const conflictField = data.barCode && found.barCode === data.barCode ? 'código de barras' : 'nombre';
         return {
           success: false,
           conflict: true,
           existingProduct: {
-            ...existing,
-            unitCost: Number(existing.unitCost),
-            salePrice: Number(existing.salePrice),
-            profitPercentage: existing.profitPercentage ? Number(existing.profitPercentage) : null,
-            iva: existing.iva ? Number(existing.iva) : null,
+            ...found,
+            unitCost: Number(found.unitCost),
+            salePrice: Number(found.salePrice),
+            profitPercentage: found.profitPercentage ? Number(found.profitPercentage) : null,
+            iva: found.iva ? Number(found.iva) : null,
           },
-          error: `El código de barras "${data.barCode}" ya pertenece al producto "${existing.name}".`
+          error: `El ${conflictField} ya pertenece al producto "${found.name}".`
         };
       }
     }
@@ -293,6 +299,7 @@ export async function createQuickProductAction(data: { name: string; unitCost: n
   }
 
 }
+
 
 export async function createQuickSupplierAction(data: { name: string; nit: string; phone?: string; email?: string; }) {
   try {

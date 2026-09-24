@@ -56,7 +56,7 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
     currentRow++;
     sheet.getCell(`E${currentRow}`).value = "Subtotal Bruto:";
     sheet.getCell(`E${currentRow}`).font = { bold: true };
-    sheet.getCell(`F${currentRow}`).value = invoice.subtotal;
+    sheet.getCell(`F${currentRow}`).value = Number(invoice.subtotal) + (invoice.discountAmount ? Number(invoice.discountAmount) : 0);
     sheet.getCell(`F${currentRow}`).font = { bold: true };
     sheet.getCell(`F${currentRow}`).numFmt = '"$"#,##0.00';
 
@@ -64,6 +64,13 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
     sheet.getCell(`E${currentRow}`).value = "Descuento Total:";
     sheet.getCell(`E${currentRow}`).font = { bold: true };
     sheet.getCell(`F${currentRow}`).value = invoice.discountAmount ? Number(invoice.discountAmount) : 0;
+    sheet.getCell(`F${currentRow}`).font = { bold: true };
+    sheet.getCell(`F${currentRow}`).numFmt = '"$"#,##0.00';
+
+    currentRow++;
+    sheet.getCell(`E${currentRow}`).value = "Subtotal Neto:";
+    sheet.getCell(`E${currentRow}`).font = { bold: true };
+    sheet.getCell(`F${currentRow}`).value = invoice.subtotal;
     sheet.getCell(`F${currentRow}`).font = { bold: true };
     sheet.getCell(`F${currentRow}`).numFmt = '"$"#,##0.00';
 
@@ -257,11 +264,15 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
               <div className="bg-primary-container/20 rounded-xl p-6 flex flex-col gap-2 text-right">
                 <div className="flex justify-between text-secondary">
                   <span>Subtotal Bruto:</span>
-                  <span>${selectedInvoice.subtotal.toLocaleString('es-CO')}</span>
+                  <span>${(Number(selectedInvoice.subtotal) + (selectedInvoice.discountAmount ? Number(selectedInvoice.discountAmount) : 0)).toLocaleString('es-CO')}</span>
                 </div>
                 <div className="flex justify-between text-secondary mt-1">
                   <span>Descuento Total:</span>
                   <span>${selectedInvoice.discountAmount ? selectedInvoice.discountAmount.toLocaleString('es-CO') : "0"}</span>
+                </div>
+                <div className="flex justify-between text-secondary mt-1 text-on-surface font-medium">
+                  <span>Subtotal Neto:</span>
+                  <span>${selectedInvoice.subtotal.toLocaleString('es-CO')}</span>
                 </div>
                 <div className="flex justify-between text-secondary mt-1">
                   <span>Total IVA:</span>

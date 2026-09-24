@@ -20,6 +20,7 @@ export interface ItemTotals {
   qty: number;
   cost: number;
   discount: number;
+  hasDiscountError?: boolean;
   netUnitPrice: number;   // Precio unitario sin IVA
   ivaRate: number;        // Porcentaje de IVA aplicado
   unitWithIva: number;    // Precio unitario con IVA
@@ -98,11 +99,12 @@ export function getItemTotals(
 
   const gross = cost * qty;
 
+  let effectiveDiscount = discount;
   if (discount > gross) {
-    throw new Error(`Discount cannot exceed the gross value (product ${prod.id})`);
+    effectiveDiscount = gross; // Prevent crashing the UI by capping the discount
   }
 
-  const baseSubtotal = roundTo2(gross - discount);
+  const baseSubtotal = roundTo2(gross - effectiveDiscount);
 
   // Sacar IVA al subtotal neto
   const ivaAmount = roundTo2(baseSubtotal * (ivaRate / 100));
@@ -111,7 +113,8 @@ export function getItemTotals(
   return {
     qty,
     cost,
-    discount: roundTo2(discount),
+    discount: roundTo2(effectiveDiscount),
+    hasDiscountError: discount > gross,
     netUnitPrice: cost,
     ivaRate,
     unitWithIva: roundTo2(cost * (1 + ivaRate / 100)),
@@ -128,17 +131,21 @@ export function calculateInvoiceTotals(
   products: Product[],
   categories: Category[],
   globalDiscount: number = 0
-): InvoiceTotals & { subtotalBeforeIva: number, grossSubtotal: number } {
+): InvoiceTotals & { subtotalBeforeIva: number, grossSubtotal: number, hasDiscountError: boolean } {
   const productsById = new Map(products.map((p) => [p.id, p]));
   const categoriesById = new Map(categories.map((c) => [c.id, c]));
 
   let subtotal = 0; // Gross subtotal (precio * cantidad)
   let ivaAmount = 0;
+  let hasDiscountError = false;
 
   for (const item of items) {
     if (!item.productId) continue;
 
     const totals = getItemTotals(item, productsById, categoriesById);
+    if (totals.hasDiscountError) {
+      hasDiscountError = true;
+    }
     const qty = totals.qty;
     const cost = totals.cost;
     subtotal += (qty * cost);
@@ -155,5 +162,6 @@ export function calculateInvoiceTotals(
     subtotalBeforeIva: roundTo2(subtotalBeforeIva),
     ivaAmount: roundTo2(ivaAmount),
     grandTotal: roundTo2(grandTotal),
+    hasDiscountError: hasDiscountError || (globalDiscount > subtotal),
   };
 }

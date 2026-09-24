@@ -329,7 +329,7 @@ export function EditarCompraClient({
     }
   }, [sumItemDiscounts]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { subtotal, ivaAmount, grandTotal, grossSubtotal } = useMemo(() => {
+  const { subtotal, ivaAmount, grandTotal, grossSubtotal, hasDiscountError } = useMemo(() => {
     const globalDiscount = isGlobalDiscountLocked ? sumItemDiscounts : (discountAmount !== "" ? Number(discountAmount) : 0);
     return calculateInvoiceTotals(items, products, categories, globalDiscount);
   }, [items, products, categories, discountAmount, isGlobalDiscountLocked, sumItemDiscounts]);
@@ -632,8 +632,8 @@ export function EditarCompraClient({
             <div className="flex flex-col w-full md:w-64">
               <label className="text-[10px] text-secondary uppercase font-medium mb-1">Descuento Global</label>
               <span className="text-[12px] text-secondary/70 mb-1 leading-tight">
-                {isGlobalDiscountLocked 
-                  ? "(Bloqueado: sumando descuentos de productos)" 
+                {isGlobalDiscountLocked
+                  ? "(Bloqueado: sumando descuentos de productos)"
                   : "(Bloqueado si usas descuentos por producto)"}
               </span>
               <div className="relative">
@@ -695,17 +695,25 @@ export function EditarCompraClient({
             </span>
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full md:w-auto flex items-center justify-center gap-2 bg-primary-fixed text-black px-8 py-4 rounded-full font-medium text-title-sm hover:brightness-95 transition-all shadow-md disabled:opacity-50 cursor-pointer"
-          >
-            {isLoading ? "Procesando..." : (
-              <>
-                <span className="material-symbols-outlined text-[24px]">check_circle</span> Actualizar Factura e Inventario
-              </>
+          <div className="flex flex-col gap-2 w-full md:w-auto">
+            {hasDiscountError && (
+              <div className="bg-error-container text-on-error-container p-3 rounded-lg text-sm flex items-center gap-2">
+                <span className="material-symbols-outlined">warning</span>
+                <span>El descuento no puede exceder el costo bruto.</span>
+              </div>
             )}
-          </button>
+            <button
+              type="submit"
+              disabled={isLoading || hasDiscountError}
+              className="w-full md:w-auto flex items-center justify-center gap-2 bg-primary-fixed text-black px-8 py-4 rounded-full font-medium text-title-sm hover:brightness-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {isLoading ? "Procesando..." : (
+                <>
+                  <span className="material-symbols-outlined text-[24px]">check_circle</span> Actualizar Factura e Inventario
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </form>
 

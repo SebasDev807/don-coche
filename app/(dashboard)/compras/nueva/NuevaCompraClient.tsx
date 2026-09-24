@@ -77,8 +77,8 @@ export function NuevaCompraClient({
     draft?.discountAmount ? Number(draft.discountAmount).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ""
   );
 
-  const [items, setItems] = useState(
-    draft?.items ?? [{ productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, discount: "" as unknown as number, discountInput: "", subtotal: 0 }]
+  const [items, setItems] = useState<any[]>(
+    draft?.items ?? []
   );
 
   // --- Guardar borrador en localStorage en cada cambio ---
@@ -331,7 +331,7 @@ export function NuevaCompraClient({
     }
   }, [sumItemDiscounts]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { subtotal, ivaAmount, grandTotal, grossSubtotal } = useMemo(() => {
+  const { subtotal, ivaAmount, grandTotal, grossSubtotal, hasDiscountError } = useMemo(() => {
     const globalDiscount = isGlobalDiscountLocked ? sumItemDiscounts : (discountAmount !== "" ? Number(discountAmount) : 0);
     return calculateInvoiceTotals(items, products, categories, globalDiscount);
   }, [items, products, categories, discountAmount, isGlobalDiscountLocked, sumItemDiscounts]);
@@ -682,17 +682,25 @@ export function NuevaCompraClient({
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full md:w-auto flex items-center justify-center gap-2 bg-primary-fixed text-black px-8 py-4 rounded-full font-medium text-title-sm hover:brightness-95 transition-all shadow-md disabled:opacity-50 cursor-pointer"
-          >
-            {isLoading ? "Procesando..." : (
+          <div className="flex flex-col gap-2 w-full md:w-auto">
+            {hasDiscountError && (
+              <div className="bg-error-container text-on-error-container p-3 rounded-lg text-sm flex items-center gap-2">
+                <span className="material-symbols-outlined">warning</span>
+                <span>El descuento no puede exceder el costo bruto.</span>
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={isLoading || hasDiscountError}
+              className="w-full md:w-auto flex items-center justify-center gap-2 bg-primary-fixed text-black px-8 py-4 rounded-full font-medium text-title-sm hover:brightness-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {isLoading ? "Procesando..." : (
               <>
                 <span className="material-symbols-outlined text-[24px]">check_circle</span> Confirmar Factura e Inventario
               </>
             )}
-          </button>
+            </button>
+          </div>
         </div>
       </form>
 

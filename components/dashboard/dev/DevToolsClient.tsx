@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { wipeDevData, verifyDevPassword, deleteInactiveUsers, getDevCustomers, deleteCustomerCascade, deleteAllCustomersCascade, seedMockCustomers, seedMockProducts, deleteMockProducts, deleteAllProductsCascade, deleteAllPurchaseInvoicesAction } from '@/actions/dev/dev.actions';
+import { wipeDevData, verifyDevPassword, deleteInactiveUsers, getDevCustomers, deleteCustomerCascade, deleteAllCustomersCascade, seedMockCustomers, seedMockProducts, deleteMockProducts, deleteAllProductsCascade, deleteAllPurchaseInvoicesAction, getDevPurchaseInvoices, deleteSpecificPurchaseInvoiceAction } from '@/actions/dev/dev.actions';
 export function DevToolsClient() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [password, setPassword] = useState('');
@@ -12,6 +12,9 @@ export function DevToolsClient() {
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [isLoadingInvoices, setIsLoadingInvoices] = useState(false);
 
   useEffect(() => {
     if (!isUnlocked) {
@@ -169,6 +172,41 @@ export function DevToolsClient() {
     }
   };
 
+  const handleOpenInvoiceModal = async () => {
+    setIsInvoiceModalOpen(true);
+    setIsLoadingInvoices(true);
+    try {
+      const res = await getDevPurchaseInvoices(password);
+      if (res.success) {
+        setInvoices(res.data);
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (e) {
+      setErrorMsg('Error al cargar facturas');
+    } finally {
+      setIsLoadingInvoices(false);
+    }
+  };
+
+  const handleDeleteSpecificInvoice = async (id: string) => {
+    if (!confirm('¿Seguro que deseas eliminar esta factura y todos sus items? No afectará el stock actual.')) return;
+    setIsSubmitting(true);
+    try {
+      const res = await deleteSpecificPurchaseInvoiceAction(password, id);
+      if (res.success) {
+        setInvoices(prev => prev.filter(i => i.id !== id));
+        setSuccessMsg(res.message);
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (e) {
+      setErrorMsg('Error al eliminar la factura');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSeedMockCustomers = async () => {
     if (!confirm('¿Seguro que deseas inyectar 10 clientes mock en la base de datos?')) return;
     setIsSubmitting(true);
@@ -269,11 +307,11 @@ export function DevToolsClient() {
       <div className="fixed inset-0 z-[100] bg-[#7f1d1d] overflow-y-auto flex flex-col items-center justify-center p-4 text-white font-serif">
         <div className="flex flex-col items-center text-center space-y-6 w-full max-w-3xl py-10">
           <div className="flex items-center justify-center mb-2">
-            <Image 
-              src="/images/caution.png" 
-              alt="Precaución" 
-              width={160} 
-              height={160} 
+            <Image
+              src="/images/caution.png"
+              alt="Precaución"
+              width={160}
+              height={160}
               className="drop-shadow-2xl"
               priority
             />
@@ -475,7 +513,7 @@ export function DevToolsClient() {
                 <span className="material-symbols-outlined text-[18px]">inventory_2</span>
                 Almacén
               </button>
-              
+
               <button
                 onClick={() => handleSeedMockProducts('INSUMO')}
                 disabled={isSubmitting || !!successMsg}
@@ -550,14 +588,27 @@ export function DevToolsClient() {
               Elimina de forma permanente <strong>todas</strong> las facturas de compra registradas a proveedores. No revierte el stock que ya se haya sumado al inventario, solo limpia el historial y los items asociados.
             </p>
 
-            <button
-              onClick={handleDeleteAllPurchaseInvoices}
-              disabled={isSubmitting}
-              className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
-            >
-              <span className="material-symbols-outlined text-[18px]">delete_forever</span>
-              Borrar Facturas de Compra
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleOpenInvoiceModal}
+                disabled={isSubmitting || !!successMsg}
+                className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                title="Ver y eliminar facturas individuales"
+              >
+                <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                Ver Facturas
+              </button>
+
+              <button
+                onClick={handleDeleteAllPurchaseInvoices}
+                disabled={isSubmitting}
+                className="w-full bg-error/10 text-error border border-error/50 hover:bg-error hover:text-white font-bold h-10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                title="Borrar todas las facturas de compra"
+              >
+                <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+                Borrar Todas
+              </button>
+            </div>
           </div>
 
         </div>
@@ -578,7 +629,7 @@ export function DevToolsClient() {
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto flex-1 bg-surface">
               {isLoadingCustomers ? (
                 <div className="flex justify-center py-10">
@@ -627,6 +678,76 @@ export function DevToolsClient() {
               >
                 <span className="material-symbols-outlined text-[18px]">delete_forever</span>
                 Eliminar Todos los Clientes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isInvoiceModalOpen && (
+        <div className="fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+              <div>
+                <h3 className="text-xl font-bold text-error flex items-center gap-2">
+                  <span className="material-symbols-outlined">receipt_long</span>
+                  Gestión de Facturas (Desarrollo)
+                </h3>
+                <p className="text-sm text-on-surface-variant mt-1">Borrado individual de facturas de compra</p>
+              </div>
+              <button onClick={() => setIsInvoiceModalOpen(false)} className="text-on-surface-variant hover:text-on-surface cursor-pointer">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 bg-surface">
+              {isLoadingInvoices ? (
+                <div className="flex justify-center py-10">
+                  <span className="material-symbols-outlined animate-spin text-4xl text-primary">refresh</span>
+                </div>
+              ) : invoices.length === 0 ? (
+                <div className="text-center py-10 text-on-surface-variant">
+                  No hay facturas de compra en la base de datos.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {invoices.map((inv: any) => (
+                    <div key={inv.id} className="flex items-center justify-between p-4 border border-outline-variant rounded-xl hover:bg-surface-container-lowest transition-colors">
+                      <div>
+                        <div className="font-bold text-on-surface">Factura: {inv.invoiceNumber} <span className="text-sm font-normal text-on-surface-variant ml-2">{inv.supplier?.name || 'Proveedor desconocido'}</span></div>
+                        <div className="text-sm text-on-surface-variant flex gap-4 mt-1">
+                          <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">calendar_today</span> {new Date(inv.date).toLocaleDateString()}</span>
+                          <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">shopping_cart</span> {inv._count?.items || 0} Items</span>
+                          <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">payments</span> ${Number(inv.grandTotal).toLocaleString('es-CO')}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteSpecificInvoice(inv.id)}
+                        disabled={isSubmitting}
+                        className="p-2 text-error hover:bg-error/10 rounded-lg transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                        title="Eliminar esta factura"
+                      >
+                        <span className="material-symbols-outlined">delete</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-outline-variant bg-surface-container-lowest flex justify-between items-center">
+              <button
+                onClick={() => setIsInvoiceModalOpen(false)}
+                className="px-6 py-2 rounded-lg font-bold border border-outline-variant hover:bg-surface-container transition-colors cursor-pointer"
+              >
+                Cerrar
+              </button>
+              <button
+                onClick={handleDeleteAllPurchaseInvoices}
+                disabled={isSubmitting || isLoadingInvoices || invoices.length === 0}
+                className="px-6 py-2 rounded-lg font-bold bg-error text-white hover:bg-error/90 transition-colors disabled:opacity-50 flex items-center gap-2 shadow-sm cursor-pointer disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+                Eliminar Todas
               </button>
             </div>
           </div>

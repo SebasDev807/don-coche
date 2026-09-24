@@ -805,10 +805,10 @@ export function NuevaCompraClient({
                         <div>
                           <label className="block text-body-sm text-secondary mb-1">Margen Ganancia [%]</label>
                           <input
-                            readOnly
                             type="number" min="0" step="any" placeholder="15"
-                            className="w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant focus:outline-none cursor-not-allowed opacity-80"
+                            className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none"
                             value={quickProductData.profitPercentage}
+                            onChange={(e) => setQuickProductData({ ...quickProductData, profitPercentage: e.target.value })}
                           />
                         </div>
                       )}
@@ -819,17 +819,18 @@ export function NuevaCompraClient({
                             <input
                               type="checkbox"
                               checked={quickProductData.hasIva}
-                              disabled
-                              className="w-3 h-3 cursor-not-allowed"
+                              onChange={(e) => setQuickProductData({ ...quickProductData, hasIva: e.target.checked })}
+                              className="w-3 h-3 cursor-pointer"
                             />
                             Incluir
                           </label>
                         </div>
                         <input
-                          readOnly
                           type="number" min="0" step="any"
-                          className="w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant focus:outline-none cursor-not-allowed opacity-80"
+                          className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none disabled:bg-surface-container-highest disabled:opacity-80 disabled:cursor-not-allowed"
                           value={quickProductData.iva}
+                          onChange={(e) => setQuickProductData({ ...quickProductData, iva: Number(e.target.value) })}
+                          disabled={!quickProductData.hasIva}
                         />
                       </div>
                     </div>
@@ -843,8 +844,8 @@ export function NuevaCompraClient({
                             <input
                               type="checkbox"
                               checked={quickProductData.autoRound}
-                              disabled
-                              className="w-3 h-3 cursor-not-allowed"
+                              onChange={(e) => setQuickProductData({ ...quickProductData, autoRound: e.target.checked })}
+                              className="w-3 h-3 cursor-pointer"
                             />
                             Redondear a $50
                           </label>

@@ -492,3 +492,58 @@ export async function deleteAllPurchaseInvoicesAction(password: string): Promise
     return { success: false, message: 'Error al eliminar las facturas de compra.' };
   }
 }
+
+export async function getDevPurchaseInvoices(password: string) {
+  try {
+    const session = await verifyRole(['SUPERUSUARIO']);
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { passwordHash: true },
+    });
+    
+    if (!user) return { success: false, message: 'Usuario no encontrado.', data: [] };
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) return { success: false, message: 'Contraseña incorrecta.', data: [] };
+
+    const invoices = await prisma.purchaseInvoice.findMany({
+      include: {
+        supplier: true,
+        _count: {
+          select: { items: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return { success: true, message: 'Facturas obtenidas.', data: invoices };
+  } catch (error) {
+    console.error('[getDevPurchaseInvoices] Error:', error);
+    return { success: false, message: 'Error al obtener facturas.', data: [] };
+  }
+}
+
+export async function deleteSpecificPurchaseInvoiceAction(password: string, invoiceId: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const session = await verifyRole(['SUPERUSUARIO']);
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { passwordHash: true },
+    });
+    
+    if (!user) return { success: false, message: 'Usuario no encontrado.' };
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) return { success: false, message: 'Contraseña incorrecta.' };
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Eliminar items de la factura de compra
+      await tx.purchaseInvoiceItem.deleteMany({ where: { invoiceId } });
+      // 2. Eliminar la factura de compra
+      await tx.purchaseInvoice.delete({ where: { id: invoiceId } });
+    });
+
+    return { success: true, message: 'La factura de compra ha sido eliminada correctamente.' };
+  } catch (error) {
+    console.error('[deleteSpecificPurchaseInvoiceAction] Error:', error);
+    return { success: false, message: 'Error al eliminar la factura de compra.' };
+  }
+}

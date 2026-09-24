@@ -27,7 +27,7 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
     sheet.getCell('B6').value = invoice.admin.name;
 
     // Items table header
-    sheet.getRow(8).values = ['Producto', 'Cantidad', 'Costo Unitario', 'Costo Unit. + IVA', 'IVA (%)', 'Subtotal'];
+    sheet.getRow(8).values = ['Producto', 'Cantidad', 'Costo Unitario', 'Costo Unit. + IVA', 'IVA (%)', 'Subtotal', 'Total'];
     sheet.getRow(8).font = { bold: true };
     sheet.getRow(8).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
 
@@ -42,12 +42,14 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
         item.unitCost,
         unitWithIva,
         `${ivaRate}%`,
-        item.quantity * item.unitCost
+        item.quantity * item.unitCost,
+        item.quantity * unitWithIva
       ];
       sheet.getCell(`C${currentRow}`).numFmt = '"$"#,##0.00';
       sheet.getCell(`D${currentRow}`).numFmt = '"$"#,##0.00';
       sheet.getCell(`E${currentRow}`).alignment = { horizontal: 'center' };
       sheet.getCell(`F${currentRow}`).numFmt = '"$"#,##0.00';
+      sheet.getCell(`G${currentRow}`).numFmt = '"$"#,##0.00';
       currentRow++;
     });
 
@@ -79,6 +81,7 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
       { width: 18 },
       { width: 20 },
       { width: 12 },
+      { width: 20 },
       { width: 20 },
     ];
 
@@ -220,6 +223,7 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
                           <th className="p-3 text-xs text-secondary font-medium uppercase text-right">Costo Unit + IVA</th>
                           <th className="p-3 text-xs text-secondary font-medium uppercase text-center">IVA</th>
                           <th className="p-3 text-xs text-secondary font-medium uppercase text-right">Subtotal</th>
+                          <th className="p-3 text-xs text-secondary font-medium uppercase text-right">Total</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-outline-variant/30">
@@ -234,6 +238,7 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
                               <td className="p-3 text-sm text-right font-medium text-on-surface">${unitWithIva.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
                               <td className="p-3 text-sm text-center text-secondary">{ivaRate}%</td>
                               <td className="p-3 text-sm text-right font-medium">${(item.quantity * item.unitCost).toLocaleString('es-CO')}</td>
+                              <td className="p-3 text-sm text-right font-bold text-primary">${(item.quantity * unitWithIva).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
                             </tr>
                           );
                         })}

@@ -7,6 +7,7 @@ import { createPurchaseInvoiceAction, createQuickProductAction, updateQuickProdu
 import { useRouter } from "next/navigation";
 import { useSellingPrice } from "@/hooks";
 import { parseLocalizedNumber } from "@/lib/utils/parseLocalizedNumber";
+import { calculateInvoiceTotals, getItemTotals } from "@/lib/utils/invoiceCalculator";
 
 const DRAFT_KEY = "nueva_compra_draft";
 
@@ -27,7 +28,11 @@ export function NuevaCompraClient({
   const [suppliers, setSuppliers] = useState(initialSuppliers);
   const [products, setProducts] = useState(initialProducts);
 
+  const productsById = useMemo(() => new Map<string, any>(products.map((p: any) => [p.id, p])), [products]);
+  const categoriesById = useMemo(() => new Map<string, any>(categories.map((c: any) => [c.id, c])), [categories]);
+
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
   const [isQuickProductModalOpen, setIsQuickProductModalOpen] = useState(false);
   const [quickProductData, setQuickProductData] = useState({
     name: "",
@@ -96,7 +101,7 @@ export function NuevaCompraClient({
       }
     }
 
-    const totals = getItemTotals(item);
+    const totals = getItemTotals(item, productsById, categoriesById);
     item.subtotal = totals.baseSubtotal;
 
     setItems(newItems);
@@ -110,10 +115,11 @@ export function NuevaCompraClient({
     setItems(items.filter((_: any, i: number) => i !== index));
   };
 
-  const handleEditProduct = (productId: string) => {
+  const handleEditProduct = (productId: string, itemIndex: number) => {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     setEditingProductId(productId);
+    setEditingItemIndex(itemIndex);
 
     // El costo en BD ya incluye IVA
     const productIva = Number(product.iva) || 0;
@@ -123,7 +129,7 @@ export function NuevaCompraClient({
       name: product.name,
       categoryId: product.categoryId || "",
       barCode: product.barCode || "",
-      stock: "",
+      stock: items[itemIndex]?.quantity?.toString() || "",
       unitCost: originalCost.toString(),
       profitPercentage: product.profitPercentage?.toString() || "",
       hasIva: Number(product.iva) > 0,
@@ -161,7 +167,16 @@ export function NuevaCompraClient({
         const updatedProduct = result.data;
         setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p).sort((a, b) => a.name.localeCompare(b.name)));
 
-        setItems(items.map((item: any) => {
+        setItems(items.map((item: any, idx: number) => {
+          if (editingItemIndex !== null && idx === editingItemIndex) {
+            const newQuantity = quickProductData.stock ? Number(quickProductData.stock) : Number(item.quantity);
+            return {
+              ...item,
+              quantity: newQuantity as unknown as number,
+              unitCost: Number(updatedProduct.unitCost) as unknown as number,
+              subtotal: newQuantity * Number(updatedProduct.unitCost)
+            };
+          }
           if (item.productId === updatedProduct.id) {
             return {
               ...item,
@@ -174,6 +189,7 @@ export function NuevaCompraClient({
 
         setIsQuickProductModalOpen(false);
         setEditingProductId(null);
+        setEditingItemIndex(null);
         setQuickProductData({
           name: "",
           categoryId: "",
@@ -290,53 +306,8 @@ export function NuevaCompraClient({
     setIsCreatingProduct(false);
   };
 
-  const getItemTotals = (item: { productId: string; quantity: number | string; unitCost: number | string }) => {
-    const qty = Number(item.quantity) || 0;
-    const cost = Number(item.unitCost) || 0;
-    const prod = products.find(p => p.id === item.productId);
-
-    if (!prod) {
-      const sub = qty * cost;
-      return { qty, cost, baseSubtotal: sub, netUnitPrice: cost, ivaRate: 0, ivaAmount: 0, unitWithIva: cost, totalSubtotal: sub, isInsumo: false };
-    }
-
-    const selectedCat = categories.find(c => c.id === prod.categoryId);
-    const isInsumo = selectedCat?.name?.toLowerCase().includes('insumo') || false;
-
-    const ivaRate = prod.iva != null ? Number(prod.iva) : 19;
-    const netUnitPrice = cost;
-    const unitWithIva = cost * (1 + ivaRate / 100);
-
-    const baseSubtotal = netUnitPrice * qty;
-    const totalSubtotal = unitWithIva * qty;
-    const ivaAmount = totalSubtotal - baseSubtotal;
-
-    return {
-      qty,
-      cost,
-      netUnitPrice,
-      ivaRate,
-      ivaAmount,
-      unitWithIva,
-      baseSubtotal,
-      totalSubtotal,
-      isInsumo
-    };
-  };
-
   const { subtotal, ivaAmount, grandTotal } = useMemo(() => {
-    let subtotalAcc = 0;
-    let ivaAcc = 0;
-    let grandTotalAcc = 0;
-
-    items.forEach((item: any) => {
-      const totals = getItemTotals(item);
-      subtotalAcc += totals.baseSubtotal;
-      ivaAcc += totals.ivaAmount;
-      grandTotalAcc += totals.totalSubtotal;
-    });
-
-    return { subtotal: subtotalAcc, ivaAmount: ivaAcc, grandTotal: grandTotalAcc };
+    return calculateInvoiceTotals(items, products, categories);
   }, [items, products, categories]);
 
   const handleQuickSupplierCreate = async (e: React.FormEvent) => {
@@ -387,7 +358,7 @@ export function NuevaCompraClient({
       adminId,
       notes,
       items: items.map((item: any) => {
-        const totals = getItemTotals(item);
+        const totals = getItemTotals(item, productsById, categoriesById);
         return {
           productId: item.productId,
           quantity: Number(item.quantity),
@@ -495,7 +466,7 @@ export function NuevaCompraClient({
 
           <div className="flex flex-col gap-3 overflow-x-auto pb-2">
             {items.map((item: any, index: number) => {
-              const totals = getItemTotals(item);
+              const itemTotals = getItemTotals(item, productsById, categoriesById);
               return (
                 <div key={index} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant flex-wrap md:flex-nowrap">
                   <div className="flex-grow w-full md:w-auto md:min-w-[250px] min-w-0">
@@ -514,7 +485,7 @@ export function NuevaCompraClient({
                       {item.productId && (
                         <button
                           type="button"
-                          onClick={() => handleEditProduct(item.productId)}
+                          onClick={() => handleEditProduct(item.productId, index)}
                           className="p-2 text-primary hover:bg-primary-container/20 rounded-lg shrink-0 cursor-pointer"
                           title="Editar producto"
                         >
@@ -528,9 +499,9 @@ export function NuevaCompraClient({
                     <label className="text-[10px] text-secondary uppercase block mb-1">Cant</label>
                     <input
                       type="number" min="1" step="1" required placeholder="0"
-                      className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-center"
+                      className="w-full bg-surface-container-highest p-2 rounded-lg border border-outline-variant text-center cursor-not-allowed opacity-80"
                       value={item.quantity}
-                      onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
+                      readOnly
                     />
                   </div>
 
@@ -538,23 +509,23 @@ export function NuevaCompraClient({
                     <label className="text-[10px] text-secondary uppercase block mb-1">Costo Unit</label>
                     <input
                       type="number" min="0" step="any" required placeholder="0"
-                      className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-right"
+                      className="w-full bg-surface-container-highest p-2 rounded-lg border border-outline-variant text-right cursor-not-allowed opacity-80"
                       value={item.unitCost}
-                      onChange={(e) => handleItemChange(index, "unitCost", e.target.value)}
+                      readOnly
                     />
                   </div>
 
                   <div className="w-36 shrink-0 text-right">
                     <label className="text-[10px] text-secondary uppercase block mb-1">Costo Unit + IVA</label>
                     <div className="font-medium p-1 text-on-surface">
-                      ${totals.unitWithIva.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                      ${itemTotals.unitWithIva.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                     </div>
                   </div>
 
                   <div className="w-40 shrink-0 text-right">
                     <label className="text-[10px] text-secondary uppercase block mb-1">Total + Iva</label>
                     <div className="font-medium p-1 text-on-surface">
-                      ${totals.totalSubtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                      ${itemTotals.totalSubtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                     </div>
                   </div>
 
@@ -603,7 +574,7 @@ export function NuevaCompraClient({
               <h2 className="text-headline-sm font-bold">
                 {editingProductId ? "Editar Producto" : "Creación Rápida"}
               </h2>
-              <button type="button" onClick={() => { setIsQuickProductModalOpen(false); setEditingProductId(null); }} className="text-secondary hover:text-on-surface">
+              <button type="button" onClick={() => { setIsQuickProductModalOpen(false); setEditingProductId(null); setEditingItemIndex(null); }} className="text-secondary hover:text-on-surface">
                 <span className="material-symbols-outlined text-[24px]">close</span>
               </button>
             </div>
@@ -629,17 +600,16 @@ export function NuevaCompraClient({
                     onChange={(e) => setQuickProductData({ ...quickProductData, barCode: e.target.value })}
                   />
                 </div>
-                {!editingProductId && (
-                  <div>
-                    <label className="block text-body-sm text-secondary mb-1">Stock Inicial</label>
-                    <input
-                      type="number" min="0" step="1" placeholder="0"
-                      className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none"
-                      value={quickProductData.stock}
-                      onChange={(e) => setQuickProductData({ ...quickProductData, stock: e.target.value })}
-                    />
-                  </div>
-                )}
+                <div>
+                  <label className="block text-body-sm text-secondary mb-1">Cantidad a Comprar</label>
+                  <input
+                    type="number" min="1" step="1" placeholder="1"
+                    required
+                    className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none"
+                    value={quickProductData.stock}
+                    onChange={(e) => setQuickProductData({ ...quickProductData, stock: e.target.value })}
+                  />
+                </div>
               </div>
               <div className="mb-4">
                 <label className="block text-body-sm text-secondary mb-1">Categoría</label>
@@ -698,11 +668,10 @@ export function NuevaCompraClient({
                         <div>
                           <label className="block text-body-sm text-secondary mb-1">Margen Ganancia [%]</label>
                           <input
-                            required
+                            readOnly
                             type="number" min="0" step="any" placeholder="15"
-                            className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none"
+                            className="w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant focus:outline-none cursor-not-allowed opacity-80"
                             value={quickProductData.profitPercentage}
-                            onChange={(e) => setQuickProductData({ ...quickProductData, profitPercentage: e.target.value })}
                           />
                         </div>
                       )}
@@ -713,25 +682,17 @@ export function NuevaCompraClient({
                             <input
                               type="checkbox"
                               checked={quickProductData.hasIva}
-                              onChange={(e) => {
-                                const isChecked = e.target.checked;
-                                setQuickProductData({
-                                  ...quickProductData,
-                                  hasIva: isChecked,
-                                  iva: 0
-                                });
-                              }}
-                              className="w-3 h-3"
+                              disabled
+                              className="w-3 h-3 cursor-not-allowed"
                             />
                             Incluir
                           </label>
                         </div>
                         <input
-                          required
-                          type="number" min="0" step="any" disabled={!quickProductData.hasIva}
-                          className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary focus:outline-none disabled:opacity-50"
+                          readOnly
+                          type="number" min="0" step="any"
+                          className="w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant focus:outline-none cursor-not-allowed opacity-80"
                           value={quickProductData.iva}
-                          onChange={(e) => setQuickProductData({ ...quickProductData, iva: Number(e.target.value) })}
                         />
                       </div>
                     </div>
@@ -745,8 +706,8 @@ export function NuevaCompraClient({
                             <input
                               type="checkbox"
                               checked={quickProductData.autoRound}
-                              onChange={(e) => setQuickProductData({ ...quickProductData, autoRound: e.target.checked })}
-                              className="w-3 h-3"
+                              disabled
+                              className="w-3 h-3 cursor-not-allowed"
                             />
                             Redondear a $50
                           </label>
@@ -769,6 +730,7 @@ export function NuevaCompraClient({
                   onClick={() => {
                     setIsQuickProductModalOpen(false);
                     setEditingProductId(null);
+                    setEditingItemIndex(null);
                   }}
                   className="px-6 py-2 rounded-full border border-outline-variant text-secondary hover:bg-surface-container"
                 >
@@ -784,128 +746,133 @@ export function NuevaCompraClient({
               </div>
             </form>
           </div>
-        </div>
-      )}
+        </div >
+      )
+      }
 
-      {isQuickSupplierModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 fade-in">
-          <div className="bg-surface rounded-3xl p-8 max-w-md w-full shadow-lg">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-headline-sm">Nuevo Proveedor</h2>
-              <button type="button" onClick={() => setIsQuickSupplierModalOpen(false)} className="text-secondary hover:text-on-surface">
-                <span className="material-symbols-outlined text-[24px]">close</span>
-              </button>
-            </div>
-            <form onSubmit={handleQuickSupplierCreate} className="flex flex-col gap-4">
-              <div>
-                <label className="block text-body-sm text-secondary mb-1">NIT / Documento *</label>
-                <input required type="text" className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary" value={quickSupplierData.nit} onChange={(e) => setQuickSupplierData({ ...quickSupplierData, nit: e.target.value })} />
-              </div>
-              <div>
-                <label className="block text-body-sm text-secondary mb-1">Nombre o Razón Social *</label>
-                <input required type="text" className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary" value={quickSupplierData.name} onChange={(e) => setQuickSupplierData({ ...quickSupplierData, name: e.target.value })} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-body-sm text-secondary mb-1">Teléfono</label>
-                  <input type="text" className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary" value={quickSupplierData.phone} onChange={(e) => setQuickSupplierData({ ...quickSupplierData, phone: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-body-sm text-secondary mb-1">Email</label>
-                  <input type="email" className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary" value={quickSupplierData.email} onChange={(e) => setQuickSupplierData({ ...quickSupplierData, email: e.target.value })} />
-                </div>
-              </div>
-              <div className="flex justify-end gap-3 mt-4">
-                <button type="button" onClick={() => setIsQuickSupplierModalOpen(false)} className="px-6 py-2 rounded-full border border-outline-variant text-secondary">Cancelar</button>
-                <button type="submit" disabled={isCreatingSupplier} className="px-6 py-2 rounded-full bg-primary-fixed text-black hover:brightness-95 transition-colors disabled:opacity-50">
-                  {isCreatingSupplier ? "Guardando..." : "Guardar Proveedor"}
+      {
+        isQuickSupplierModalOpen && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 fade-in">
+            <div className="bg-surface rounded-3xl p-8 max-w-md w-full shadow-lg">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-headline-sm">Nuevo Proveedor</h2>
+                <button type="button" onClick={() => setIsQuickSupplierModalOpen(false)} className="text-secondary hover:text-on-surface">
+                  <span className="material-symbols-outlined text-[24px]">close</span>
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {isPreviewModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 fade-in">
-          <div className="bg-surface rounded-3xl p-8 max-w-lg w-full shadow-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6 border-b border-outline-variant pb-4">
-              <h2 className="text-headline-sm font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">receipt_long</span>
-                Resumen de Factura
-              </h2>
-              <button type="button" onClick={() => setIsPreviewModalOpen(false)} className="text-secondary hover:text-on-surface">
-                <span className="material-symbols-outlined text-[24px]">close</span>
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-4 mb-6">
-              <div className="bg-surface-container rounded-xl p-4 flex flex-col gap-2">
-                <div className="flex justify-between">
-                  <span className="text-secondary">Proveedor:</span>
-                  <span className="font-medium">{suppliers.find(s => s.id === supplierId)?.name}</span>
+              <form onSubmit={handleQuickSupplierCreate} className="flex flex-col gap-4">
+                <div>
+                  <label className="block text-body-sm text-secondary mb-1">NIT / Documento *</label>
+                  <input required type="text" className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary" value={quickSupplierData.nit} onChange={(e) => setQuickSupplierData({ ...quickSupplierData, nit: e.target.value })} />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-secondary">Factura No:</span>
-                  <span className="font-medium">{invoiceNumber}</span>
+                <div>
+                  <label className="block text-body-sm text-secondary mb-1">Nombre o Razón Social *</label>
+                  <input required type="text" className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary" value={quickSupplierData.name} onChange={(e) => setQuickSupplierData({ ...quickSupplierData, name: e.target.value })} />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-secondary">Fecha:</span>
-                  <span className="font-medium">{date}</span>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-medium text-body-lg mb-2">Artículos ({items.length})</h4>
-                <div className="bg-surface-container rounded-xl overflow-hidden">
-                  <div className="max-h-48 overflow-y-auto p-2">
-                    {items.map((item: any, idx: number) => {
-                      const p = products.find(prod => prod.id === item.productId);
-                      const totals = getItemTotals(item);
-                      return (
-                        <div key={idx} className="flex justify-between items-center p-2 border-b border-outline-variant/30 last:border-0 text-body-sm">
-                          <div className="truncate pr-2 w-1/2">
-                            {item.quantity}x {p?.name || 'Desconocido'}
-                          </div>
-                          <div className="font-medium">
-                            ${totals.totalSubtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                          </div>
-                        </div>
-                      );
-                    })}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-body-sm text-secondary mb-1">Teléfono</label>
+                    <input type="text" className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary" value={quickSupplierData.phone} onChange={(e) => setQuickSupplierData({ ...quickSupplierData, phone: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-body-sm text-secondary mb-1">Email</label>
+                    <input type="email" className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary" value={quickSupplierData.email} onChange={(e) => setQuickSupplierData({ ...quickSupplierData, email: e.target.value })} />
                   </div>
                 </div>
+                <div className="flex justify-end gap-3 mt-4">
+                  <button type="button" onClick={() => setIsQuickSupplierModalOpen(false)} className="px-6 py-2 rounded-full border border-outline-variant text-secondary">Cancelar</button>
+                  <button type="submit" disabled={isCreatingSupplier} className="px-6 py-2 rounded-full bg-primary-fixed text-black hover:brightness-95 transition-colors disabled:opacity-50">
+                    {isCreatingSupplier ? "Guardando..." : "Guardar Proveedor"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )
+      }
+
+      {
+        isPreviewModalOpen && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 fade-in">
+            <div className="bg-surface rounded-3xl p-8 max-w-lg w-full shadow-lg max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6 border-b border-outline-variant pb-4">
+                <h2 className="text-headline-sm font-bold flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">receipt_long</span>
+                  Resumen de Factura
+                </h2>
+                <button type="button" onClick={() => setIsPreviewModalOpen(false)} className="text-secondary hover:text-on-surface">
+                  <span className="material-symbols-outlined text-[24px]">close</span>
+                </button>
               </div>
 
-              <div className="bg-primary-container/20 rounded-xl p-4 flex flex-col gap-1 text-right">
-                <div className="flex justify-between text-secondary">
-                  <span>Subtotal (Base):</span>
-                  <span>${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+              <div className="flex flex-col gap-4 mb-6">
+                <div className="bg-surface-container rounded-xl p-4 flex flex-col gap-2">
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Proveedor:</span>
+                    <span className="font-medium">{suppliers.find(s => s.id === supplierId)?.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Factura No:</span>
+                    <span className="font-medium">{invoiceNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Fecha:</span>
+                    <span className="font-medium">{date}</span>
+                  </div>
                 </div>
-                {ivaAmount > 0 && (
+
+                <div>
+                  <h4 className="font-medium text-body-lg mb-2">Artículos ({items.length})</h4>
+                  <div className="bg-surface-container rounded-xl overflow-hidden">
+                    <div className="max-h-48 overflow-y-auto p-2">
+                      {items.map((item: any, idx: number) => {
+                        const p = products.find(prod => prod.id === item.productId);
+                        const itemTotals = getItemTotals(item, productsById, categoriesById);
+                        return (
+                          <div key={idx} className="flex justify-between items-center p-2 border-b border-outline-variant/30 last:border-0 text-body-sm">
+                            <div className="truncate pr-2 w-1/2">
+                              {item.quantity}x {p?.name || 'Desconocido'}
+                            </div>
+                            <div className="font-medium">
+                              ${itemTotals.totalSubtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-primary-container/20 rounded-xl p-4 flex flex-col gap-1 text-right">
                   <div className="flex justify-between text-secondary">
-                    <span>IVA Total:</span>
-                    <span>${ivaAmount.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                    <span>Subtotal (Base):</span>
+                    <span>${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
                   </div>
-                )}
-                <div className="flex justify-between text-headline-sm font-bold text-primary mt-2 pt-2 border-t border-outline-variant/50">
-                  <span>Total Factura:</span>
-                  <span>${grandTotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                  {ivaAmount > 0 && (
+                    <div className="flex justify-between text-secondary">
+                      <span>IVA Total:</span>
+                      <span>${ivaAmount.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-headline-sm font-bold text-primary mt-2 pt-2 border-t border-outline-variant/50">
+                    <span>Total Factura:</span>
+                    <span>${grandTotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-3 justify-end">
-              <button type="button" onClick={() => setIsPreviewModalOpen(false)} className="px-6 py-3 rounded-full border-2 border-outline-variant text-secondary font-medium hover:bg-surface-container">
-                Editar Datos
-              </button>
-              <button type="button" onClick={confirmSubmit} disabled={isLoading} className="flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-black font-bold hover:brightness-95 shadow-md">
-                <span className="material-symbols-outlined">save</span> Confirmar y Guardar
-              </button>
+              <div className="flex gap-3 justify-end">
+                <button type="button" onClick={() => setIsPreviewModalOpen(false)} className="px-6 py-3 rounded-full border-2 border-outline-variant text-secondary font-medium hover:bg-surface-container">
+                  Editar Datos
+                </button>
+                <button type="button" onClick={confirmSubmit} disabled={isLoading} className="flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-black font-bold hover:brightness-95 shadow-md">
+                  <span className="material-symbols-outlined">save</span> Confirmar y Guardar
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }

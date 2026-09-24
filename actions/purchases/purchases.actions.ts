@@ -73,31 +73,13 @@ export async function createPurchaseInvoiceAction(data: {
         const newStock = previousStock + item.quantity;
 
         const oldUnitCost = Number(product.unitCost);
-        const oldSalePrice = Number(product.salePrice);
         const newUnitCost = item.unitCost;
-
-        let newSalePrice = oldSalePrice;
-
-        // Auto-update sale price (PVP) based on new unit cost
-        const prodIva = product.iva ? Number(product.iva) : 0;
-        const costWithIva = newUnitCost * (1 + prodIva / 100);
-
-        if (newUnitCost !== oldUnitCost) {
-          if (product.profitPercentage) {
-            const profit = Number(product.profitPercentage);
-            newSalePrice = costWithIva * (1 + (profit / 100));
-          } else {
-            const marginMultiplier = oldUnitCost > 0 ? (oldSalePrice / (oldUnitCost * (1 + prodIva / 100))) : 1;
-            newSalePrice = costWithIva * marginMultiplier;
-          }
-        }
 
         await tx.product.update({
           where: { id: item.productId },
           data: {
             stock: newStock,
             unitCost: newUnitCost,
-            salePrice: newSalePrice,
           },
         });
 
@@ -391,23 +373,9 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
 
         // Update product price if it's included in the new items
         let nextUnitCost = Number(product.unitCost);
-        let nextSalePrice = Number(product.salePrice);
 
         if (newItem) {
           nextUnitCost = newItem.unitCost;
-          // Calculate new sale price (PVP) if cost changed
-          if (nextUnitCost !== Number(product.unitCost)) {
-            const prodIva = product.iva ? Number(product.iva) : 0;
-            const costWithIva = nextUnitCost * (1 + prodIva / 100);
-            if (product.profitPercentage) {
-              const profit = Number(product.profitPercentage);
-              nextSalePrice = costWithIva * (1 + (profit / 100));
-            } else {
-              const oldUnitCost = Number(product.unitCost);
-              const marginMultiplier = oldUnitCost > 0 ? (Number(product.salePrice) / (oldUnitCost * (1 + prodIva / 100))) : 1;
-              nextSalePrice = costWithIva * marginMultiplier;
-            }
-          }
         }
 
         await tx.product.update({
@@ -415,7 +383,6 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
           data: {
             stock: newStock,
             unitCost: nextUnitCost,
-            salePrice: nextSalePrice,
           }
         });
 

@@ -12,7 +12,29 @@ export const metadata: Metadata = {
 export default async function ComprasPage() {
   await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
   const result = await getPurchaseInvoicesAction();
-  const invoices = result.success && result.data ? result.data : [];
+  const rawInvoices = result.success && result.data ? result.data : [];
+  const invoices = rawInvoices.map(invoice => ({
+    ...invoice,
+    totalBase: Number(invoice.totalBase || 0),
+    discounts: Number(invoice.discounts || 0),
+    subtotal: Number(invoice.subtotal || 0),
+    ivaAmount: Number(invoice.ivaAmount || 0),
+    grandTotal: Number(invoice.grandTotal || 0),
+    items: invoice.items?.map((item: any) => ({
+      ...item,
+      quantity: Number(item.quantity || 0),
+      unitCost: Number(item.unitCost || 0),
+      discountPercentage: Number(item.discountPercentage || 0),
+      subtotal: Number(item.subtotal || 0),
+      product: item.product ? {
+        ...item.product,
+        unitCost: Number(item.product.unitCost || 0),
+        salePrice: Number(item.product.salePrice || 0),
+        iva: item.product.iva != null ? Number(item.product.iva) : 19,
+        profitPercentage: item.product.profitPercentage ? Number(item.product.profitPercentage) : 0,
+      } : undefined
+    }))
+  }));
 
   return (
     <div className="fade-in flex flex-col min-h-[calc(100vh-140px)]">

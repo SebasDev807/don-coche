@@ -506,6 +506,7 @@ model PurchaseInvoice {
   invoiceNumber String   @map("invoice_number")
   date          DateTime @default(now()) @db.Date
   subtotal      Decimal  @db.Decimal(10, 2)
+  discountAmount Decimal? @map("discount_amount") @db.Decimal(10, 2)
   ivaAmount     Decimal  @default(0) @map("iva_amount") @db.Decimal(10, 2)
   grandTotal    Decimal  @map("grand_total") @db.Decimal(10, 2)
   adminId       String   @map("admin_id") @db.Uuid

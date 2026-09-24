@@ -23,6 +23,7 @@ export interface ItemTotals {
   netUnitPrice: number;   // Precio unitario sin IVA
   ivaRate: number;        // Porcentaje de IVA aplicado
   unitWithIva: number;    // Precio unitario con IVA
+  gross: number;          // (cantidad × precio unitario) sin descuento
   baseSubtotal: number;   // (cantidad × precio unitario) − descuento
   ivaAmount: number;      // IVA de la línea, calculado sobre baseSubtotal
   totalSubtotal: number;  // baseSubtotal + ivaAmount
@@ -66,7 +67,21 @@ export function getItemTotals(
 
   const prod = item.productId ? productsById.get(item.productId) : undefined;
   if (!prod) {
-    throw new Error(`Product not found: ${item.productId ?? "(no id)"}`);
+    const gross = cost * qty;
+    const baseSubtotal = roundTo2(gross - discount);
+    return {
+      qty,
+      cost,
+      discount: roundTo2(discount),
+      netUnitPrice: cost,
+      ivaRate: 0,
+      unitWithIva: cost,
+      gross: roundTo2(gross),
+      baseSubtotal,
+      ivaAmount: 0,
+      totalSubtotal: baseSubtotal,
+      isInsumo: false,
+    };
   }
 
   const category = prod.categoryId ? categoriesById.get(prod.categoryId) : undefined;
@@ -74,7 +89,7 @@ export function getItemTotals(
 
   const ivaRate =
     prod.iva === undefined || prod.iva === null || prod.iva === ""
-      ? DEFAULT_IVA_RATE
+      ? 0 // "si lo tiene"
       : parseNumber(prod.iva, "product.iva");
 
   if (ivaRate < 0) {
@@ -89,6 +104,7 @@ export function getItemTotals(
 
   const baseSubtotal = roundTo2(gross - discount);
 
+  // Sacar IVA al subtotal neto
   const ivaAmount = roundTo2(baseSubtotal * (ivaRate / 100));
   const totalSubtotal = roundTo2(baseSubtotal + ivaAmount);
 
@@ -99,6 +115,7 @@ export function getItemTotals(
     netUnitPrice: cost,
     ivaRate,
     unitWithIva: roundTo2(cost * (1 + ivaRate / 100)),
+    gross: roundTo2(gross),
     baseSubtotal,
     ivaAmount,
     totalSubtotal,
@@ -109,29 +126,33 @@ export function getItemTotals(
 export function calculateInvoiceTotals(
   items: InvoiceItem[],
   products: Product[],
-  categories: Category[]
-): InvoiceTotals {
+  categories: Category[],
+  globalDiscount: number = 0
+): InvoiceTotals & { subtotalBeforeIva: number, grossSubtotal: number } {
   const productsById = new Map(products.map((p) => [p.id, p]));
   const categoriesById = new Map(categories.map((c) => [c.id, c]));
 
-  let subtotal = 0;
-  let totalDiscount = 0;
+  let subtotal = 0; // Gross subtotal (precio * cantidad)
   let ivaAmount = 0;
-  let grandTotal = 0;
 
   for (const item of items) {
     if (!item.productId) continue;
 
     const totals = getItemTotals(item, productsById, categoriesById);
-    subtotal += totals.baseSubtotal;
-    totalDiscount += totals.discount;
+    const qty = totals.qty;
+    const cost = totals.cost;
+    subtotal += (qty * cost);
     ivaAmount += totals.ivaAmount;
-    grandTotal += totals.totalSubtotal;
   }
 
+  const subtotalBeforeIva = subtotal - globalDiscount;
+  const grandTotal = subtotalBeforeIva + ivaAmount;
+
   return {
-    subtotal: roundTo2(subtotal),
-    totalDiscount: roundTo2(totalDiscount),
+    grossSubtotal: roundTo2(subtotal),
+    subtotal: roundTo2(subtotalBeforeIva),
+    totalDiscount: roundTo2(globalDiscount),
+    subtotalBeforeIva: roundTo2(subtotalBeforeIva),
     ivaAmount: roundTo2(ivaAmount),
     grandTotal: roundTo2(grandTotal),
   };

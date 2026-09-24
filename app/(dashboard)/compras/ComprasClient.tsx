@@ -27,7 +27,7 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
     sheet.getCell('B6').value = invoice.admin.name;
 
     // Items table header
-    sheet.getRow(8).values = ['Producto', 'Cantidad', 'Costo Unitario', 'Costo Unit. + IVA', 'IVA (%)', 'Subtotal', 'Total'];
+    sheet.getRow(8).values = ['Producto', 'Cantidad', 'Costo Unitario', 'Descuento', 'Subtotal', 'Subtotal Neto', 'Total IVA'];
     sheet.getRow(8).font = { bold: true };
     sheet.getRow(8).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } };
 
@@ -35,19 +35,18 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
     let currentRow = 9;
     invoice.items.forEach((item: any) => {
       const ivaRate = item.product?.iva != null ? Number(item.product.iva) : 19;
-      const unitWithIva = item.unitCost * (1 + ivaRate / 100);
       sheet.getRow(currentRow).values = [
         item.product.name,
         item.quantity,
         item.unitCost,
-        unitWithIva,
-        `${ivaRate}%`,
-        item.quantity * item.unitCost,
-        item.quantity * unitWithIva
+        item.discountAmount ? Number(item.discountAmount) : 0,
+        item.subtotal,
+        item.netSubtotal || item.subtotal,
+        (item.netSubtotal || item.subtotal) * (ivaRate / 100)
       ];
       sheet.getCell(`C${currentRow}`).numFmt = '"$"#,##0.00';
       sheet.getCell(`D${currentRow}`).numFmt = '"$"#,##0.00';
-      sheet.getCell(`E${currentRow}`).alignment = { horizontal: 'center' };
+      sheet.getCell(`E${currentRow}`).numFmt = '"$"#,##0.00';
       sheet.getCell(`F${currentRow}`).numFmt = '"$"#,##0.00';
       sheet.getCell(`G${currentRow}`).numFmt = '"$"#,##0.00';
       currentRow++;
@@ -55,14 +54,21 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
 
     // Totals
     currentRow++;
-    sheet.getCell(`E${currentRow}`).value = "Subtotal:";
+    sheet.getCell(`E${currentRow}`).value = "Subtotal Bruto:";
     sheet.getCell(`E${currentRow}`).font = { bold: true };
     sheet.getCell(`F${currentRow}`).value = invoice.subtotal;
     sheet.getCell(`F${currentRow}`).font = { bold: true };
     sheet.getCell(`F${currentRow}`).numFmt = '"$"#,##0.00';
 
     currentRow++;
-    sheet.getCell(`E${currentRow}`).value = "IVA:";
+    sheet.getCell(`E${currentRow}`).value = "Descuento Total:";
+    sheet.getCell(`E${currentRow}`).font = { bold: true };
+    sheet.getCell(`F${currentRow}`).value = invoice.discountAmount ? Number(invoice.discountAmount) : 0;
+    sheet.getCell(`F${currentRow}`).font = { bold: true };
+    sheet.getCell(`F${currentRow}`).numFmt = '"$"#,##0.00';
+
+    currentRow++;
+    sheet.getCell(`E${currentRow}`).value = "Total IVA:";
     sheet.getCell(`E${currentRow}`).font = { bold: true };
     sheet.getCell(`F${currentRow}`).value = invoice.ivaAmount;
     sheet.getCell(`F${currentRow}`).font = { bold: true };
@@ -220,10 +226,10 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
                           <th className="p-3 text-xs text-secondary font-medium uppercase">Producto</th>
                           <th className="p-3 text-xs text-secondary font-medium uppercase text-center">Cant</th>
                           <th className="p-3 text-xs text-secondary font-medium uppercase text-right">Costo Unit</th>
-                          <th className="p-3 text-xs text-secondary font-medium uppercase text-right">Costo Unit + IVA</th>
-                          <th className="p-3 text-xs text-secondary font-medium uppercase text-center">IVA</th>
+                          <th className="p-3 text-xs text-secondary font-medium uppercase text-right">Descuento</th>
                           <th className="p-3 text-xs text-secondary font-medium uppercase text-right">Subtotal</th>
-                          <th className="p-3 text-xs text-secondary font-medium uppercase text-right">Total</th>
+                          <th className="p-3 text-xs text-secondary font-medium uppercase text-right">Subtotal Neto</th>
+                          <th className="p-3 text-xs text-secondary font-medium uppercase text-right">Total IVA</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-outline-variant/30">
@@ -235,10 +241,10 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
                               <td className="p-3 text-sm">{item.product.name}</td>
                               <td className="p-3 text-sm text-center font-medium">{item.quantity}</td>
                               <td className="p-3 text-sm text-right text-secondary">${item.unitCost.toLocaleString('es-CO')}</td>
-                              <td className="p-3 text-sm text-right font-medium text-on-surface">${unitWithIva.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
-                              <td className="p-3 text-sm text-center text-secondary">{ivaRate}%</td>
-                              <td className="p-3 text-sm text-right font-medium">${(item.quantity * item.unitCost).toLocaleString('es-CO')}</td>
-                              <td className="p-3 text-sm text-right font-bold text-primary">${(item.quantity * unitWithIva).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
+                              <td className="p-3 text-sm text-right text-secondary">${item.discountAmount ? Number(item.discountAmount).toLocaleString('es-CO') : "0"}</td>
+                              <td className="p-3 text-sm text-right font-medium text-on-surface">${item.subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
+                              <td className="p-3 text-sm text-right font-medium text-on-surface">${(item.netSubtotal || item.subtotal).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
+                              <td className="p-3 text-sm text-right font-bold text-primary">${((item.netSubtotal || item.subtotal) * (ivaRate / 100)).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
                             </tr>
                           );
                         })}
@@ -250,15 +256,20 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
 
               <div className="bg-primary-container/20 rounded-xl p-6 flex flex-col gap-2 text-right">
                 <div className="flex justify-between text-secondary">
-                  <span>Subtotal:</span>
-                  <span>${selectedInvoice.items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitCost), 0).toLocaleString('es-CO')}</span>
+                  <span>Subtotal Bruto:</span>
+                  <span>${selectedInvoice.subtotal.toLocaleString('es-CO')}</span>
+                </div>
+                <div className="flex justify-between text-secondary mt-1">
+                  <span>Descuento Total:</span>
+                  <span>${selectedInvoice.discountAmount ? selectedInvoice.discountAmount.toLocaleString('es-CO') : "0"}</span>
+                </div>
+                <div className="flex justify-between text-secondary mt-1">
+                  <span>Total IVA:</span>
+                  <span>${selectedInvoice.ivaAmount.toLocaleString('es-CO')}</span>
                 </div>
                 <div className="flex justify-between text-headline-sm font-bold text-primary mt-2 pt-2 border-t border-outline-variant/50">
                   <span>Total Pagado:</span>
-                  <span>${selectedInvoice.items.reduce((sum: number, item: any) => {
-                    const ivaRate = item.product?.iva != null ? Number(item.product.iva) : 19;
-                    return sum + (item.unitCost * (1 + ivaRate / 100) * item.quantity);
-                  }, 0).toLocaleString('es-CO')}</span>
+                  <span>${selectedInvoice.grandTotal.toLocaleString('es-CO')}</span>
                 </div>
               </div>
             </div>

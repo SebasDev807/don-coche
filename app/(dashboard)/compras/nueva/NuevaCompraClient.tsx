@@ -72,16 +72,20 @@ export function NuevaCompraClient({
   const [invoiceNumber, setInvoiceNumber] = useState(draft?.invoiceNumber ?? "");
   const [date, setDate] = useState(draft?.date ?? new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState(draft?.notes ?? "");
+  const [discountAmount, setDiscountAmount] = useState<number | "">(draft?.discountAmount ?? "");
+  const [discountInput, setDiscountInput] = useState<string>(
+    draft?.discountAmount ? Number(draft.discountAmount).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ""
+  );
 
   const [items, setItems] = useState(
-    draft?.items ?? [{ productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, subtotal: 0 }]
+    draft?.items ?? [{ productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, discount: "" as unknown as number, discountInput: "", subtotal: 0 }]
   );
 
   // --- Guardar borrador en localStorage en cada cambio ---
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ supplierId, invoiceNumber, date, notes, items }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ supplierId, invoiceNumber, date, notes, items, discountAmount }));
     } catch { }
   }, [supplierId, invoiceNumber, date, notes, items]);
 
@@ -108,7 +112,7 @@ export function NuevaCompraClient({
   };
 
   const addItem = () => {
-    setItems([...items, { productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, subtotal: 0 }]);
+    setItems([...items, { productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, discount: "" as unknown as number, discountInput: "", subtotal: 0 }]);
   };
 
   const removeItem = (index: number) => {
@@ -246,9 +250,9 @@ export function NuevaCompraClient({
             const productQuantity = quickProductData.stock ? Number(quickProductData.stock) : 1;
             const unitCostNumber = Number(updatedProduct.unitCost);
             if (emptyRowIndex >= 0) {
-              newItems[emptyRowIndex] = { productId: updatedProduct.id, quantity: productQuantity as unknown as number, unitCost: unitCostNumber as unknown as number, subtotal: productQuantity * unitCostNumber };
+              newItems[emptyRowIndex] = { productId: updatedProduct.id, quantity: productQuantity as unknown as number, unitCost: unitCostNumber as unknown as number, discount: "" as unknown as number, discountInput: "", subtotal: productQuantity * unitCostNumber };
             } else {
-              newItems.push({ productId: updatedProduct.id, quantity: productQuantity as unknown as number, unitCost: unitCostNumber as unknown as number, subtotal: productQuantity * unitCostNumber });
+              newItems.push({ productId: updatedProduct.id, quantity: productQuantity as unknown as number, unitCost: unitCostNumber as unknown as number, discount: "" as unknown as number, discountInput: "", subtotal: productQuantity * unitCostNumber });
             }
             setItems(newItems);
             setIsQuickProductModalOpen(false);
@@ -275,6 +279,8 @@ export function NuevaCompraClient({
             productId: newProduct.id,
             quantity: productQuantity as unknown as number,
             unitCost: unitCostNumber as unknown as number,
+            discount: "" as unknown as number,
+            discountInput: "",
             subtotal: productQuantity * unitCostNumber
           };
         } else {
@@ -282,6 +288,8 @@ export function NuevaCompraClient({
             productId: newProduct.id,
             quantity: productQuantity as unknown as number,
             unitCost: unitCostNumber as unknown as number,
+            discount: "" as unknown as number,
+            discountInput: "",
             subtotal: productQuantity * unitCostNumber
           });
         }
@@ -306,9 +314,27 @@ export function NuevaCompraClient({
     setIsCreatingProduct(false);
   };
 
-  const { subtotal, ivaAmount, grandTotal } = useMemo(() => {
-    return calculateInvoiceTotals(items, products, categories);
-  }, [items, products, categories]);
+  const sumItemDiscounts = useMemo(() => {
+    return items.reduce((acc: number, item: any) => {
+      const d = Number(item.discount || 0);
+      return acc + (isNaN(d) ? 0 : d);
+    }, 0);
+  }, [items]);
+
+  const isGlobalDiscountLocked = sumItemDiscounts > 0;
+  const isItemDiscountLocked = !isGlobalDiscountLocked && Number(discountAmount) > 0;
+
+  useEffect(() => {
+    if (sumItemDiscounts > 0 && discountInput !== "") {
+      setDiscountInput("");
+      setDiscountAmount("");
+    }
+  }, [sumItemDiscounts]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const { subtotal, ivaAmount, grandTotal, grossSubtotal } = useMemo(() => {
+    const globalDiscount = isGlobalDiscountLocked ? sumItemDiscounts : (discountAmount !== "" ? Number(discountAmount) : 0);
+    return calculateInvoiceTotals(items, products, categories, globalDiscount);
+  }, [items, products, categories, discountAmount, isGlobalDiscountLocked, sumItemDiscounts]);
 
   const handleQuickSupplierCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -353,6 +379,7 @@ export function NuevaCompraClient({
       invoiceNumber,
       date: new Date(date),
       subtotal,
+      discountAmount: discountAmount !== "" ? Number(discountAmount) : undefined,
       ivaAmount,
       grandTotal,
       adminId,
@@ -363,7 +390,9 @@ export function NuevaCompraClient({
           productId: item.productId,
           quantity: Number(item.quantity),
           unitCost: Number(item.unitCost),
-          subtotal: totals.totalSubtotal
+          subtotal: totals.gross,
+          discountAmount: item.discount !== "" ? Number(item.discount) : undefined,
+          netSubtotal: totals.baseSubtotal
         };
       })
     });
@@ -468,8 +497,8 @@ export function NuevaCompraClient({
             {items.map((item: any, index: number) => {
               const itemTotals = getItemTotals(item, productsById, categoriesById);
               return (
-                <div key={index} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant flex-wrap md:flex-nowrap">
-                  <div className="flex-grow w-full md:w-auto md:min-w-[250px] min-w-0">
+                <div key={index} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant flex-wrap md:flex-nowrap md:min-w-max">
+                  <div className="w-full md:w-80 shrink-0 min-w-0">
                     <div className="flex items-center w-full gap-2">
                       <select
                         required
@@ -499,9 +528,9 @@ export function NuevaCompraClient({
                     <label className="text-[10px] text-secondary uppercase block mb-1">Cant</label>
                     <input
                       type="number" min="1" step="1" required placeholder="0"
-                      className="w-full bg-surface-container-highest p-2 rounded-lg border border-outline-variant text-center cursor-not-allowed opacity-80"
+                      className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-center focus:border-primary"
                       value={item.quantity}
-                      readOnly
+                      onChange={(e) => handleItemChange(index, "quantity", e.target.value ? Number(e.target.value) : "")}
                     />
                   </div>
 
@@ -515,17 +544,58 @@ export function NuevaCompraClient({
                     />
                   </div>
 
+                  <div className="w-32 shrink-0">
+                    <label className="text-[10px] text-secondary uppercase block mb-1">Descuento</label>
+                    <input
+                      type="text" placeholder="0"
+                      disabled={isItemDiscountLocked}
+                      className={`w-full p-2 rounded-lg border text-right focus:border-primary ${isItemDiscountLocked ? 'bg-surface-container-highest border-outline-variant/50 cursor-not-allowed opacity-60' : 'bg-surface-container border-outline-variant'}`}
+                      value={item.discountInput || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (!/^[0-9.,]*$/.test(val)) return;
+                        const newItems = [...items];
+                        newItems[index].discountInput = val;
+                        newItems[index].discount = parseLocalizedNumber(val) || "";
+                        const totals = getItemTotals(newItems[index], productsById, categoriesById);
+                        newItems[index].subtotal = totals.baseSubtotal;
+                        setItems(newItems);
+                      }}
+                      onBlur={() => {
+                        const newItems = [...items];
+                        const num = parseLocalizedNumber(newItems[index].discountInput || "");
+                        if (num > 0) {
+                          newItems[index].discountInput = num.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                          newItems[index].discount = num;
+                        } else {
+                          newItems[index].discountInput = "";
+                          newItems[index].discount = "";
+                        }
+                        const totals = getItemTotals(newItems[index], productsById, categoriesById);
+                        newItems[index].subtotal = totals.baseSubtotal;
+                        setItems(newItems);
+                      }}
+                    />
+                  </div>
+
                   <div className="w-36 shrink-0 text-right">
-                    <label className="text-[10px] text-secondary uppercase block mb-1">Costo Unit + IVA</label>
+                    <label className="text-[10px] text-secondary uppercase block mb-1">Subtotal</label>
                     <div className="font-medium p-1 text-on-surface">
-                      ${itemTotals.unitWithIva.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                      ${itemTotals.gross.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                     </div>
                   </div>
 
-                  <div className="w-40 shrink-0 text-right">
-                    <label className="text-[10px] text-secondary uppercase block mb-1">Total + Iva</label>
-                    <div className="font-medium p-1 text-on-surface">
-                      ${itemTotals.totalSubtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                  <div className="w-36 shrink-0 text-right">
+                    <label className="text-[10px] text-secondary uppercase block mb-1">Subtotal Neto</label>
+                    <div className="font-medium p-1 text-on-surface text-primary">
+                      ${itemTotals.baseSubtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                    </div>
+                  </div>
+
+                  <div className="w-32 shrink-0 text-right">
+                    <label className="text-[10px] text-secondary uppercase block mb-1">Total IVA</label>
+                    <div className="font-medium p-1 text-on-surface text-primary">
+                      ${itemTotals.ivaAmount.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                     </div>
                   </div>
 
@@ -545,12 +615,71 @@ export function NuevaCompraClient({
         </div>
 
         {/* Totales y Submit */}
-        <div className="flex flex-col md:flex-row justify-between items-center bg-surface p-6 rounded-2xl border border-outline-variant mt-4 gap-6">
-          <div className="flex flex-col">
-            <span className="text-secondary text-body-sm">Total Factura (Antes de guardar)</span>
-            <span className="text-headline-md text-primary font-bold">
-              ${grandTotal.toLocaleString('es-CO')}
-            </span>
+        <div className="flex flex-col md:flex-row justify-between items-end bg-surface p-6 rounded-2xl border border-outline-variant mt-4 gap-6">
+          <div className="flex flex-col gap-4 w-full md:w-auto">
+            <div className="flex flex-col w-full md:w-64">
+              <label className="text-[10px] text-secondary uppercase font-medium mb-1">Descuento Global</label>
+              <span className="text-[12px] text-secondary/70 mb-1 leading-tight">
+                {isGlobalDiscountLocked
+                  ? "(Bloqueado: sumando descuentos de productos)"
+                  : "(Bloqueado si usas descuentos por producto)"}
+              </span>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary">$</span>
+                <input
+                  type="text"
+                  placeholder="0"
+                  disabled={isGlobalDiscountLocked}
+                  className={`w-full p-2 pl-7 rounded-lg border focus:border-primary text-body-md transition-colors ${isGlobalDiscountLocked ? 'bg-surface-container-highest border-outline-variant/50 cursor-not-allowed opacity-80 text-primary font-medium' : 'bg-surface-container-highest border-outline-variant'}`}
+                  value={isGlobalDiscountLocked ? sumItemDiscounts.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : discountInput}
+                  onChange={(e) => {
+                    if (isGlobalDiscountLocked) return;
+                    const val = e.target.value;
+                    if (!/^[0-9.,]*$/.test(val)) return;
+                    setDiscountInput(val);
+                    setDiscountAmount(parseLocalizedNumber(val) || "");
+                  }}
+                  onBlur={() => {
+                    if (isGlobalDiscountLocked) return;
+                    const num = parseLocalizedNumber(discountInput);
+                    if (num > 0) {
+                      setDiscountInput(num.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                      setDiscountAmount(num);
+                    } else {
+                      setDiscountInput("");
+                      setDiscountAmount("");
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col border-t border-outline-variant pt-3 gap-2">
+              <div className="flex justify-between items-center text-secondary">
+                <span className="text-body-sm">Subtotal:</span>
+                <span className="font-medium">
+                  ${grossSubtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-secondary">
+                <span className="text-body-sm">Subtotal (Neto):</span>
+                <span className="font-medium text-on-surface">
+                  ${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-secondary">
+                <span className="text-body-sm">Total IVA:</span>
+                <span className="font-medium">
+                  ${ivaAmount.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex flex-col mt-1">
+                <span className="text-secondary text-body-sm">Total Factura (Antes de guardar)</span>
+                <span className="text-headline-md text-primary font-bold">
+                  ${grandTotal.toLocaleString('es-CO')}
+                </span>
+              </div>
+            </div>
           </div>
 
           <button

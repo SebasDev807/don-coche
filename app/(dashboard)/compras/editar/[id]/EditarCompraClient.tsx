@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Supplier } from "@prisma/client";
 
 import { updatePurchaseInvoiceAction, createQuickProductAction, updateQuickProductAction, createQuickSupplierAction } from "@/actions/purchases/purchases.actions";
@@ -69,8 +69,15 @@ export function EditarCompraClient({
     productId: i.productId,
     quantity: i.quantity as unknown as number,
     unitCost: i.unitCost as unknown as number,
+    discount: i.discountAmount ? Number(i.discountAmount) : ("" as unknown as number),
+    discountInput: i.discountAmount ? Number(i.discountAmount).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "",
     subtotal: i.subtotal
   })));
+
+  const [discountAmount, setDiscountAmount] = useState<number | "">(initialInvoice.discountAmount ? Number(initialInvoice.discountAmount) : "");
+  const [discountInput, setDiscountInput] = useState<string>(
+    initialInvoice.discountAmount ? Number(initialInvoice.discountAmount).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ""
+  );
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +108,7 @@ export function EditarCompraClient({
 
   const addItem = () => {
     const newLength = items.length + 1;
-    setItems([...items, { productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, subtotal: 0 }]);
+    setItems([...items, { productId: "", quantity: "" as unknown as number, unitCost: "" as unknown as number, discount: "" as unknown as number, discountInput: "", subtotal: 0 }]);
     setCurrentPage(Math.ceil(newLength / itemsPerPage) || 1);
   };
 
@@ -243,9 +250,9 @@ export function EditarCompraClient({
             const productQuantity = quickProductData.stock ? Number(quickProductData.stock) : 1;
             const unitCostNumber = Number(updatedProduct.unitCost);
             if (emptyRowIndex >= 0) {
-              newItems[emptyRowIndex] = { productId: updatedProduct.id, quantity: productQuantity as unknown as number, unitCost: unitCostNumber as unknown as number, subtotal: productQuantity * unitCostNumber };
+              newItems[emptyRowIndex] = { productId: updatedProduct.id, quantity: productQuantity as unknown as number, unitCost: unitCostNumber as unknown as number, discount: "" as unknown as number, discountInput: "", subtotal: productQuantity * unitCostNumber };
             } else {
-              newItems.push({ productId: updatedProduct.id, quantity: productQuantity as unknown as number, unitCost: unitCostNumber as unknown as number, subtotal: productQuantity * unitCostNumber });
+              newItems.push({ productId: updatedProduct.id, quantity: productQuantity as unknown as number, unitCost: unitCostNumber as unknown as number, discount: "" as unknown as number, discountInput: "", subtotal: productQuantity * unitCostNumber });
             }
             setItems(newItems);
             setIsQuickProductModalOpen(false);
@@ -272,6 +279,7 @@ export function EditarCompraClient({
             productId: newProduct.id,
             quantity: productQuantity as unknown as number,
             unitCost: unitCostNumber as unknown as number,
+            discount: "" as unknown as number, discountInput: "",
             subtotal: productQuantity * unitCostNumber
           };
         } else {
@@ -279,6 +287,7 @@ export function EditarCompraClient({
             productId: newProduct.id,
             quantity: productQuantity as unknown as number,
             unitCost: unitCostNumber as unknown as number,
+            discount: "" as unknown as number, discountInput: "",
             subtotal: productQuantity * unitCostNumber
           });
         }
@@ -303,9 +312,27 @@ export function EditarCompraClient({
     setIsCreatingProduct(false);
   };
 
-  const { subtotal, ivaAmount, grandTotal } = useMemo(() => {
-    return calculateInvoiceTotals(items, products, categories);
-  }, [items, products, categories]);
+  const sumItemDiscounts = useMemo(() => {
+    return items.reduce((acc: number, item: any) => {
+      const d = Number(item.discount || 0);
+      return acc + (isNaN(d) ? 0 : d);
+    }, 0);
+  }, [items]);
+
+  const isGlobalDiscountLocked = sumItemDiscounts > 0;
+  const isItemDiscountLocked = !isGlobalDiscountLocked && Number(discountAmount) > 0;
+
+  useEffect(() => {
+    if (sumItemDiscounts > 0 && discountInput !== "") {
+      setDiscountInput("");
+      setDiscountAmount("");
+    }
+  }, [sumItemDiscounts]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const { subtotal, ivaAmount, grandTotal, grossSubtotal } = useMemo(() => {
+    const globalDiscount = isGlobalDiscountLocked ? sumItemDiscounts : (discountAmount !== "" ? Number(discountAmount) : 0);
+    return calculateInvoiceTotals(items, products, categories, globalDiscount);
+  }, [items, products, categories, discountAmount, isGlobalDiscountLocked, sumItemDiscounts]);
 
   const handleQuickSupplierCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -350,6 +377,7 @@ export function EditarCompraClient({
       invoiceNumber,
       date: new Date(date),
       subtotal,
+      discountAmount: discountAmount !== "" ? Number(discountAmount) : undefined,
       ivaAmount,
       grandTotal,
       adminId,
@@ -360,7 +388,9 @@ export function EditarCompraClient({
           productId: item.productId,
           quantity: Number(item.quantity),
           unitCost: Number(item.unitCost),
-          subtotal: totals.totalSubtotal
+          subtotal: totals.gross,
+          discountAmount: item.discount !== "" ? Number(item.discount) : undefined,
+          netSubtotal: totals.baseSubtotal
         };
       })
     });
@@ -464,8 +494,8 @@ export function EditarCompraClient({
               const absoluteIndex = (currentPage - 1) * itemsPerPage + localIndex;
               const totals = getItemTotals(item, productsById, categoriesById);
               return (
-                <div key={absoluteIndex} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant flex-wrap md:flex-nowrap">
-                  <div className="flex-grow w-full md:w-auto md:min-w-[250px] min-w-0">
+                <div key={absoluteIndex} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant flex-wrap md:flex-nowrap md:min-w-max">
+                  <div className="w-full md:w-80 shrink-0 min-w-0">
                     <div className="flex items-center w-full gap-2">
                       <select
                         required
@@ -475,17 +505,17 @@ export function EditarCompraClient({
                       >
                         <option value="">Seleccione un producto</option>
                         {products.map(p => (
-                          <option key={p.id} value={p.id}>{p.name} - Actual: ${Number(p.unitCost)}</option>
+                          <option key={p.id} value={p.id}>{p.name} - Actual: ${Number(p.unitCost).toLocaleString('es-CO')}</option>
                         ))}
                       </select>
                       {item.productId && (
                         <button
                           type="button"
                           onClick={() => handleEditProduct(item.productId, absoluteIndex)}
-                          className="flex-shrink-0 text-primary hover:text-primary/80 transition-colors cursor-pointer"
-                          title="Editar Producto"
+                          className="shrink-0 p-2 text-primary hover:bg-primary-container rounded-lg transition-colors flex items-center justify-center border border-primary/20"
+                          title="Editar producto"
                         >
-                          <span className="material-symbols-outlined text-[20px]">edit</span>
+                          <span className="material-symbols-outlined text-[18px]">edit</span>
                         </button>
                       )}
                     </div>
@@ -494,8 +524,8 @@ export function EditarCompraClient({
                   <div className="w-24 shrink-0">
                     <label className="text-[10px] text-secondary uppercase block mb-1">Cant</label>
                     <input
-                      type="number" min="1" step="1" required placeholder="0"
-                      className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-center focus:border-primary"
+                      type="number" min="1" step="any" required placeholder="0"
+                      className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-right focus:border-primary"
                       value={item.quantity}
                       onChange={(e) => handleItemChange(absoluteIndex, "quantity", Number(e.target.value))}
                     />
@@ -504,24 +534,56 @@ export function EditarCompraClient({
                   <div className="w-32 shrink-0">
                     <label className="text-[10px] text-secondary uppercase block mb-1">Costo Unit</label>
                     <input
-                      type="number" min="0" step="any" required placeholder="0"
-                      className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-right focus:border-primary"
-                      value={item.unitCost}
-                      onChange={(e) => handleItemChange(absoluteIndex, "unitCost", Number(e.target.value))}
+                      type="text" placeholder="0" readOnly
+                      className="w-full bg-surface-container-highest p-2 rounded-lg border border-outline-variant/50 text-right opacity-80 cursor-not-allowed"
+                      value={`$${(Number(item.unitCost) || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`}
                     />
                   </div>
 
-                  <div className="w-36 shrink-0 text-right">
-                    <label className="text-[10px] text-secondary uppercase block mb-1">Costo Unit + IVA</label>
-                    <div className="font-medium p-1 text-on-surface">
-                      ${totals.unitWithIva.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                  <div className="w-32 shrink-0">
+                    <label className="text-[10px] text-secondary uppercase block mb-1">Descuento</label>
+                    <input
+                      type="text" placeholder="0"
+                      disabled={isItemDiscountLocked}
+                      className={`w-full p-2 rounded-lg border text-right focus:border-primary ${isItemDiscountLocked ? 'bg-surface-container-highest border-outline-variant/50 cursor-not-allowed opacity-60' : 'bg-surface-container border-outline-variant'}`}
+                      value={item.discountInput || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (!/^[0-9.,]*$/.test(val)) return;
+                        handleItemChange(absoluteIndex, "discountInput", val);
+                        handleItemChange(absoluteIndex, "discount", parseLocalizedNumber(val) || "");
+                      }}
+                      onBlur={() => {
+                        const num = parseLocalizedNumber(item.discountInput);
+                        if (num > 0) {
+                          handleItemChange(absoluteIndex, "discountInput", num.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                          handleItemChange(absoluteIndex, "discount", num);
+                        } else {
+                          handleItemChange(absoluteIndex, "discountInput", "");
+                          handleItemChange(absoluteIndex, "discount", "");
+                        }
+                      }}
+                    />
+                  </div>
+
+                  <div className="w-32 shrink-0 text-right flex flex-col justify-end h-[62px]">
+                    <label className="text-[10px] text-secondary uppercase block mb-1">Subtotal</label>
+                    <div className="font-medium p-1 text-on-surface truncate">
+                      ${totals.gross.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                     </div>
                   </div>
 
-                  <div className="w-40 shrink-0 text-right">
-                    <label className="text-[10px] text-secondary uppercase block mb-1">Total + Iva</label>
-                    <div className="font-medium p-1 text-on-surface">
-                      ${totals.totalSubtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                  <div className="w-32 shrink-0 text-right flex flex-col justify-end h-[62px]">
+                    <label className="text-[10px] text-secondary uppercase block mb-1">Subtotal Neto</label>
+                    <div className="font-medium p-1 text-on-surface truncate">
+                      ${totals.baseSubtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                    </div>
+                  </div>
+
+                  <div className="w-28 shrink-0 text-right flex flex-col justify-end h-[62px]">
+                    <label className="text-[10px] text-secondary uppercase block mb-1">Total IVA</label>
+                    <div className="font-medium p-1 text-on-surface truncate">
+                      ${totals.ivaAmount.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                     </div>
                   </div>
 
@@ -566,10 +628,70 @@ export function EditarCompraClient({
 
         {/* Totales y Submit */}
         <div className="flex flex-col md:flex-row justify-between items-center bg-surface p-6 rounded-2xl border border-outline-variant mt-4 gap-6">
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-4 w-full md:w-auto">
+            <div className="flex flex-col w-full md:w-64">
+              <label className="text-[10px] text-secondary uppercase font-medium mb-1">Descuento Global</label>
+              <span className="text-[12px] text-secondary/70 mb-1 leading-tight">
+                {isGlobalDiscountLocked 
+                  ? "(Bloqueado: sumando descuentos de productos)" 
+                  : "(Bloqueado si usas descuentos por producto)"}
+              </span>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary">$</span>
+                <input
+                  type="text"
+                  placeholder="0"
+                  disabled={isGlobalDiscountLocked}
+                  className={`w-full p-2 pl-7 rounded-lg border focus:border-primary text-body-md transition-colors ${isGlobalDiscountLocked ? 'bg-surface-container-highest border-outline-variant/50 cursor-not-allowed opacity-80 text-primary font-medium' : 'bg-surface-container-highest border-outline-variant'}`}
+                  value={isGlobalDiscountLocked ? sumItemDiscounts.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : discountInput}
+                  onChange={(e) => {
+                    if (isGlobalDiscountLocked) return;
+                    const val = e.target.value;
+                    if (!/^[0-9.,]*$/.test(val)) return;
+                    setDiscountInput(val);
+                    setDiscountAmount(parseLocalizedNumber(val) || "");
+                  }}
+                  onBlur={() => {
+                    if (isGlobalDiscountLocked) return;
+                    const num = parseLocalizedNumber(discountInput);
+                    if (num > 0) {
+                      setDiscountInput(num.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                      setDiscountAmount(num);
+                    } else {
+                      setDiscountInput("");
+                      setDiscountAmount("");
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col border-t border-outline-variant pt-3 gap-2">
+              <div className="flex justify-between items-center text-secondary">
+                <span className="text-body-sm">Subtotal:</span>
+                <span className="font-medium">
+                  ${grossSubtotal?.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) || '0'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-secondary">
+                <span className="text-body-sm">Subtotal (Neto):</span>
+                <span className="font-medium text-on-surface">
+                  ${subtotal?.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) || '0'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-secondary">
+                <span className="text-body-sm">Total IVA:</span>
+                <span className="font-medium text-on-surface">
+                  ${ivaAmount?.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) || '0'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col text-right">
             <span className="text-secondary text-body-sm">Total Factura (Antes de guardar)</span>
             <span className="text-headline-md text-primary font-bold">
-              ${grandTotal.toLocaleString('es-CO')}
+              ${grandTotal?.toLocaleString('es-CO') || '0'}
             </span>
           </div>
 

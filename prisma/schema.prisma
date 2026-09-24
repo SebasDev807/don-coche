@@ -501,18 +501,18 @@ model Supplier {
 }
 
 model PurchaseInvoice {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  supplierId    String   @map("supplier_id") @db.Uuid
-  invoiceNumber String   @map("invoice_number")
-  date          DateTime @default(now()) @db.Date
-  subtotal      Decimal  @db.Decimal(10, 2)
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId     String   @map("supplier_id") @db.Uuid
+  invoiceNumber  String   @map("invoice_number")
+  date           DateTime @default(now()) @db.Date
+  subtotal       Decimal  @db.Decimal(10, 2)
   discountAmount Decimal? @map("discount_amount") @db.Decimal(10, 2)
-  ivaAmount     Decimal  @default(0) @map("iva_amount") @db.Decimal(10, 2)
-  grandTotal    Decimal  @map("grand_total") @db.Decimal(10, 2)
-  adminId       String   @map("admin_id") @db.Uuid
-  notes         String?
-  status        String   @default("CONFIRMED")
-  createdAt     DateTime @default(now()) @map("created_at")
+  ivaAmount      Decimal  @default(0) @map("iva_amount") @db.Decimal(10, 2)
+  grandTotal     Decimal  @map("grand_total") @db.Decimal(10, 2)
+  adminId        String   @map("admin_id") @db.Uuid
+  notes          String?
+  status         String   @default("CONFIRMED")
+  createdAt      DateTime @default(now()) @map("created_at")
 
   supplier Supplier              @relation(fields: [supplierId], references: [id])
   admin    User                  @relation(fields: [adminId], references: [id])
@@ -528,8 +528,10 @@ model PurchaseInvoiceItem {
   invoiceId String  @map("invoice_id") @db.Uuid
   productId String  @map("product_id") @db.Uuid
   quantity  Int
-  unitCost  Decimal @map("unit_cost") @db.Decimal(10, 2)
-  subtotal  Decimal @db.Decimal(10, 2)
+  unitCost       Decimal @map("unit_cost") @db.Decimal(10, 2)
+  subtotal       Decimal @db.Decimal(10, 2) // Representa el subtotal bruto
+  discountAmount Decimal? @map("discount_amount") @db.Decimal(10, 2)
+  netSubtotal    Decimal? @map("net_subtotal") @db.Decimal(10, 2)
 
   invoice PurchaseInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   product Product         @relation(fields: [productId], references: [id])

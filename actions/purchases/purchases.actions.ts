@@ -7,7 +7,9 @@ type PurchaseItemInput = {
   productId: string;
   quantity: number;
   unitCost: number;
-  subtotal: number;
+  subtotal: number; // Gross subtotal
+  discountAmount?: number;
+  netSubtotal: number;
 };
 
 export async function createPurchaseInvoiceAction(data: {
@@ -15,6 +17,7 @@ export async function createPurchaseInvoiceAction(data: {
   invoiceNumber: string;
   date: Date;
   subtotal: number;
+  discountAmount?: number;
   ivaAmount: number;
   grandTotal: number;
   adminId: string;
@@ -44,6 +47,7 @@ export async function createPurchaseInvoiceAction(data: {
           invoiceNumber: data.invoiceNumber,
           date: data.date,
           subtotal: data.subtotal,
+          discountAmount: data.discountAmount,
           ivaAmount: data.ivaAmount,
           grandTotal: data.grandTotal,
           adminId: data.adminId,
@@ -54,6 +58,8 @@ export async function createPurchaseInvoiceAction(data: {
               quantity: item.quantity,
               unitCost: item.unitCost,
               subtotal: item.subtotal,
+              discountAmount: item.discountAmount,
+              netSubtotal: item.netSubtotal,
             })),
           },
         },
@@ -155,6 +161,8 @@ export async function getPurchaseInvoicesAction() {
         ...item,
         unitCost: Number(item.unitCost),
         subtotal: Number(item.subtotal),
+        discountAmount: item.discountAmount ? Number(item.discountAmount) : 0,
+        netSubtotal: item.netSubtotal ? Number(item.netSubtotal) : Number(item.subtotal),
         product: {
           ...item.product,
           iva: item.product.iva ? Number(item.product.iva) : 0,
@@ -198,6 +206,8 @@ export async function getPurchaseInvoiceByIdAction(id: string) {
         ...item,
         unitCost: Number(item.unitCost),
         subtotal: Number(item.subtotal),
+        discountAmount: item.discountAmount ? Number(item.discountAmount) : 0,
+        netSubtotal: item.netSubtotal ? Number(item.netSubtotal) : Number(item.subtotal),
         product: {
           ...item.product,
           iva: item.product.iva ? Number(item.product.iva) : 0,
@@ -301,6 +311,7 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
   invoiceNumber: string;
   date: Date;
   subtotal: number;
+  discountAmount?: number;
   ivaAmount: number;
   grandTotal: number;
   adminId: string;
@@ -414,6 +425,7 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
           invoiceNumber: data.invoiceNumber,
           date: data.date,
           subtotal: data.subtotal,
+          discountAmount: data.discountAmount,
           ivaAmount: data.ivaAmount,
           grandTotal: data.grandTotal,
           notes: data.notes,
@@ -423,6 +435,8 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
               quantity: item.quantity,
               unitCost: item.unitCost,
               subtotal: item.subtotal,
+              discountAmount: item.discountAmount,
+              netSubtotal: item.netSubtotal,
             })),
           },
         },

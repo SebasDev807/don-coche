@@ -15,8 +15,7 @@ export default async function ComprasPage() {
   const rawInvoices = result.success && result.data ? result.data : [];
   const invoices = rawInvoices.map(invoice => ({
     ...invoice,
-    totalBase: Number(invoice.totalBase || 0),
-    discounts: Number(invoice.discounts || 0),
+    discountAmount: invoice.discountAmount ? Number(invoice.discountAmount) : 0,
     subtotal: Number(invoice.subtotal || 0),
     ivaAmount: Number(invoice.ivaAmount || 0),
     grandTotal: Number(invoice.grandTotal || 0),
@@ -24,7 +23,6 @@ export default async function ComprasPage() {
       ...item,
       quantity: Number(item.quantity || 0),
       unitCost: Number(item.unitCost || 0),
-      discountPercentage: Number(item.discountPercentage || 0),
       subtotal: Number(item.subtotal || 0),
       product: item.product ? {
         ...item.product,

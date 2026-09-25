@@ -725,7 +725,7 @@ export function DevToolsClient() {
                         disabled={isSubmitting}
                         className="p-2 text-error hover:bg-error/10 rounded-lg transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                         title="Eliminar esta factura"
-                      >
+                      >Deja el iva
                         <span className="material-symbols-outlined">delete</span>
                       </button>
                     </div>
@@ -756,3 +756,6 @@ export function DevToolsClient() {
     </div>
   );
 }
+
+
+//

@@ -202,7 +202,6 @@ export function CreateProductForm() {
                 <span className="material-symbols-outlined text-[24px]">barcode</span>
               </div>
             </div>
-            <p className="text-secondary text-sm mt-1">Si lo dejas en blanco, se generará uno automáticamente.</p>
             <ErrorMessage message={errors.barCode?.message} />
           </div>
 

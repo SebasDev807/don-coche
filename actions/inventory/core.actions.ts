@@ -2,7 +2,6 @@
 
 import { prisma } from '@/lib/prisma';
 import { createProductSchema, createCategorySchema } from '@/validation';
-import { generateEAN13 } from '@/lib/utils/barcode';
 import { generateSlug } from '@/lib/utils/slug';
 import { verifySession, verifyRole } from '@/lib/dal';
 import { ItemCategory, Prisma } from '@prisma/client';
@@ -94,7 +93,7 @@ export async function createProduct(formData: FormData) {
     const categoryRecord = await prisma.category.findUnique({
       where: { id: validatedData.category }
     });
-    barCode = validatedData.barCode || generateEAN13();
+    barCode = validatedData.barCode || null;
     slug = generateSlug(validatedData.name);
 
     const unitCostBase = validatedData.unitCost;

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useSellingPrice } from "@/hooks";
 import { calculateInvoiceTotals, getItemTotals } from "@/lib/utils/invoiceCalculator";
 import { parseLocalizedNumber } from "@/lib/utils/parseLocalizedNumber";
+import { SearchableSelect } from "@/components/ui";
 
 export function EditarCompraClient({
   initialInvoice,
@@ -29,6 +30,11 @@ export function EditarCompraClient({
 
   const productsById = useMemo(() => new Map<string, any>(products.map((p: any) => [p.id, p])), [products]);
   const categoriesById = useMemo(() => new Map<string, any>(categories.map((c: any) => [c.id, c])), [categories]);
+
+  const supplierOptions = useMemo(() => suppliers.map(s => ({
+    value: s.id,
+    label: `${s.name} (NIT: ${s.nit})`
+  })), [suppliers]);
 
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
@@ -426,17 +432,13 @@ export function EditarCompraClient({
                 <span className="material-symbols-outlined text-[16px]">person_add</span> Nuevo Proveedor
               </button>
             </div>
-            <select
-              required
-              className="w-full bg-surface-container p-3 rounded-xl border border-outline-variant focus:border-primary"
+            <SearchableSelect
+              options={supplierOptions}
               value={supplierId}
-              onChange={(e) => setSupplierId(e.target.value)}
-            >
-              <option value="">-- Seleccionar Proveedor --</option>
-              {suppliers.map(s => (
-                <option key={s.id} value={s.id}>{s.name} (NIT: {s.nit})</option>
-              ))}
-            </select>
+              onChange={setSupplierId}
+              placeholder="-- Seleccionar Proveedor --"
+              required={true}
+            />
           </div>
 
           <div className="flex flex-col gap-2">

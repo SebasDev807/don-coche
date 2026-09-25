@@ -3,3 +3,4 @@ export * from './PasswordInput';
 export * from './ExportExcelButton';
 export * from './PrimaryButton';
 export * from './SearchBar';
+export * from './SearchableSelect';

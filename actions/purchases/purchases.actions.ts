@@ -126,10 +126,25 @@ export async function createPurchaseInvoiceAction(data: {
   }
 }
 
-export async function getPurchaseInvoicesAction() {
+export async function getPurchaseInvoicesAction(searchQuery?: string, page: number = 1, pageSize: number = 6) {
   try {
-    const invoices = await prisma.purchaseInvoice.findMany({
-      include: {
+    const whereClause: any = {};
+    if (searchQuery) {
+      whereClause.OR = [
+        { invoiceNumber: { contains: searchQuery, mode: 'insensitive' } },
+        { supplier: { name: { contains: searchQuery, mode: 'insensitive' } } }
+      ];
+    }
+
+    const skip = (page - 1) * pageSize;
+
+    const [totalCount, invoices] = await prisma.$transaction([
+      prisma.purchaseInvoice.count({ where: whereClause }),
+      prisma.purchaseInvoice.findMany({
+        where: whereClause,
+        skip,
+        take: pageSize,
+        include: {
         supplier: true,
         admin: {
           select: {
@@ -150,7 +165,8 @@ export async function getPurchaseInvoicesAction() {
       orderBy: {
         createdAt: 'desc',
       },
-    });
+    })
+    ]);
 
     const serializedInvoices = invoices.map(inv => ({
       ...inv,
@@ -172,7 +188,9 @@ export async function getPurchaseInvoicesAction() {
       }))
     }));
 
-    return { success: true, data: serializedInvoices };
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    return { success: true, data: serializedInvoices, totalPages, totalCount };
   } catch (error) {
     console.error("Error fetching purchase invoices:", error);
     return { success: false, error: "Error al obtener historial de compras" };

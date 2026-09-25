@@ -65,6 +65,11 @@ export async function createPurchaseInvoiceAction(data: {
         },
       });
 
+      /**
+       * @deprecated El usuario ha solicitado tener control manual sobre el inventario.
+       * La actualización automática de stock al crear factura ha sido deshabilitada.
+       */
+      /*
       // 2. Update inventory and prices for each item
       for (const item of data.items) {
         const product = await tx.product.findUnique({
@@ -101,6 +106,7 @@ export async function createPurchaseInvoiceAction(data: {
           },
         });
       }
+      */
 
       return invoice;
     });

@@ -361,75 +361,6 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      // Create a map of the old items
-      const oldItemsMap = new Map();
-      existingInvoice.items.forEach(i => {
-        oldItemsMap.set(i.productId, i);
-      });
-
-      // Find products that are in the new items list
-      const productIds = new Set([
-        ...existingInvoice.items.map(i => i.productId),
-        ...data.items.map(i => i.productId)
-      ]);
-
-      const products = await tx.product.findMany({
-        where: { id: { in: Array.from(productIds) } }
-      });
-
-      const productMap = new Map();
-      products.forEach(p => productMap.set(p.id, p));
-
-      // Process deltas and update products
-      for (const productId of Array.from(productIds)) {
-        const oldItem = oldItemsMap.get(productId);
-        const newItem = data.items.find(i => i.productId === productId);
-
-        const oldQty = oldItem ? oldItem.quantity : 0;
-        const newQty = newItem ? newItem.quantity : 0;
-        const delta = newQty - oldQty;
-
-        const product = productMap.get(productId);
-        if (!product) {
-          throw new Error(`Producto con ID ${productId} no encontrado.`);
-        }
-
-        if (delta < 0 && product.stock + delta < 0) {
-          throw new Error(`No se puede reducir la cantidad del producto "${product.name}" porque el stock actual (${product.stock}) quedaría en negativo.`);
-        }
-
-        let newStock = product.stock + delta;
-
-        // Update product price if it's included in the new items
-        let nextUnitCost = Number(product.unitCost);
-
-        if (newItem) {
-          nextUnitCost = newItem.unitCost;
-        }
-
-        await tx.product.update({
-          where: { id: productId },
-          data: {
-            stock: newStock,
-            unitCost: nextUnitCost,
-          }
-        });
-
-        if (delta !== 0) {
-          await tx.inventoryMovement.create({
-            data: {
-              productId: productId,
-              adminId: data.adminId,
-              type: "COMPRA",
-              quantity: delta,
-              previousStock: product.stock,
-              newStock: newStock,
-              reason: `Ajuste por Edición - Factura ${data.invoiceNumber}`,
-            },
-          });
-        }
-      }
-
       // Delete old items
       await tx.purchaseInvoiceItem.deleteMany({
         where: { invoiceId: invoiceId }
@@ -482,6 +413,30 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
       success: false,
       error: error.message || "Error interno al actualizar la factura de compra.",
     };
+  }
+}
+
+export async function deletePurchaseInvoiceAction(invoiceId: string) {
+  try {
+    const existing = await prisma.purchaseInvoice.findUnique({ where: { id: invoiceId } });
+    if (!existing) {
+      return { success: false, error: "La factura no existe." };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.purchaseInvoiceItem.deleteMany({
+        where: { invoiceId }
+      });
+      await tx.purchaseInvoice.delete({
+        where: { id: invoiceId }
+      });
+    });
+
+    revalidatePath("/compras");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting purchase invoice:", error);
+    return { success: false, error: "Error interno al eliminar la factura." };
   }
 }
 

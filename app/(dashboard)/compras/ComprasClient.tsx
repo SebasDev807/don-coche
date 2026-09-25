@@ -3,9 +3,36 @@
 import { useState } from "react";
 import ExcelJS from "exceljs";
 import Link from "next/link";
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import { deletePurchaseInvoiceAction } from "@/actions/purchases/purchases.actions";
 
-export function ComprasClient({ invoices }: { invoices: any[] }) {
+const MySwal = withReactContent(Swal);
+
+export function ComprasClient({ invoices, userRole }: { invoices: any[], userRole: string }) {
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const canDelete = ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'].includes(userRole);
+
+  const handleDelete = async (id: string) => {
+    const result = await MySwal.fire({
+      title: '¿Estás seguro?',
+      text: "Esta acción eliminará la factura de forma permanente.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+    });
+
+    if (result.isConfirmed) {
+      const res = await deletePurchaseInvoiceAction(id);
+      if (res.success) {
+        MySwal.fire('Eliminada', 'La factura ha sido eliminada.', 'success');
+      } else {
+        MySwal.fire('Error', res.error, 'error');
+      }
+    }
+  };
 
   const handleExportExcel = async (invoice: any) => {
     const workbook = new ExcelJS.Workbook();
@@ -159,25 +186,34 @@ export function ComprasClient({ invoices }: { invoices: any[] }) {
                   <td className="p-4 flex items-center justify-center gap-2">
                     <button
                       onClick={() => setSelectedInvoice(invoice)}
-                      className="p-2 rounded-full hover:bg-surface-container-high text-secondary hover:text-primary transition-colors"
+                      className="p-2 rounded-full hover:bg-surface-container-high text-secondary hover:text-primary transition-colors cursor-pointer"
                       title="Ver Detalles"
                     >
                       <span className="material-symbols-outlined text-[20px]">visibility</span>
                     </button>
                     <Link
                       href={`/compras/editar/${invoice.id}`}
-                      className="p-2 rounded-full hover:bg-surface-container-high text-secondary hover:text-primary transition-colors"
+                      className="p-2 rounded-full hover:bg-surface-container-high text-secondary hover:text-primary transition-colors cursor-pointer"
                       title="Editar Compra"
                     >
                       <span className="material-symbols-outlined text-[20px]">edit</span>
                     </Link>
                     <button
                       onClick={() => handleExportExcel(invoice)}
-                      className="p-2 rounded-full hover:bg-surface-container-high text-secondary hover:text-[#107C41] transition-colors"
+                      className="p-2 rounded-full hover:bg-surface-container-high text-secondary hover:text-[#107C41] transition-colors cursor-pointer"
                       title="Exportar a Excel"
                     >
                       <span className="material-symbols-outlined text-[20px]">download</span>
                     </button>
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDelete(invoice.id)}
+                        className="p-2 rounded-full bg-error/10 text-error hover:bg-error hover:text-white transition-colors cursor-pointer"
+                        title="Eliminar Factura"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

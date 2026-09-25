@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ComprasPage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
-  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+  const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
   
   const searchParams = await props.searchParams;
   const q = typeof searchParams.q === 'string' ? searchParams.q : undefined;
@@ -82,7 +82,7 @@ export default async function ComprasPage(props: { searchParams: Promise<{ [key:
           </div>
         ) : (
           <>
-            <ComprasClient invoices={invoices} />
+            <ComprasClient invoices={invoices} userRole={session.role} />
             
             {/* Pagination Controls */}
             {totalPages > 1 && (

@@ -214,7 +214,7 @@ export function EditarCompraClient({
         name: quickProductData.name,
         barCode: quickProductData.barCode,
         categoryId: quickProductData.categoryId || undefined,
-        stock: quickProductData.stock ? Number(quickProductData.stock) : 0,
+        stock: 0, // Siempre se crea en 0; la factura sumará el stock al guardar
         unitCost: finalUnitCost,
         salePrice: isInsumos ? 0 : sellingPrice,
         profitPercentage: isInsumos ? 0 : (quickProductData.profitPercentage ? Number(quickProductData.profitPercentage) : undefined),

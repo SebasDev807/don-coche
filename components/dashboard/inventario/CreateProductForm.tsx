@@ -225,7 +225,7 @@ export function CreateProductForm() {
                 {...register('category')}
                 className={`h-[56px] form-select w-full rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-primary focus:ring-2 transition-shadow px-4 pr-10 text-on-surface appearance-none cursor-pointer ${errors.category ? 'border-error focus:border-error focus:ring-error' : ''}`}
               >
-                <option disabled value="">Seleccione una categoría...</option>
+                <option value="">Sin Categoría</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>{category.name}</option>
                 ))}

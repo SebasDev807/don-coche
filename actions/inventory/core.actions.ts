@@ -90,9 +90,9 @@ export async function createProduct(formData: FormData) {
     validatedData = createProductSchema.parse(rawData);
 
     // Generar Barcode y Slug
-    const categoryRecord = await prisma.category.findUnique({
+    const categoryRecord = validatedData.category ? await prisma.category.findUnique({
       where: { id: validatedData.category }
-    });
+    }) : null;
     barCode = validatedData.barCode || null;
     slug = generateSlug(validatedData.name);
 
@@ -113,7 +113,7 @@ export async function createProduct(formData: FormData) {
       data: {
         name: validatedData.name,
         description: validatedData.description,
-        categoryId: validatedData.category,
+        categoryId: validatedData.category || null,
         stock: validatedData.stock,
         unitCost: unitCostBase,
         salePrice: computedSalePrice,

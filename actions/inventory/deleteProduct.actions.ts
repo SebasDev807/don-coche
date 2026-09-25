@@ -19,7 +19,7 @@ export interface DeleteProductResponse {
 export async function deleteProduct(id: string): Promise<DeleteProductResponse> {
   // Solo SuperUsuario, Gerente y Administrador pueden eliminar productos
   const { verifyRole } = await import('@/lib/dal');
-  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR']);
+  await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
   try {
     if (!id) {

@@ -13,7 +13,7 @@ export function DeleteProductDetailButton({ id, userRole }: { id: string, userRo
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
-  if (userRole === 'AUXILIAR_ADMINISTRATIVO') {
+  if (userRole === 'TECNICO') {
     return null;
   }
 

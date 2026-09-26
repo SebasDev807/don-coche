@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { CreateSupplierModal } from "./CreateSupplierModal";
 import { SearchBar } from "@/components/ui/SearchBar";
+import { Pagination } from "@/components/ui/Pagination";
 
 export default function ProveedoresPageClient({
   initialSuppliers,
@@ -111,29 +112,12 @@ export default function ProveedoresPageClient({
         </div>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6">
-          <span className="text-secondary text-sm">
-            Mostrando página {currentPage} de {totalPages} ({totalCount} resultados)
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="p-2 rounded-full border border-outline-variant text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <span className="material-symbols-outlined">chevron_left</span>
-            </button>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="p-2 rounded-full border border-outline-variant text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <span className="material-symbols-outlined">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        onPageChange={handlePageChange}
+      />
 
       <CreateSupplierModal 
         isOpen={isCreateModalOpen} 

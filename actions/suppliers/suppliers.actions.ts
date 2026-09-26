@@ -97,3 +97,36 @@ export async function createSupplierAction(data: {
     };
   }
 }
+
+export async function deleteSupplierAction(supplierId: string) {
+  try {
+    // Usamos una transacción para eliminar primero las facturas asociadas y luego el proveedor.
+    // Los ítems de las facturas (PurchaseInvoiceItem) se eliminarán en cascada por la base de datos
+    // ya que tienen `onDelete: Cascade` en el esquema.
+    await prisma.$transaction([
+      prisma.purchaseInvoice.deleteMany({
+        where: {
+          supplierId: supplierId
+        }
+      }),
+      prisma.supplier.delete({
+        where: {
+          id: supplierId
+        }
+      })
+    ]);
+
+    revalidatePath("/proveedores");
+    revalidatePath("/compras");
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting supplier:", error);
+    return {
+      success: false,
+      error: "Error al eliminar el proveedor. Asegúrate de que no tenga dependencias que impidan su eliminación.",
+    };
+  }
+}

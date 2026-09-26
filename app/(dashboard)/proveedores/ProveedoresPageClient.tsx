@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { CreateSupplierModal } from "./CreateSupplierModal";
+import { SearchBar } from "@/components/ui/SearchBar";
 
 export default function ProveedoresPageClient({
   initialSuppliers,
@@ -18,19 +20,7 @@ export default function ProveedoresPageClient({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const params = new URLSearchParams(searchParams.toString());
-    if (searchQuery.trim()) {
-      params.set('q', searchQuery.trim());
-    } else {
-      params.delete('q');
-    }
-    params.set('page', '1');
-    router.push(`${pathname}?${params.toString()}`);
-  };
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
@@ -41,18 +31,21 @@ export default function ProveedoresPageClient({
 
   return (
     <>
-      <div className="flex justify-between items-center mb-6">
-        <form onSubmit={handleSearch} className="flex-1 max-w-md relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary">search</span>
-          <input
-            type="text"
-            placeholder="Buscar por nombre o NIT..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface-container pl-12 pr-4 py-3 rounded-full border border-outline-variant focus:border-primary focus:outline-none transition-colors shadow-sm"
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div className="flex-1 w-full max-w-md">
+          <SearchBar 
+            placeholder="Buscar por nombre o NIT..." 
+            className="w-full"
           />
-          <button type="submit" className="hidden">Buscar</button>
-        </form>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsCreateModalOpen(true)}
+          className="flex items-center justify-center gap-2 bg-primary-fixed text-black px-6 py-3 rounded-full font-bold hover:brightness-95 transition-colors shadow-sm cursor-pointer w-full sm:w-auto"
+        >
+          <span className="material-symbols-outlined text-[20px]">add</span>
+          Nuevo Proveedor
+        </button>
       </div>
 
       <div className="bg-surface-container rounded-2xl overflow-hidden shadow-sm">
@@ -141,6 +134,11 @@ export default function ProveedoresPageClient({
           </div>
         </div>
       )}
+
+      <CreateSupplierModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+      />
     </>
   );
 }

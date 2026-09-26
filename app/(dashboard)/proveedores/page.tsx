@@ -8,11 +8,10 @@ export const metadata: Metadata = {
   description: 'Gestión de proveedores',
 };
 
-export default async function ProveedoresPage({
-  searchParams
-}: {
-  searchParams: { q?: string; page?: string }
+export default async function ProveedoresPage(props: {
+  searchParams: Promise<{ q?: string; page?: string }>
 }) {
+  const searchParams = await props.searchParams;
   await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
 
   const query = searchParams.q || '';

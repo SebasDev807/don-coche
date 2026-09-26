@@ -5,6 +5,7 @@ import { ComprasClient } from './ComprasClient';
 import { verifyRole } from '@/lib/dal';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { ExportZipButton } from './ExportZipButton';
+import { XmlImportControls } from './XmlImportControls';
 
 export const metadata: Metadata = {
   title: 'Historial de Compras | Don Coche',
@@ -66,7 +67,8 @@ export default async function ComprasPage(props: { searchParams: Promise<{ [key:
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-            <SearchBar placeholder="Buscar factura o proveedor..." className="w-full sm:w-80" />
+            <SearchBar placeholder="Buscar factura o proveedor..." className="w-full sm:w-64 lg:w-80" />
+            <XmlImportControls />
             <ExportZipButton />
             <Link 
               href="/compras/nueva"

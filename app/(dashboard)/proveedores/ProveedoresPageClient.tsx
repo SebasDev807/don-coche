@@ -27,6 +27,17 @@ export default function ProveedoresPageClient({
   const searchParams = useSearchParams();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
+
+  const handleOpenCreate = () => {
+    setSelectedSupplier(null);
+    setIsCreateModalOpen(true);
+  };
+
+  const handleOpenEdit = (supplier: any) => {
+    setSelectedSupplier(supplier);
+    setIsCreateModalOpen(true);
+  };
 
   const handleDelete = async (supplierId: string, supplierName: string) => {
     const result = await MySwal.fire({
@@ -87,7 +98,7 @@ export default function ProveedoresPageClient({
         </div>
         <button
           type="button"
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={handleOpenCreate}
           className="flex items-center justify-center gap-2 bg-primary-fixed text-black px-6 py-3 rounded-full font-bold hover:brightness-95 transition-colors shadow-sm cursor-pointer w-full sm:w-auto"
         >
           <span className="material-symbols-outlined text-[20px]">add</span>
@@ -129,7 +140,7 @@ export default function ProveedoresPageClient({
                     <td className="p-4 text-right flex justify-end gap-2">
                       <button
                         type="button"
-                        onClick={() => {}}
+                        onClick={() => handleOpenEdit(supplier)}
                         className="p-2 rounded-full hover:bg-surface-container-high text-secondary hover:text-primary transition-colors cursor-pointer"
                         title="Modificar Proveedor"
                       >
@@ -168,6 +179,7 @@ export default function ProveedoresPageClient({
       <CreateSupplierModal 
         isOpen={isCreateModalOpen} 
         onClose={() => setIsCreateModalOpen(false)} 
+        initialData={selectedSupplier}
       />
     </>
   );

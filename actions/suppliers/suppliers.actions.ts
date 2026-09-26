@@ -130,3 +130,52 @@ export async function deleteSupplierAction(supplierId: string) {
     };
   }
 }
+
+export async function updateSupplierAction(
+  id: string,
+  data: {
+    nit: string;
+    name: string;
+    phone?: string;
+    email?: string;
+  }
+) {
+  try {
+    const existingSupplier = await prisma.supplier.findUnique({
+      where: {
+        nit: data.nit,
+      },
+    });
+
+    if (existingSupplier && existingSupplier.id !== id) {
+      return {
+        success: false,
+        error: "Ya existe otro proveedor con ese NIT.",
+      };
+    }
+
+    const supplier = await prisma.supplier.update({
+      where: { id },
+      data: {
+        nit: data.nit,
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+      },
+    });
+
+    revalidatePath("/proveedores");
+    revalidatePath("/compras/nueva");
+
+    return {
+      success: true,
+      data: supplier,
+    };
+  } catch (error) {
+    console.error("Error updating supplier:", error);
+    return {
+      success: false,
+      error: "Error al actualizar el proveedor.",
+    };
+  }
+}

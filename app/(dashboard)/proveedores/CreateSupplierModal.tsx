@@ -3,8 +3,8 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createSupplierAction } from "@/actions/suppliers/suppliers.actions";
-import { useState } from "react";
+import { createSupplierAction, updateSupplierAction } from "@/actions/suppliers/suppliers.actions";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -25,9 +25,10 @@ type SupplierFormData = z.infer<typeof supplierSchema>;
 interface CreateSupplierModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialData?: any;
 }
 
-export function CreateSupplierModal({ isOpen, onClose }: CreateSupplierModalProps) {
+export function CreateSupplierModal({ isOpen, onClose, initialData }: CreateSupplierModalProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,6 +46,26 @@ export function CreateSupplierModal({ isOpen, onClose }: CreateSupplierModalProp
       email: "",
     }
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        reset({
+          nit: initialData.nit || "",
+          name: initialData.name || "",
+          phone: initialData.phone || "",
+          email: initialData.email || "",
+        });
+      } else {
+        reset({
+          nit: "",
+          name: "",
+          phone: "",
+          email: "",
+        });
+      }
+    }
+  }, [isOpen, initialData, reset]);
 
   if (!isOpen) return null;
 
@@ -64,24 +85,29 @@ export function CreateSupplierModal({ isOpen, onClose }: CreateSupplierModalProp
       email: data.email === "" ? undefined : data.email,
     };
 
-    const result = await createSupplierAction(sanitizedData);
+    let result;
+    if (initialData && initialData.id) {
+      result = await updateSupplierAction(initialData.id, sanitizedData);
+    } else {
+      result = await createSupplierAction(sanitizedData);
+    }
 
     setIsSubmitting(false);
 
     if (result.success) {
       MySwal.fire({
         icon: 'success',
-        title: 'Proveedor Creado',
-        text: 'El proveedor ha sido registrado exitosamente.',
+        title: initialData ? 'Proveedor Actualizado' : 'Proveedor Creado',
+        text: initialData ? 'El proveedor ha sido actualizado exitosamente.' : 'El proveedor ha sido registrado exitosamente.',
         confirmButtonColor: '#ffc107',
       });
       handleClose();
-      router.refresh(); // Refrescar la página actual para cargar el nuevo proveedor
+      router.refresh(); 
     } else {
       MySwal.fire({
         icon: 'error',
         title: 'Error',
-        text: result.error || 'Ocurrió un error inesperado al crear el proveedor.',
+        text: result.error || 'Ocurrió un error inesperado al procesar el proveedor.',
         confirmButtonColor: '#ffc107',
       });
     }
@@ -91,8 +117,10 @@ export function CreateSupplierModal({ isOpen, onClose }: CreateSupplierModalProp
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 fade-in">
       <div className="bg-surface rounded-3xl p-8 max-w-md w-full shadow-lg">
         <h2 className="text-headline-sm mb-6 flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-[28px]">domain_add</span>
-          Nuevo Proveedor
+          <span className="material-symbols-outlined text-primary text-[28px]">
+            {initialData ? 'edit_square' : 'domain_add'}
+          </span>
+          {initialData ? 'Editar Proveedor' : 'Nuevo Proveedor'}
         </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">

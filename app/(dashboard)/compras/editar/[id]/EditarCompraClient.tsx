@@ -36,6 +36,11 @@ export function EditarCompraClient({
     label: `${s.name} (NIT: ${s.nit})`
   })), [suppliers]);
 
+  const productOptions = useMemo(() => products.map((p: any) => ({
+    value: p.id,
+    label: `${p.name} - Actual: $${Number(p.unitCost).toLocaleString('es-CO')}`
+  })), [products]);
+
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
   const [isQuickProductModalOpen, setIsQuickProductModalOpen] = useState(false);
@@ -499,17 +504,14 @@ export function EditarCompraClient({
                 <div key={absoluteIndex} className="flex gap-4 items-center bg-surface p-4 rounded-2xl border border-outline-variant flex-wrap md:flex-nowrap md:min-w-max">
                   <div className="w-full md:w-80 shrink-0 min-w-0">
                     <div className="flex items-center w-full gap-2">
-                      <select
-                        required
-                        className="w-full bg-surface-container p-2 rounded-lg border border-outline-variant text-body-md truncate min-w-0"
+                      <SearchableSelect
+                        options={productOptions}
                         value={item.productId}
-                        onChange={(e) => handleItemChange(absoluteIndex, "productId", e.target.value)}
-                      >
-                        <option value="">Seleccione un producto</option>
-                        {products.map(p => (
-                          <option key={p.id} value={p.id}>{p.name} - Actual: ${Number(p.unitCost).toLocaleString('es-CO')}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => handleItemChange(absoluteIndex, "productId", val)}
+                        placeholder="Seleccione un producto"
+                        required={true}
+                        size="sm"
+                      />
                       {item.productId && (
                         <button
                           type="button"

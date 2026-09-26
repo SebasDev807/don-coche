@@ -132,7 +132,8 @@ export async function getPurchaseInvoicesAction(searchQuery?: string, page: numb
     if (searchQuery) {
       whereClause.OR = [
         { invoiceNumber: { contains: searchQuery, mode: 'insensitive' } },
-        { supplier: { name: { contains: searchQuery, mode: 'insensitive' } } }
+        { supplier: { name: { contains: searchQuery, mode: 'insensitive' } } },
+        { supplier: { nit: { contains: searchQuery, mode: 'insensitive' } } }
       ];
     }
 

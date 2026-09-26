@@ -514,6 +514,7 @@ export function NuevaCompraClient({
                         placeholder="Seleccione un producto"
                         required={true}
                         size="sm"
+                        className="w-full min-w-0"
                       />
                       {item.productId && (
                         <button

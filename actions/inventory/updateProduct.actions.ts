@@ -84,7 +84,11 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
     }
 
     if (categoryId !== undefined) {
-      updateData.category_rel = { connect: { id: categoryId } };
+      if (!categoryId || categoryId === "") {
+        updateData.category_rel = { disconnect: true };
+      } else {
+        updateData.category_rel = { connect: { id: categoryId } };
+      }
     }
 
     if (stock !== undefined) {

@@ -27,6 +27,32 @@ export async function getSuppliersAction() {
   }
 }
 
+export async function getPaginatedSuppliersAction(searchQuery?: string, page: number = 1, pageSize: number = 10) {
+  try {
+    const whereClause: any = { isActive: true };
+    if (searchQuery) {
+      whereClause.OR = [
+        { name: { contains: searchQuery, mode: 'insensitive' } },
+        { nit: { contains: searchQuery, mode: 'insensitive' } },
+      ];
+    }
+    const skip = (page - 1) * pageSize;
+    const [totalCount, suppliers] = await prisma.$transaction([
+      prisma.supplier.count({ where: whereClause }),
+      prisma.supplier.findMany({
+        where: whereClause,
+        skip,
+        take: pageSize,
+        orderBy: { name: 'asc' },
+      })
+    ]);
+    return { success: true, data: suppliers, totalPages: Math.ceil(totalCount / pageSize), totalCount };
+  } catch (error) {
+    console.error("Error fetching paginated suppliers:", error);
+    return { success: false, error: "Error al obtener los proveedores." };
+  }
+}
+
 export async function createSupplierAction(data: {
   nit: string;
   name: string;

@@ -5,6 +5,11 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { CreateSupplierModal } from "./CreateSupplierModal";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Pagination } from "@/components/ui/Pagination";
+import { deleteSupplierAction } from "@/actions/suppliers/suppliers.actions";
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 export default function ProveedoresPageClient({
   initialSuppliers,
@@ -22,6 +27,47 @@ export default function ProveedoresPageClient({
   const searchParams = useSearchParams();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const handleDelete = async (supplierId: string, supplierName: string) => {
+    const result = await MySwal.fire({
+      title: '¿Estás completamente seguro?',
+      html: `Estás a punto de eliminar al proveedor <b>${supplierName}</b>.<br/><br/><span style="color: #dc3545; font-weight: bold;">¡ADVERTENCIA!</span> Esta acción es <b>irreversible</b> y también <b>eliminará TODAS las facturas de compra</b> asociadas a este proveedor para mantener la consistencia de la base de datos.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar todo',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (result.isConfirmed) {
+      MySwal.fire({
+        title: 'Eliminando...',
+        text: 'Por favor espera mientras se eliminan los datos.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          MySwal.showLoading();
+        }
+      });
+
+      const response = await deleteSupplierAction(supplierId);
+
+      if (response.success) {
+        MySwal.fire(
+          '¡Eliminado!',
+          'El proveedor y sus facturas asociadas han sido eliminados correctamente.',
+          'success'
+        );
+        router.refresh();
+      } else {
+        MySwal.fire(
+          'Error',
+          response.error || 'No se pudo eliminar el proveedor.',
+          'error'
+        );
+      }
+    }
+  };
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
@@ -91,7 +137,7 @@ export default function ProveedoresPageClient({
                       </button>
                       <button
                         type="button"
-                        onClick={() => {}}
+                        onClick={() => handleDelete(supplier.id, supplier.name)}
                         className="p-2 rounded-full bg-error/10 text-error hover:bg-error hover:text-white transition-colors cursor-pointer"
                         title="Eliminar Proveedor"
                       >

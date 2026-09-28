@@ -20,6 +20,17 @@ export async function GET() {
       },
       include: {
         category_rel: true,
+        purchaseItems: {
+          include: {
+            invoice: {
+              include: { supplier: true },
+            },
+          },
+          orderBy: {
+            invoice: { date: 'desc' },
+          },
+          take: 1,
+        },
       },
       orderBy: {
         barCode: 'asc',
@@ -35,6 +46,7 @@ export async function GET() {
       { header: 'Código', key: 'barCode', width: 20 },
       { header: 'Nombre', key: 'name', width: 40 },
       { header: 'Categoría', key: 'category', width: 25 },
+      { header: 'Proveedor', key: 'supplier', width: 30 },
       { header: 'Stock', key: 'stock', width: 15, style: { alignment: { horizontal: 'right' as const } } },
       { header: 'Costo Unitario', key: 'unitCost', width: 20, style: { numFmt: currencyFormat } },
       { header: 'Precio de Venta', key: 'salePrice', width: 20, style: { numFmt: currencyFormat } },
@@ -50,10 +62,13 @@ export async function GET() {
       const stock = product.stock || 0;
       const profitPercentage = product.profitPercentage ? Number(product.profitPercentage) / 100 : 0; // Excel usa 0.xx para %
 
+      const supplier = product.purchaseItems?.[0]?.invoice?.supplier?.name || 'Sin Proveedor';
+
       return {
         barCode: product.barCode || '-',
         name: product.name,
         category: product.category_rel?.name || product.category || 'Sin Categoría',
+        supplier: supplier,
         stock: stock,
         unitCost: unitCost,
         salePrice: salePrice,

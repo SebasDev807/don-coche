@@ -48,7 +48,7 @@ export function CajaDashboardClient({ pendingOrders, billedOrders }: CajaDashboa
       </div>
 
       {/* Columna Derecha: Cuadre del Día */}
-      <div className="w-full lg:w-96 flex-shrink-0 h-[600px] lg:h-auto pb-6 lg:pb-0">
+      <div className="w-full lg:w-[460px] xl:w-[500px] flex-shrink-0 h-[600px] lg:h-auto pb-6 lg:pb-0">
         <DailyCashSummary orders={billedOrders} />
       </div>
 

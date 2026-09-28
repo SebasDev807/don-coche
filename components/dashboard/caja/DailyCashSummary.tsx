@@ -6,6 +6,8 @@ import { CashClosureHistoryModal } from './CashClosureHistoryModal';
 import { ManualInvoiceModal } from './ManualInvoiceModal';
 import { ExportKpiButton } from '../ExportKpiButton';
 import { ReceiptModal } from './ReceiptModal';
+import { updateSalePaymentMethod } from '@/actions/caja/closure.actions';
+import { PaymentMethod } from '@prisma/client';
 
 interface DailyCashSummaryProps {
   orders: any[];
@@ -16,6 +18,30 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [printOrder, setPrintOrder] = useState<any>(null);
+
+  // Estados para edición del método de pago
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
+  const [tempPaymentMethod, setTempPaymentMethod] = useState<PaymentMethod | ''>('');
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleEditPayment = (order: any) => {
+    setEditingRowId(order.id);
+    setTempPaymentMethod(order.paymentMethod as PaymentMethod);
+  };
+
+  const handleSavePayment = async (orderId: string, orderNumber: string | number) => {
+    if (!tempPaymentMethod) return;
+    setIsUpdating(true);
+    try {
+      const isProductSale = typeof orderNumber === 'string' && orderNumber.startsWith('V-');
+      await updateSalePaymentMethod(orderId, isProductSale, tempPaymentMethod);
+      setEditingRowId(null);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const totalEfectivo = orders.filter(o => o.paymentMethod === 'EFECTIVO').reduce((acc, o) => acc + o.grandTotal, 0);
   const totalTarjeta = orders.filter(o => o.paymentMethod === 'TARJETA').reduce((acc, o) => acc + o.grandTotal, 0);
@@ -74,9 +100,49 @@ export function DailyCashSummary({ orders }: DailyCashSummaryProps) {
                       )}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="bg-surface-container-high text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded uppercase">
-                        {order.paymentMethod}
-                      </span>
+                      {editingRowId === order.id ? (
+                        <div className="flex items-center gap-1">
+                          <select
+                            value={tempPaymentMethod}
+                            onChange={(e) => setTempPaymentMethod(e.target.value as PaymentMethod)}
+                            className="bg-surface border border-outline-variant text-on-surface text-[10px] font-bold px-1 py-1 rounded"
+                            disabled={isUpdating}
+                          >
+                            <option value="EFECTIVO">EFECTIVO</option>
+                            <option value="TARJETA">TARJETA</option>
+                            <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                          </select>
+                          <button
+                            onClick={() => handleSavePayment(order.id, order.orderNumber)}
+                            disabled={isUpdating}
+                            className="text-[#137333] hover:text-[#0d5023] bg-surface-container-high rounded p-1 flex items-center justify-center transition-colors disabled:opacity-50 cursor-pointer"
+                            title="Guardar"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">check</span>
+                          </button>
+                          <button
+                            onClick={() => setEditingRowId(null)}
+                            disabled={isUpdating}
+                            className="text-error hover:text-error/80 bg-surface-container-high rounded p-1 flex items-center justify-center transition-colors disabled:opacity-50 cursor-pointer"
+                            title="Cancelar"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">close</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 group">
+                          <span className="bg-surface-container-high text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded uppercase">
+                            {order.paymentMethod}
+                          </span>
+                          <button
+                            onClick={() => handleEditPayment(order)}
+                            className="text-on-surface-variant hover:text-primary transition-all p-1 rounded hover:bg-surface-container-highest flex items-center justify-center cursor-pointer"
+                            title="Editar Método de Pago"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">edit</span>
+                          </button>
+                        </div>
+                      )}
                     </td>
                     <td className="py-3 px-4 text-right font-bold text-on-surface">
                       ${order.grandTotal.toLocaleString()}

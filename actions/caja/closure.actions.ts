@@ -154,3 +154,29 @@ export async function getHistoricalClosures() {
     return { success: false, message: error.message, data: [] };
   }
 }
+
+import { PaymentMethod } from '@prisma/client';
+
+export async function updateSalePaymentMethod(id: string, isProductSale: boolean, paymentMethod: PaymentMethod) {
+  try {
+    const session = await verifyRole(['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO']);
+    
+    if (isProductSale) {
+      await prisma.productSale.update({
+        where: { id },
+        data: { paymentMethod }
+      });
+    } else {
+      await prisma.order.update({
+        where: { id },
+        data: { paymentMethod, adminId: session.userId }
+      });
+    }
+    
+    revalidatePath('/caja');
+    return { success: true };
+  } catch (error: any) {
+    console.error(error);
+    return { success: false, message: 'Error al actualizar método de pago' };
+  }
+}

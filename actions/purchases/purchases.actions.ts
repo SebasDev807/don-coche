@@ -593,7 +593,16 @@ export async function getGrandTotalAction(searchQuery?: string) {
       },
     });
     
-    return { success: true, data: aggregate._sum.grandTotal ? Number(aggregate._sum.grandTotal) : 0 };
+    const aggregateItems = await prisma.purchaseInvoiceItem.aggregate({
+      where: { invoice: whereClause },
+      _sum: { quantity: true },
+    });
+
+    return { 
+      success: true, 
+      data: aggregate._sum.grandTotal ? Number(aggregate._sum.grandTotal) : 0,
+      totalItems: aggregateItems._sum.quantity ? Number(aggregateItems._sum.quantity) : 0
+    };
   } catch (error) {
     console.error("Error fetching grand total:", error);
     return { success: false, error: "Error al obtener el gran total" };

@@ -6,6 +6,7 @@ import React from 'react';
 interface InventoryKpiCardsProps {
   totalValue: number;
   totalProducts: number;
+  totalStockUnits?: number;
   lowStockAlerts: number;
   leadingCategory: string;
 }
@@ -19,6 +20,7 @@ interface InventoryKpiCardsProps {
 export function InventoryKpiCards({
   totalValue,
   totalProducts,
+  totalStockUnits = 0,
   lowStockAlerts,
   leadingCategory
 }: InventoryKpiCardsProps) {
@@ -44,9 +46,14 @@ export function InventoryKpiCards({
         <div className="w-12 h-12 shrink-0 bg-secondary-container rounded-full flex items-center justify-center text-on-secondary-container">
           <span className="material-symbols-outlined text-2xl">inventory_2</span>
         </div>
-        <div className="truncate">
+        <div className="truncate flex flex-col justify-center">
           <p className="font-label-bold text-label-bold text-secondary mb-1 truncate">Productos Totales</p>
-          <p className="font-headline-md text-headline-md text-on-surface truncate">{totalProducts} SKUs</p>
+          <div className="flex flex-col">
+            <span className="font-headline-md text-headline-md text-on-surface leading-tight truncate">{totalProducts} SKUs</span>
+            {totalStockUnits > 0 && (
+              <span className="text-body-sm text-secondary truncate mt-1">{totalStockUnits.toLocaleString('es-CO')} ítems físicos</span>
+            )}
+          </div>
         </div>
       </div>
 

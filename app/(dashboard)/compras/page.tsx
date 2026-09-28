@@ -28,6 +28,7 @@ export default async function ComprasPage(props: { searchParams: Promise<{ [key:
 
   const totalsResult = await getGrandTotalAction(q);
   const grandTotal = totalsResult.success && totalsResult.data !== undefined ? totalsResult.data : 0;
+  const totalItems = totalsResult.success && totalsResult.totalItems !== undefined ? totalsResult.totalItems : 0;
 
   const buildUrl = (newPage: number) => {
     const params = new URLSearchParams();
@@ -96,8 +97,18 @@ export default async function ComprasPage(props: { searchParams: Promise<{ [key:
                 </p>
               </div>
             </div>
-            <div className="font-display-sm text-primary font-bold">
-              ${grandTotal.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <div className="flex flex-col md:items-end">
+              <div className="font-display-sm text-primary font-bold">
+                ${grandTotal.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="flex flex-wrap gap-2 mt-1">
+                <div className="text-body-md text-secondary font-medium bg-surface-container px-3 py-1 rounded-full inline-block">
+                  {totalCount} {totalCount === 1 ? 'factura' : 'facturas'} en total
+                </div>
+                <div className="text-body-md text-secondary font-medium bg-surface-container px-3 py-1 rounded-full inline-block">
+                  {totalItems.toLocaleString('es-CO')} ítems en total
+                </div>
+              </div>
             </div>
           </div>
         )}

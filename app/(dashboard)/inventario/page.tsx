@@ -70,6 +70,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
   // Cálculos dinámicos de KPIs
   const totalValue = products.reduce((acc, p) => acc + (Number(p.unitCost) * p.stock), 0);
   const totalProducts = products.length;
+  const totalStockUnits = products.reduce((acc, p) => acc + p.stock, 0);
   const lowStockAlerts = products.filter(p => p.stock <= 3).length;
 
   // Encontrar la categoría líder
@@ -149,6 +150,7 @@ export default async function InventoryScreenPage(props: { searchParams: Promise
         <InventoryKpiCards
           totalValue={totalValue}
           totalProducts={totalProducts}
+          totalStockUnits={totalStockUnits}
           lowStockAlerts={lowStockAlerts}
           leadingCategory={leadingCategory}
         />

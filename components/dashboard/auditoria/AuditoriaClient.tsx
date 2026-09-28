@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { OrderAuditModal } from './OrderAuditModal';
 import { MOVEMENT_STATUS_STYLES } from '@/data/mocks';
 
@@ -284,26 +285,76 @@ export function AuditoriaClient({ movements, totals, pagination, filters }: Audi
 
         {/* ─── Paginación ─── */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-surface-variant flex items-center justify-between bg-surface-container-lowest">
+          <div className="p-4 border-t border-surface-variant flex flex-col sm:flex-row gap-4 items-center justify-between bg-surface-container-lowest">
             <p className="text-xs text-on-surface-variant">
-              Página {pagination.currentPage} de {pagination.totalPages} · {pagination.totalCount} registros
+              Mostrando página <span className="font-bold text-on-surface">{pagination.currentPage}</span> de <span className="font-bold text-on-surface">{pagination.totalPages}</span> ({pagination.totalCount} registros)
             </p>
-            <div className="flex gap-2">
-              {pagination.currentPage > 1 && (
-                <a
+            <div className="flex gap-1 items-center">
+              {pagination.currentPage > 1 ? (
+                <Link
                   href={buildUrl({ plate: filters.plate, status: filters.status, fechaDesde: filters.fechaDesde, fechaHasta: filters.fechaHasta, page: String(pagination.currentPage - 1) })}
-                  className="px-4 py-2 text-sm font-label-bold rounded border border-surface-variant text-on-surface hover:bg-surface-container-low transition-colors"
+                  className="px-3 py-1.5 text-sm font-label-bold rounded-lg border border-surface-variant text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-center"
                 >
-                  ← Anterior
-                </a>
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                </Link>
+              ) : (
+                <div className="px-3 py-1.5 text-sm font-label-bold rounded-lg border border-surface-variant text-on-surface-variant opacity-50 cursor-not-allowed flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                </div>
               )}
-              {pagination.currentPage < pagination.totalPages && (
-                <a
+
+              {/* Numbered pages */}
+              {(() => {
+                const pages: (number | string)[] = [];
+                const { currentPage, totalPages } = pagination;
+                if (totalPages <= 7) {
+                  for (let i = 1; i <= totalPages; i++) pages.push(i);
+                } else {
+                  if (currentPage <= 4) {
+                    pages.push(1, 2, 3, 4, 5, '...', totalPages);
+                  } else if (currentPage >= totalPages - 3) {
+                    pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+                  } else {
+                    pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+                  }
+                }
+                
+                return pages.map((p, i) => {
+                  if (p === '...') {
+                    return (
+                      <span key={`ellipsis-${i}`} className="px-2 py-1.5 text-sm text-on-surface-variant">
+                        ...
+                      </span>
+                    );
+                  }
+                  const isCurrent = p === pagination.currentPage;
+                  return (
+                    <Link
+                      key={p}
+                      href={buildUrl({ plate: filters.plate, status: filters.status, fechaDesde: filters.fechaDesde, fechaHasta: filters.fechaHasta, page: String(p) })}
+                      className={`px-3 py-1.5 min-w-[32px] text-center text-sm font-label-bold rounded-lg transition-colors ${
+                        isCurrent 
+                          ? 'bg-primary text-on-primary font-bold' 
+                          : 'text-on-surface hover:bg-surface-container-low border border-transparent hover:border-surface-variant'
+                      }`}
+                    >
+                      {p}
+                    </Link>
+                  );
+                });
+              })()}
+
+              {pagination.currentPage < pagination.totalPages ? (
+                <Link
                   href={buildUrl({ plate: filters.plate, status: filters.status, fechaDesde: filters.fechaDesde, fechaHasta: filters.fechaHasta, page: String(pagination.currentPage + 1) })}
-                  className="px-4 py-2 text-sm font-label-bold rounded border border-surface-variant text-on-surface hover:bg-surface-container-low transition-colors"
+                  className="px-3 py-1.5 text-sm font-label-bold rounded-lg border border-surface-variant text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-center"
                 >
-                  Siguiente →
-                </a>
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </Link>
+              ) : (
+                <div className="px-3 py-1.5 text-sm font-label-bold rounded-lg border border-surface-variant text-on-surface-variant opacity-50 cursor-not-allowed flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </div>
               )}
             </div>
           </div>

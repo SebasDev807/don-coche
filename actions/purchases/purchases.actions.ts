@@ -79,7 +79,17 @@ export async function createPurchaseInvoiceAction(data: {
         const newStock = previousStock + item.quantity;
 
         const oldUnitCost = Number(product.unitCost);
-        const newUnitCost = item.unitCost;
+        
+        const invoiceNetSubtotal = Number(data.subtotal) - (Number(data.discountAmount) || 0);
+        const itemNetSubtotal = Number(item.netSubtotal) || (Number(item.subtotal) - (Number(item.discountAmount) || 0));
+        
+        let proportionalIva = 0;
+        if (invoiceNetSubtotal > 0 && Number(data.ivaAmount) > 0) {
+          proportionalIva = (itemNetSubtotal / invoiceNetSubtotal) * Number(data.ivaAmount);
+        }
+        
+        const totalItemCost = itemNetSubtotal + proportionalIva;
+        const newUnitCost = totalItemCost / item.quantity;
 
         await tx.product.update({
           where: { id: item.productId },
@@ -405,7 +415,16 @@ export async function updatePurchaseInvoiceAction(invoiceId: string, data: {
         let nextUnitCost = Number(product.unitCost);
 
         if (newItem) {
-          nextUnitCost = newItem.unitCost;
+          const invoiceNetSubtotal = Number(data.subtotal) - (Number(data.discountAmount) || 0);
+          const itemNetSubtotal = Number(newItem.netSubtotal) || (Number(newItem.subtotal) - (Number(newItem.discountAmount) || 0));
+          
+          let proportionalIva = 0;
+          if (invoiceNetSubtotal > 0 && Number(data.ivaAmount) > 0) {
+            proportionalIva = (itemNetSubtotal / invoiceNetSubtotal) * Number(data.ivaAmount);
+          }
+          
+          const totalItemCost = itemNetSubtotal + proportionalIva;
+          nextUnitCost = totalItemCost / newItem.quantity;
         }
 
         await tx.product.update({
@@ -555,3 +574,29 @@ export async function updateQuickProductAction(id: string, data: { name: string;
     return { success: false, error: 'No se pudo actualizar el producto.' };
   }
 }
+
+export async function getGrandTotalAction(searchQuery?: string) {
+  try {
+    const whereClause: any = {};
+    if (searchQuery) {
+      whereClause.OR = [
+        { invoiceNumber: { contains: searchQuery, mode: 'insensitive' } },
+        { supplier: { name: { contains: searchQuery, mode: 'insensitive' } } },
+        { supplier: { nit: { contains: searchQuery, mode: 'insensitive' } } }
+      ];
+    }
+
+    const aggregate = await prisma.purchaseInvoice.aggregate({
+      where: whereClause,
+      _sum: {
+        grandTotal: true,
+      },
+    });
+    
+    return { success: true, data: aggregate._sum.grandTotal ? Number(aggregate._sum.grandTotal) : 0 };
+  } catch (error) {
+    console.error("Error fetching grand total:", error);
+    return { success: false, error: "Error al obtener el gran total" };
+  }
+}
+

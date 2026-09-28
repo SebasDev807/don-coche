@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getPurchaseInvoicesAction } from '@/actions/purchases/purchases.actions';
+import { getPurchaseInvoicesAction, getGrandTotalAction } from '@/actions/purchases/purchases.actions';
 import Link from 'next/link';
 import { ComprasClient } from './ComprasClient';
 import { verifyRole } from '@/lib/dal';
@@ -25,6 +25,9 @@ export default async function ComprasPage(props: { searchParams: Promise<{ [key:
   const rawInvoices = result.success && result.data ? result.data : [];
   const totalPages = result.success && result.totalPages ? result.totalPages : 1;
   const totalCount = result.success && result.totalCount ? result.totalCount : 0;
+
+  const totalsResult = await getGrandTotalAction(q);
+  const grandTotal = totalsResult.success && totalsResult.data !== undefined ? totalsResult.data : 0;
 
   const buildUrl = (newPage: number) => {
     const params = new URLSearchParams();
@@ -79,6 +82,25 @@ export default async function ComprasPage(props: { searchParams: Promise<{ [key:
             </Link>
           </div>
         </header>
+
+        {grandTotal > 0 && (
+          <div className="mb-6 bg-surface-container-low border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                <span className="material-symbols-outlined text-[24px]">payments</span>
+              </div>
+              <div>
+                <h2 className="font-title-md text-on-surface">Gran Total</h2>
+                <p className="text-body-sm text-secondary">
+                  {q ? 'Total de las compras en resultados de búsqueda' : 'Total acumulado de todas las compras'}
+                </p>
+              </div>
+            </div>
+            <div className="font-display-sm text-primary font-bold">
+              ${grandTotal.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+          </div>
+        )}
 
         {invoices.length === 0 ? (
           <div className="bg-surface-container rounded-2xl p-12 text-center text-secondary">

@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   description: 'Resumen financiero consolidado',
 };
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 /**
  * Página principal del dashboard con KPIs, gráfica y tabla.
  */

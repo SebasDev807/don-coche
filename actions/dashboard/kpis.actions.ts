@@ -145,7 +145,8 @@ export async function getWeeklyChartData() {
       const date = new Date(monday);
       date.setDate(monday.getDate() + i);
       data.push({
-        date: date, // guardamos el objeto Date para comparar luego
+        date: date,
+        dateStr: date.toISOString(), // Guardamos el ISO para enviarlo al cliente
         dia: daysMap[date.getDay()],
         lavadero: 0,
         serviteca: 0
@@ -165,7 +166,8 @@ export async function getWeeklyChartData() {
         }
       },
       include: {
-        services: { include: { service: true } }
+        services: { include: { service: true } },
+        products: { include: { product: true } }
       }
     });
 
@@ -187,16 +189,134 @@ export async function getWeeklyChartData() {
             dayData.lavadero += price;
           }
         }
+        
+        for (const p of order.products) {
+          const price = Number(p.unitPrice) * p.quantity;
+          if (p.product.category === 'LAVADERO') {
+            dayData.lavadero += price;
+          } else {
+            // Productos por lo general son de serviteca (lubricantes, accesorios, repuestos)
+            dayData.serviteca += price;
+          }
+        }
+      }
+    }
+
+    const productSalesThisWeek = await prisma.productSale.findMany({
+      where: {
+        soldAt: {
+          gte: startOfWeekDate,
+          lte: endOfWeekDate,
+        }
+      },
+      include: {
+        items: { include: { product: true } }
+      }
+    });
+
+    for (const sale of productSalesThisWeek) {
+      if (!sale.soldAt) continue;
+
+      const saleDateStr = sale.soldAt.toDateString();
+      const dayData = data.find(d => d.date.toDateString() === saleDateStr);
+
+      if (dayData) {
+        for (const item of sale.items) {
+          const price = Number(item.unitPrice) * item.quantity;
+          if (item.product.category === 'LAVADERO') {
+            dayData.lavadero += price;
+          } else {
+            dayData.serviteca += price;
+          }
+        }
       }
     }
 
     return {
       success: true,
       // Retornar sin los objetos date puros para que se pueda serializar al cliente
-      data: data.map(({ dia, lavadero, serviteca }) => ({ dia, lavadero, serviteca }))
+      data: data.map(({ dateStr, dia, lavadero, serviteca }) => ({ dateStr, dia, lavadero, serviteca }))
     };
   } catch (error: any) {
     console.error('Error fetching chart data:', error);
+    return { success: false, data: [] };
+  }
+}
+
+export async function getDailySalesHistory(dateStr: string) {
+  try {
+    await verifySession();
+    
+    const startOfDay = new Date(dateStr);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(dateStr);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const orders = await prisma.order.findMany({
+      where: {
+        status: 'FACTURADA',
+        billedAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        }
+      },
+      include: {
+        services: { include: { service: true } },
+        products: { include: { product: true } }
+      }
+    });
+
+    const directSales = await prisma.productSale.findMany({
+      where: {
+        soldAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        }
+      },
+      include: {
+        items: { include: { product: true } }
+      }
+    });
+
+    const items: Array<{ name: string, category: string, price: number, quantity: number, type: 'Service' | 'Product' }> = [];
+
+    for (const o of orders) {
+      for (const s of o.services) {
+        items.push({
+          name: s.service.name,
+          category: s.service.category || 'LAVADERO',
+          price: Number(s.chargedPrice),
+          quantity: 1,
+          type: 'Service'
+        });
+      }
+      for (const p of o.products) {
+        items.push({
+          name: p.product.name,
+          category: p.product.category || 'SERVITECA',
+          price: Number(p.unitPrice),
+          quantity: p.quantity,
+          type: 'Product'
+        });
+      }
+    }
+
+    for (const s of directSales) {
+      for (const i of s.items) {
+        items.push({
+          name: i.product.name,
+          category: i.product.category || 'SERVITECA',
+          price: Number(i.unitPrice),
+          quantity: i.quantity,
+          type: 'Product' // Direct Sale
+        });
+      }
+    }
+
+    return { success: true, data: items };
+
+  } catch (error: any) {
+    console.error('Error fetching daily history:', error);
     return { success: false, data: [] };
   }
 }

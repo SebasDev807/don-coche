@@ -278,7 +278,7 @@ export async function getDailySalesHistory(dateStr: string) {
       }
     });
 
-    const items: Array<{ name: string, category: string, price: number, quantity: number, type: 'Service' | 'Product' }> = [];
+    const items: Array<{ name: string, category: string, price: number, quantity: number, type: 'Service' | 'Product', technician?: string }> = [];
 
     for (const o of orders) {
       for (const s of o.services) {
@@ -287,7 +287,8 @@ export async function getDailySalesHistory(dateStr: string) {
           category: s.service.category || 'LAVADERO',
           price: Number(s.chargedPrice),
           quantity: 1,
-          type: 'Service'
+          type: 'Service',
+          technician: s.technicianName || undefined
         });
       }
       for (const p of o.products) {

@@ -27,6 +27,7 @@ interface DailyItem {
   price: number;
   quantity: number;
   type: 'Service' | 'Product';
+  technician?: string;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -179,7 +180,14 @@ export function WeeklyChart({ data }: WeeklyChartProps) {
                   {dailyItems.map((item, i) => (
                     <div key={i} className="bg-surface-container-lowest p-3 rounded-lg border border-surface-variant flex justify-between items-center hover:bg-surface-container-low transition-colors">
                       <div className="flex flex-col">
-                        <span className="font-label-bold text-sm text-on-surface">{item.name}</span>
+                        <span className="font-label-bold text-sm text-on-surface">
+                          {item.name}
+                          {item.technician && (
+                            <span className="ml-2 font-normal text-xs text-on-surface-variant italic">
+                              (Por: {item.technician})
+                            </span>
+                          )}
+                        </span>
                         <div className="flex gap-2 items-center mt-1">
                           <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${item.category === 'LAVADERO' ? 'bg-primary-container text-on-primary-container' : 'bg-tertiary text-on-tertiary'}`}>
                             {item.category}

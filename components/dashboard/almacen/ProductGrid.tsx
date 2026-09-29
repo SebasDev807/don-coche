@@ -8,9 +8,10 @@ interface ProductGridProps {
   search: string;
   cart: Map<string, number>;
   onAdd: (product: AlmacenProduct) => void;
+  hideStock?: boolean;
 }
 
-export function ProductGrid({ products, search, cart, onAdd }: ProductGridProps) {
+export function ProductGrid({ products, search, cart, onAdd, hideStock = false }: ProductGridProps) {
   const [visibleCount, setVisibleCount] = useState(24);
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -83,15 +84,17 @@ export function ProductGrid({ products, search, cart, onAdd }: ProductGridProps)
               `}
             >
               {/* Badge stock */}
-              <span
-                className={`absolute top-3 right-3 text-xs font-bold px-2 py-0.5 rounded-full ${
-                  product.stock <= 5
-                    ? 'bg-error-container text-on-error-container'
-                    : 'bg-surface-container-high text-on-surface-variant'
-                }`}
-              >
-                {product.stock} uds
-              </span>
+              {!hideStock && (
+                <span
+                  className={`absolute top-3 right-3 text-xs font-bold px-2 py-0.5 rounded-full ${
+                    product.stock <= 5
+                      ? 'bg-error-container text-on-error-container'
+                      : 'bg-surface-container-high text-on-surface-variant'
+                  }`}
+                >
+                  {product.stock} uds
+                </span>
+              )}
 
               {/* Badge IVA — siempre visible */}
               <span className="absolute top-3 left-3 text-[10px] font-bold px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container">

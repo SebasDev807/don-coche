@@ -38,7 +38,7 @@ export async function updateOrderAdmin(
       }
     });
 
-    revalidatePath('/auditoria');
+    revalidatePath('/historial-ventas');
     revalidatePath('/caja');
     revalidatePath('/dashboard');
 

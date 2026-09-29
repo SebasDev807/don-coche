@@ -36,23 +36,26 @@ export default async function TecnicoScreen() {
 
   const { data: services } = await getServices({ limit: 100 });
 
-  const insumos = await prisma.product.findMany({
+  const rawInsumos = await prisma.product.findMany({
     where: {
       isActive: true,
-      category_rel: {
-        name: {
-          equals: 'Insumos',
-          mode: 'insensitive'
-        }
-      }
+      stock: { gt: 0 }
     },
     select: {
       id: true,
       name: true,
       stock: true,
+      salePrice: true,
     },
     orderBy: { name: 'asc' }
   });
+
+  const insumos = rawInsumos.map(i => ({
+    id: i.id,
+    name: i.name,
+    stock: i.stock,
+    salePrice: Number(i.salePrice)
+  }));
 
   return (
     <div className="fade-in bg-background text-on-background h-screen flex flex-col font-[family-name:var(--font-sora)] overflow-hidden">

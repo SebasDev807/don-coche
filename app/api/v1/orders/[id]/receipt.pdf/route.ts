@@ -131,7 +131,10 @@ export async function GET(
       const valW = W - labelW;
       const yStart = doc.y;
       doc.fontSize(9).font('Helvetica-Bold').text(`${label}:`, x0, yStart, { width: labelW });
+      const y1 = doc.y;
       doc.fontSize(9).font('Helvetica-Bold').text(value, x0 + labelW, yStart, { width: valW });
+      const y2 = doc.y;
+      doc.y = Math.max(y1, y2);
     };
 
     const rawPlate = order.vehicle?.plate;
@@ -163,8 +166,13 @@ export async function GET(
         const yRow = doc.y;
         doc.fontSize(9).font('Helvetica-Bold')
           .text(`- ${os.service?.name || 'Servicio'}`, x0, yRow, { width: nameW });
+        const yAfterName = doc.y;
+        
         doc.fontSize(9).font('Helvetica-Bold')
           .text(price, x0 + nameW, yRow, { width: priceW, align: 'right' });
+        const yAfterPrice = doc.y;
+        
+        doc.y = Math.max(yAfterName, yAfterPrice);
         doc.moveDown(0.15);
       }
       doc.moveDown(0.3);
@@ -197,8 +205,13 @@ export async function GET(
         const yRow = doc.y;
         doc.fontSize(9).font('Helvetica-Bold')
           .text(`- ${op.product?.name || 'Producto'}`, x0, yRow, { width: nameW });
+        const yAfterName = doc.y;
+        
         doc.fontSize(9).font('Helvetica-Bold')
           .text(lineTotal, x0 + nameW, yRow, { width: totalW, align: 'right' });
+        const yAfterPrice = doc.y;
+
+        doc.y = Math.max(yAfterName, yAfterPrice);
         doc.moveDown(0.15);
 
         // Detalle IVA
@@ -224,7 +237,12 @@ export async function GET(
       const yRow = doc.y;
       const fs = big ? 12 : 9;
       doc.fontSize(fs).font('Helvetica-Bold').text(label, x0, yRow, { width: labelW });
+      const y1 = doc.y;
+      
       doc.fontSize(fs).font('Helvetica-Bold').text(val, x0 + labelW, yRow, { width: valW, align: 'right' });
+      const y2 = doc.y;
+      
+      doc.y = Math.max(y1, y2);
       doc.moveDown(0.2);
     };
 

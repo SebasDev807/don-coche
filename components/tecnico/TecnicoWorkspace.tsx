@@ -15,7 +15,7 @@ const MySwal = withReactContent(Swal);
 interface TecnicoWorkspaceProps {
   catalogServices: any[];
   userDepartment?: string | null;
-  insumos?: { id: string; name: string; stock: number }[];
+  insumos?: { id: string; name: string; stock: number; salePrice: number }[];
 }
 
 // Tipo para orden existente en pista
@@ -339,7 +339,7 @@ export function TecnicoWorkspace({ catalogServices, userDepartment, insumos }: T
               }`}
             >
               <span className="material-symbols-outlined text-[18px]">inventory_2</span>
-              Stock de Insumos
+              Catálogo de productos
               {selectedProducts.length > 0 && (
                 <span className="absolute top-2 right-4 bg-secondary text-on-secondary text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
                   {selectedProducts.length}

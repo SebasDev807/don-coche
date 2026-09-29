@@ -174,7 +174,7 @@ export default async function DashboardPage() {
             <h2 className="font-headline-md text-xl text-on-surface font-bold">
               Resumen de Últimos Movimientos
             </h2>
-            <Link href="/auditoria" className="text-on-surface hover:text-on-surface-variant font-label-bold text-sm flex items-center gap-1 transition-colors cursor-pointer">
+            <Link href="/historial-ventas" className="text-on-surface hover:text-on-surface-variant font-label-bold text-sm flex items-center gap-1 transition-colors cursor-pointer">
               Ver Todo{' '}
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </Link>

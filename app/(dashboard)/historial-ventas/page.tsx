@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AuditoriaClient } from '@/components/dashboard/auditoria/AuditoriaClient';
 
 export const metadata: Metadata = {
-  title: 'Auditoría de Movimientos | Don Coche',
+  title: 'Historial de Ventas | Don Coche',
   description: 'Historial completo de órdenes y caja con filtros, búsqueda y exportación',
 };
 
@@ -29,7 +29,7 @@ export default async function AuditoriaPage({ searchParams }: PageProps) {
   const status     = params.status || 'TODOS';
   const fechaDesde = params.fechaDesde || '';
   const fechaHasta = params.fechaHasta || '';
-  const limit      = 50;
+  const limit      = 6;
 
   const result = await getPaginatedMovements(page, limit, { plate, status, fechaDesde, fechaHasta });
 
@@ -45,7 +45,7 @@ export default async function AuditoriaPage({ searchParams }: PageProps) {
         </Link>
         <div>
           <h1 className="font-display-md text-3xl font-black text-on-surface">
-            Libro Mayor de Auditoría
+            Historial de Ventas
           </h1>
           <p className="text-sm text-on-surface-variant mt-1">
             Historial completo · Filtros por placa, fecha y estado · Exportación a Excel

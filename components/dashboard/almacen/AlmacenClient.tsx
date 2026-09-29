@@ -16,6 +16,7 @@ const MySwal = withReactContent(Swal);
 interface AlmacenClientProps {
   initialProducts: AlmacenProduct[];
   hideServicesTab?: boolean;
+  hideStock?: boolean;
   prefillData?: {
     plate?: string;
     customerName?: string;
@@ -50,7 +51,7 @@ const SERVICE_CATEGORIES: {
     },
   ];
 
-export function AlmacenClient({ initialProducts, hideServicesTab = false, prefillData }: AlmacenClientProps) {
+export function AlmacenClient({ initialProducts, hideServicesTab = false, hideStock = false, prefillData }: AlmacenClientProps) {
   const [activeTab, setActiveTab] = useState<'productos' | 'servicios'>('productos');
   const [products] = useState<AlmacenProduct[]>(initialProducts);
   const [search, setSearch] = useState('');
@@ -317,6 +318,7 @@ export function AlmacenClient({ initialProducts, hideServicesTab = false, prefil
                 search={search}
                 cart={cart}
                 onAdd={addToCart}
+                hideStock={hideStock}
               />
             </div>
           </div>

@@ -34,7 +34,7 @@ export function OrderEditClient({ order }: OrderEditClientProps) {
       if (result.success) {
         setSuccessMsg(result.message);
         setTimeout(() => {
-          router.push('/auditoria');
+          router.push('/historial-ventas');
         }, 1500);
       } else {
         setErrorMsg(result.message);
@@ -104,7 +104,7 @@ export function OrderEditClient({ order }: OrderEditClientProps) {
       <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant">
         <button
           type="button"
-          onClick={() => router.push('/auditoria')}
+          onClick={() => router.push('/historial-ventas')}
           disabled={isSubmitting || !!successMsg}
           className="px-6 py-2.5 rounded-xl border border-outline-variant text-on-surface font-bold hover:bg-surface-container transition-colors disabled:opacity-50 cursor-pointer"
         >

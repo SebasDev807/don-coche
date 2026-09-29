@@ -32,7 +32,7 @@ export default async function EditOrderPage({ params }: PageProps) {
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4 border-b border-surface-variant pb-6">
         <Link
-          href="/auditoria"
+          href="/historial-ventas"
           className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low text-on-surface hover:bg-surface-variant transition-colors"
         >
           <span className="material-symbols-outlined">arrow_back</span>

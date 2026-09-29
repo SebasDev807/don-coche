@@ -35,6 +35,7 @@ interface NavItem {
 /** Ítems principales del menú de navegación. */
 const NAV_ITEMS: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
+  { icon: 'build', label: 'Pista (Nueva Orden)', href: '/pista', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO', 'TECNICO'] },
   { icon: 'point_of_sale', label: 'Panel de Caja', href: '/caja', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
   { icon: 'storefront', label: 'Punto de Venta', href: '/almacen', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
   { icon: 'group', label: 'Gestión de Personal', href: '/personal', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'] },
@@ -44,7 +45,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: 'design_services', label: 'Catálogo de Servicios', href: '/servicios', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
   { icon: 'directions_car', label: 'Clientes y Vehículos', href: '/clientes', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
   { icon: 'calendar_month', label: 'Próximas Citas', href: '/citas', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR', 'AUXILIAR_ADMINISTRATIVO'] },
-  { icon: 'history_edu', label: 'Libro de Auditoría', href: '/auditoria', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'] },
+  { icon: 'history_edu', label: 'Historial de Ventas', href: '/historial-ventas', allowedRoles: ['SUPERUSUARIO', 'GERENTE', 'ADMINISTRADOR'] },
 ];
 
 

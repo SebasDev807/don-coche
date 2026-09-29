@@ -236,7 +236,7 @@ export function OrderAuditModal({ orderId, onClose }: OrderAuditModalProps) {
                 Descargar Recibo PDF
               </a>
               <a
-                href={`/auditoria/editar/${order.id}`}
+                href={`/historial-ventas/editar/${order.id}`}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-on-primary font-bold hover:bg-primary/90 transition-colors shadow-sm"
               >
                 <span className="material-symbols-outlined text-[18px]">edit</span>
